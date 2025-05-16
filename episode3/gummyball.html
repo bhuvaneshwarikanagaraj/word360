@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gum Collector Game</title>
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track gummyball activity view
+        LogRocket.track('Gummyball Activity View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode3_gummyball'
+        });
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Special Elite', cursive;
+            background-color: #fff;
+            min-height: 100vh;
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none; /* Prevent default touch actions */
+        }
+
+        .game-wrapper {
+            max-width: 350px;
+            width: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 0;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 500px;
+            background-color: #F5E6D3;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        #container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;  /* Increased size for better tap target */
+            height: 35px; /* Increased size for better tap target */
+            background-color: #8B4513;
+            border-radius: 0 0 30px 30px;
+            cursor: grab;
+            z-index: 10;
+            transition: left 0.1s ease; /* Smoother movement */
+        }
+
+        .hat {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .hat::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 12px;
+            background-color: #6b3109;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .hat::after {
+            content: '';
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            width: 46px; /* Adjusted for larger hat */
+            height: 8px;
+            background-color: #522406;
+            border-radius: 4px;
+        }
+
+        .gum {
+            position: absolute;
+            width: 28px; /* Slightly larger for easier catching */
+            height: 28px; /* Slightly larger for easier catching */
+            background-color: pink;
+            border-radius: 50%;
+            z-index: 5;
+        }
+
+        .coin, .coin-icon, #coins {
+            display: none;
+        }
+
+        #score {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #8B4513;
+        }
+
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(245, 230, 211, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #8B4513;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            border: 2px solid #8B4513;
+            min-width: 280px;
+            max-width: 90%;
+        }
+
+        #next-btn, #replay-btn {
+            background-color: #8B4513;
+            color: #F5E6D3;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: 'Special Elite', cursive;
+            display: none;
+            margin-left: auto;
+            margin-right: auto;
+            min-width: 120px;
+        }
+
+        #message-text {
+            margin-bottom: 15px;
+        }
+
+        #next-btn:hover, #replay-btn:hover {
+            background-color: #6b3109;
+        }
+
+        .congrats {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards, fadeOut 1.5s forwards 1s;
+            z-index: 100;
+            font-size: 20px;
+            font-weight: bold;
+            color: gold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1.2); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: scale(1.2); }
+            to { opacity: 0; transform: scale(1.5); }
+        }
+
+        #instructions {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 16px;
+            color: #8B4513;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: 2px solid #8B4513;
+            width: 100%;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #start-btn {
+            background-color: #8B4513;
+            color: #F5E6D3;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-family: 'Special Elite', cursive;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #start-btn:hover {
+            background-color: #6b3109;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        #start-btn:active {
+            transform: scale(0.95);
+        }
+
+        #close-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 35px;
+            height: 35px;
+            background: #8B4513;
+            border: 2px solid #6B3410;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #F5E6D3;
+            font-size: 1.2em;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+        }
+
+        #close-btn:hover {
+            background: #95562B;
+            transform: scale(1.1);
+        }
+
+        #close-btn:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .game-wrapper {
+                padding: 20px 0;
+                max-width: 100%;
+            }
+
+            #game-container {
+                height: 60vh;
+                width: 95%;
+                margin: 0 auto;
+            }
+
+            #instructions {
+                font-size: 14px;
+                padding: 12px;
+                margin-bottom: 10px;
+                width: 90%;
+            }
+
+            #message {
+                font-size: 16px;
+                padding: 15px;
+                width: 85%;
+            }
+
+            .completion-message {
+                font-size: 14px;
+                padding: 8px 15px;
+                width: auto;
+                max-width: 90%;
+                white-space: nowrap;
+            }
+
+            #close-btn {
+                top: 5px;
+                right: 5px;
+            }
+
+            #score {
+                font-size: 14px;
+                top: 10px;
+                left: 10px;
+            }
+
+            .gum {
+                width: 26px;  /* Slightly larger for mobile */
+                height: 26px;
+            }
+
+            #container {
+                width: 70px;  /* Larger for better touch target */
+                height: 35px;
+            }
+        }
+
+        /* Add landscape mode support */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .game-wrapper {
+                padding: 10px 0;
+            }
+
+            #game-container {
+                height: 70vh;
+            }
+
+            #instructions {
+                margin-bottom: 5px;
+            }
+        }
+
+        .success-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(245, 230, 211, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .success-message {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #8B4513;
+            font-size: 14px;
+        }
+
+        /* Add completion tag styles */
+        .completion-tag {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-family: 'Special Elite', cursive;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Add completion message styles */
+        .completion-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-family: 'Special Elite', cursive;
+            font-size: 16px;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            pointer-events: none; /* Allows clicking through the message */
+        }
+    </style>
+</head>
+<body>
+    <div class="game-wrapper">
+        <button id="close-btn" onclick="closeActivity()">&times;</button>
+        <div id="instructions">
+            <p>Catch 20 out of 30 gumballs to rescue little boy from guards</p>
+        </div>
+        <div id="game-container">
+            <div id="score">Caught: 0 / 20</div>
+            <div id="container" class="hat"></div>
+            <div id="message">
+                <div id="message-text"></div>
+                <button id="next-btn" onclick="navigateToNextPanel()" style="display: none;">Next</button>
+                <button id="replay-btn" onclick="startGame()" style="display: none;">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="start-overlay">
+        <button id="start-btn">Start Game</button>
+    </div>
+
+    <div class="completion-message" id="completionMessage">Task Completed</div>
+
+    <audio id="victorySound" src="victory_sound.mp3"></audio>
+
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const container = document.getElementById('container');
+        const scoreDisplay = document.getElementById('score');
+        const messageBox = document.getElementById('message');
+        const messageText = document.getElementById('message-text');
+        const nextBtn = document.getElementById('next-btn');
+        const replayBtn = document.getElementById('replay-btn');
+        const startBtn = document.getElementById('start-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const startOverlay = document.getElementById('start-overlay');
+        const victorySound = document.getElementById('victorySound');
+        
+        // Game state variables
+        let totalGums = 0;
+        let caughtGums = 0;
+        let targetGums = 20;
+        let maxGums = 30;
+        let gameActive = false;
+        let isDragging = false;
+        let lastX = 0;
+        let hasWon = false;
+        
+        // Improved configuration for consistent experience
+        const GUMBALL_SPAWN_INTERVAL = 1200; // Consistent 1.2 second spawn rate
+        const GUMBALL_BASE_SPEED = 2;        // Base speed for all gumballs
+        const GUMBALL_SPEED_VARIANCE = 0.8;  // Small variance for natural feel
+        
+        // Limiting concurrent gumballs
+        const MAX_CONCURRENT_GUMBALLS = 4;   // Maximum number of gumballs on screen
+        let currentGumballsCount = 0;
+
+        // Set up touch/mouse event listeners with a simplified approach
+        gameContainer.addEventListener('touchstart', handleControlInteraction);
+        gameContainer.addEventListener('touchmove', handleControlInteraction);
+        gameContainer.addEventListener('mousemove', handleControlInteraction);
+
+        function handleControlInteraction(e) {
+            if (!gameActive) return;
+            
+            e.preventDefault(); // Prevent scrolling
+            
+            // Get X position from either mouse or touch
+            let clientX;
+            if (e.type.includes('touch')) {
+                clientX = e.touches[0].clientX;
+            } else {
+                clientX = e.clientX;
+            }
+            
+            // Calculate container position
+            const gameRect = gameContainer.getBoundingClientRect();
+            const containerWidth = container.offsetWidth;
+            
+            // Position relative to game container
+            let newLeft = clientX - gameRect.left - (containerWidth / 2);
+            
+            // Constrain to game boundaries
+            const maxLeft = gameRect.width - containerWidth;
+            newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+            
+            // Move the container
+            container.style.left = `${newLeft}px`;
+        }
+
+        function createGum() {
+            if (!gameActive || totalGums >= maxGums) {
+                if (currentGumballsCount === 0 && totalGums >= maxGums && caughtGums < targetGums) {
+                    endGame(false);
+                }
+                return;
+            }
+            
+            // Only spawn if we haven't reached the concurrent limit
+            if (currentGumballsCount >= MAX_CONCURRENT_GUMBALLS) {
+                return;
+            }
+            
+            // Create the gumball element
+            const gum = document.createElement('div');
+            gum.className = 'gum';
+            
+            // Position horizontally with better distribution
+            const containerWidth = gameContainer.offsetWidth;
+            const gumWidth = 28; // Match CSS width
+            const availableSpace = containerWidth - gumWidth;
+            
+            // Avoid spawning too close to the edges
+            const margin = gumWidth;
+            const left = margin + Math.random() * (availableSpace - 2 * margin);
+            
+            gum.style.left = `${left}px`;
+            gum.style.top = '-30px';
+            gameContainer.appendChild(gum);
+            
+            totalGums++;
+            currentGumballsCount++;
+            
+            // Consistent speed with small variance
+            const speed = GUMBALL_BASE_SPEED + (Math.random() * GUMBALL_SPEED_VARIANCE);
+            
+            // Animate the gumball falling
+            const fallInterval = setInterval(() => {
+                const currentTop = parseFloat(gum.style.top);
+                gum.style.top = `${currentTop + speed}px`;
+                
+                // Check for collision with container
+                if (isColliding(gum, container)) {
+                    gum.remove();
+                    caughtGums++;
+                    updateScore();
+                    clearInterval(fallInterval);
+                    showCaughtAnimation(left, container.offsetTop);
+                    currentGumballsCount--;
+                    checkGameStatus();
+                } 
+                // Check if gumball is out of bounds
+                else if (currentTop > gameContainer.offsetHeight) {
+                    gum.remove();
+                    clearInterval(fallInterval);
+                    currentGumballsCount--;
+                    checkGameStatus();
+                }
+            }, 20);
+        }
+
+        function showPopupMessage(text, color) {
+            const popup = document.createElement('div');
+            popup.className = 'congrats';
+            popup.textContent = text;
+            popup.style.color = color; 
+            popup.style.left = '50%';
+            popup.style.top = '50%';
+            popup.style.transform = 'translate(-50%, -50%)';  
+            gameContainer.appendChild(popup);  
+            setTimeout(() => {
+                popup.remove();
+            }, 2500);
+        }
+
+        function showCaughtAnimation(x, y) {
+            const plus = document.createElement('div');
+            plus.className = 'congrats';
+            plus.textContent = "+1";
+            plus.style.left = `${x}px`;
+            plus.style.top = `${y}px`;
+            plus.style.fontSize = '16px';    
+            gameContainer.appendChild(plus);      
+            setTimeout(() => {
+                plus.remove();
+            }, 2500);
+        }
+
+        function isColliding(element1, element2) {
+            const rect1 = element1.getBoundingClientRect();
+            const rect2 = element2.getBoundingClientRect();    
+            return !(
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom ||
+                rect1.right < rect2.left ||
+                rect1.left > rect2.right
+            );
+        }
+
+        function updateScore() {
+            scoreDisplay.textContent = `Caught: ${caughtGums} / ${targetGums}`;
+        }
+
+        function checkGameStatus() {
+            if (caughtGums >= targetGums && !hasWon) {
+                hasWon = true;
+                // Play victory sound immediately when target is reached
+                if (victorySound) {
+                    victorySound.currentTime = 0;
+                    victorySound.play().catch(console.error);
+                }
+                endGame(true);
+            } else if (totalGums >= maxGums && caughtGums < targetGums && currentGumballsCount === 0) {
+                endGame(false);
+            }
+        }
+
+        // Function to reset the game state in localStorage
+        function resetGameState() {
+            localStorage.removeItem('GUMBALL_ACTIVITY_KEY');
+            document.getElementById('completionMessage').style.display = 'none';
+        }
+
+        // Only show completion if coming back from next panel
+        const currentPanel = localStorage.getItem('targetPanel');
+        if (localStorage.getItem('GUMBALL_ACTIVITY_KEY') === 'true' && currentPanel !== '7') {
+            document.getElementById('completionMessage').style.display = 'block';
+        } else {
+            // Reset the game state if starting fresh
+            resetGameState();
+        }
+
+        function endGame(isWin) {
+            gameActive = false; 
+            
+            // Clean up any remaining gumballs
+            document.querySelectorAll('.gum').forEach(element => {
+                element.remove();
+            });
+            currentGumballsCount = 0;
+            
+            if (isWin) {
+                messageText.textContent = "Congratulations! Rescued Kai successfully!";
+                messageBox.style.backgroundColor = "rgba(144, 238, 144, 0.9)";
+                nextBtn.style.display = "block";
+                replayBtn.style.display = "none";
+                // Mark activity as completed
+                localStorage.setItem('gummyballCompleted', 'true');
+                localStorage.setItem('GUMMYBALL_COMPLETED', 'true');
+                localStorage.setItem('GUMBALL_ACTIVITY_KEY', 'true');
+                document.getElementById('completionMessage').style.display = 'block';
+            } else {
+                messageText.textContent = "Try again! You didn't collect enough gumballs.";
+                messageBox.style.backgroundColor = "rgba(255, 200, 200, 0.9)";
+                nextBtn.style.display = "none";
+                replayBtn.style.display = "block";
+            }      
+            messageBox.style.display = "block";
+        }
+
+        function startGame() {
+            // Reset completion state when starting a new game
+            resetGameState();
+            
+            // Reset game state
+            gameActive = true;
+            totalGums = 0;
+            caughtGums = 0;
+            hasWon = false;
+            currentGumballsCount = 0;
+            
+            // Hide UI elements
+            startOverlay.style.display = "none";
+            messageBox.style.display = "none";
+            nextBtn.style.display = "none";
+            replayBtn.style.display = "none";
+            
+            // Clear any existing gumballs
+            document.querySelectorAll('.gum').forEach(element => {
+                element.remove();
+            });
+            
+            // Reset score display
+            updateScore();
+            
+            // Initialize container position in the middle
+            const gameRect = gameContainer.getBoundingClientRect();
+            const containerWidth = container.offsetWidth;
+            container.style.left = `${(gameRect.width - containerWidth) / 2}px`;
+            
+            // Create gumballs at regular intervals
+            const gumSpawner = setInterval(() => {
+                if (!gameActive || totalGums >= maxGums) {
+                    clearInterval(gumSpawner);
+                    return;
+                }
+                
+                // Check if we can spawn more gumballs
+                if (currentGumballsCount < MAX_CONCURRENT_GUMBALLS) {
+                    createGum();
+                }
+            }, GUMBALL_SPAWN_INTERVAL);
+        }
+
+        startBtn.addEventListener('click', startGame);
+        replayBtn.addEventListener('click', startGame);
+
+        function navigateToNextPanel() {
+            // Mark activity as completed
+            localStorage.setItem('gummyballCompleted', 'true');
+            localStorage.setItem('GUMMYBALL_COMPLETED', 'true');
+            localStorage.setItem('GUMBALL_ACTIVITY_KEY', 'true');
+            
+            // Show completion message
+            document.getElementById('completionMessage').style.display = 'block';
+            
+            // Track activity completion if LogRocket is available
+            if (window.LogRocket) {
+                LogRocket.track('Gumball Activity Completed', {
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            // Navigate back to episode3.html with panel 8
+            window.location.href = './episode3.html?panel=8';
+        }
+
+        function closeActivity() {
+            // Navigate back to episode3.html with panel 7b
+            window.location.href = './episode3.html?panel=7b';
+        }
+
+        // Check if task was previously completed
+        if (localStorage.getItem('gummyballCompleted') === 'true' || 
+            localStorage.getItem('GUMMYBALL_COMPLETED') === 'true' || 
+            localStorage.getItem('GUMBALL_ACTIVITY_KEY') === 'true') {
+            document.getElementById('completionMessage').style.display = 'block';
+            messageBox.style.display = "block";
+            messageText.textContent = "Congratulations! Rescued Kai successfully!";
+            messageBox.style.backgroundColor = "rgba(144, 238, 144, 0.9)";
+            nextBtn.style.display = "block";
+            replayBtn.style.display = "none";
+            startOverlay.style.display = "none";
+        }
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html>

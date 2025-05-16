@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detective Skills Flashcards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track flashcard task page view
+        LogRocket.track('Flashcard Task View');
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            font-family: 'Special Elite', cursive;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2;
+            pointer-events: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            min-height: 450px;
+            text-align: center;
+            position: relative;
+            padding: 30px 20px 60px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 3;
+        }
+
+        .completion-tag {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(76, 175, 80, 0.8);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            visibility: hidden;
+            z-index: 4;
+        }
+
+        .completion-tag.completed {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .next-button {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 35px;
+            font-size: 1.1em;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            animation: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 4;
+        }
+
+        .next-button:hover {
+            background: rgba(76, 175, 80, 1);
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .next-button.visible {
+            display: flex;
+            animation: pulseNext 2s infinite;
+        }
+
+        @keyframes pulseNext {
+            0% {
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 2px 10px rgba(76, 175, 80, 0.4);
+            }
+            50% {
+                transform: translateX(-50%) scale(1.05);
+                box-shadow: 0 5px 20px rgba(76, 175, 80, 0.6);
+            }
+            100% {
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 2px 10px rgba(76, 175, 80, 0.4);
+            }
+        }
+
+        h2 {
+            color: white;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .question {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .flashcard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 12px 0;
+        }
+
+        .flashcard {
+            background: #DEB887;
+            border: 2px solid #8B4513;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            font-size: 0.9em;
+        }
+
+        .flashcard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(139, 69, 19, 0.2);
+        }
+
+        .flashcard.selected {
+            background: #A0522D;
+            color: white;
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .flashcard.correct {
+            background: #6B8E23;
+            color: white;
+            border-color: #556B2F;
+        }
+
+        .flashcard.incorrect {
+            background: #CD5C5C;
+            color: white;
+            border-color: #8B0000;
+        }
+
+        .result-message {
+            margin-top: 12px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+            font-size: 1em;
+            line-height: 1.3;
+        }
+
+        .result-message.correct {
+            background: rgba(107, 142, 35, 0.2);
+            color: #556B2F;
+            border: 2px solid #6B8E23;
+        }
+
+        .result-message.incorrect {
+            background: rgba(205, 92, 92, 0.2);
+            color: #8B0000;
+            border: 2px solid #CD5C5C;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+            transform: scale(1);
+        }
+
+        .check-button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(76, 175, 80, 0.8);
+            color: white;
+            opacity: 0.5;
+            pointer-events: none;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .check-button.active {
+            opacity: 1;
+            pointer-events: auto;
+            background: rgba(76, 175, 80, 1);
+        }
+
+        .check-button:hover {
+            background: rgba(76, 175, 80, 1);
+            transform: scale(1.05);
+        }
+
+        .hint-button {
+            display: none; /* Remove hint button */
+        }
+
+        .congratulations {
+            display: none; /* Remove congratulations message */
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: #8B4513;
+            border: 2px solid #6B3410;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .close-button:hover {
+            background: #6B3410;
+            transform: scale(1.1);
+        }
+
+        .close-button.blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; background: #8B4513; }
+            50% { opacity: 0.7; background: #6B3410; }
+            100% { opacity: 1; background: #8B4513; }
+        }
+
+        @media (max-width: 480px) {
+            .close-button {
+                width: 35px;
+                height: 35px;
+                font-size: 1.3em;
+                top: 8px;
+                right: 8px;
+            }
+        }
+
+        .close-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .close-button.disabled {
+            opacity: 1;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        @media (max-height: 600px), (max-width: 400px) {
+            .container {
+                padding: 10px;
+                max-height: 85vh;
+            }
+            h2 {
+                font-size: 0.9em;
+                margin-bottom: 8px;
+            }
+            .flashcard {
+                padding: 8px;
+                min-height: 45px;
+                font-size: 0.8em;
+            }
+            .check-button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+                margin-top: 8px;
+            }
+            .congratulations {
+                padding: 10px 15px;
+                font-size: 1em;
+                margin: 10px auto;
+            }
+            .result-message {
+                padding: 10px;
+                font-size: 0.9em;
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="completion-tag" id="completionTag">Task Completed!</div>
+        <h2>Help Ferret Understand!</h2>
+        <p>When Mr. Ginger says "We need your expertise"</p>
+        <div class="question">What does 'expertise' mean in this context?</div>
+        <div class="flashcard-grid">
+            <div class="flashcard" data-value="experience">Being Crooked</div>
+            <div class="flashcard" data-value="skills">Special skills and knowledge</div>
+            <div class="flashcard" data-value="tools">Having good tools</div>
+            <div class="flashcard" data-value="speed">Being very fast</div>
+        </div>
+        <div class="result-message"></div>
+        <div class="button-container">
+            <button class="check-button" onclick="checkAnswer()">CHECK ANSWER</button>
+        </div>
+        <button class="next-button" id="nextButton" onclick="closeFlashcard()">NEXT <span>→</span></button>
+    </div>
+
+    <audio id="buttonClickSound" src="./button_click.mp3"></audio>
+    <audio id="victorySound" src="./victory_sound.mp3"></audio>
+
+    <script>
+        // Add message listener at the top of your script
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'init_flashcard') {
+                console.log("Received background image for flashcard");
+                // Set the background image
+                document.body.style.backgroundImage = `url('${event.data.backgroundImage}')`;
+            }
+        });
+
+        const correctAnswer = 'skills';
+        let selectedCard = null;
+        let taskCompleted = false;
+        let attemptMade = false;
+
+        // Prevent closing with escape key or clicking outside
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                if (taskCompleted) {
+                    closeFlashcard();
+                }
+            }
+        });
+
+        // Update closeFlashcard function
+        function closeFlashcard() {
+            console.log("Close button clicked");
+            
+            // Play button click sound
+            const buttonClickSound = document.getElementById('buttonClickSound');
+            if (buttonClickSound) {
+                buttonClickSound.currentTime = 0;
+                buttonClickSound.play().catch(console.error);
+            }
+            
+            try {
+                if (taskCompleted) {
+                    console.log("Task completed, sending success message");
+                    // Send message to parent to navigate to next story slide
+                    window.parent.postMessage({
+                        type: "flashcard_success",
+                        action: "next_slide"
+                    }, "*");
+                } else {
+                    console.log("Task not completed, sending close message");
+                    window.parent.postMessage({
+                        type: "flashcard_close",
+                        action: "return_to_current"
+                    }, "*");
+                }
+            } catch (e) {
+                console.error("Error closing flashcard:", e);
+            }
+        }
+
+        // Update initialize function
+        function initialize() {
+            // Check completion status from localStorage first
+            try {
+                const isCompleted = window.parent.localStorage.getItem('flashcard_completed') === 'true';
+                const selectedAnswerValue = window.parent.localStorage.getItem('flashcard_selected_answer');
+                console.log("Checking completion status:", isCompleted, "Selected answer:", selectedAnswerValue);
+                
+                const completionTag = document.getElementById('completionTag');
+                const nextButton = document.getElementById('nextButton');
+                
+                if (isCompleted && selectedAnswerValue) {
+                    console.log("Task was previously completed");
+                    // Show completion state
+                    completionTag.textContent = "Task Completed!";
+                    completionTag.classList.add('completed');
+                    nextButton.classList.add('visible');
+                    nextButton.style.display = 'flex';
+                    taskCompleted = true;
+                    
+                    // Show the user's selected answer and the correct answer
+                    document.querySelectorAll('.flashcard').forEach(card => {
+                        if (card.dataset.value === selectedAnswerValue) {
+                            // This was the user's selection
+                            if (selectedAnswerValue === correctAnswer) {
+                                card.classList.add('correct');
+                            } else {
+                                card.classList.add('incorrect');
+                            }
+                            selectedCard = card;
+                        } else if (card.dataset.value === correctAnswer && selectedAnswerValue !== correctAnswer) {
+                            // Show the correct answer if user was wrong
+                            card.classList.add('correct');
+                        }
+                        card.style.opacity = card.dataset.value === selectedAnswerValue || card.dataset.value === correctAnswer ? '1' : '0.5';
+                        // Disable all flashcards
+                        card.style.cursor = 'default';
+                        card.style.pointerEvents = 'none';
+                    });
+                    
+                    // Show the appropriate explanation
+                    const resultMessage = document.querySelector('.result-message');
+                    if (selectedAnswerValue === correctAnswer) {
+                        resultMessage.textContent = "That's right! 'Expertise' means having special skills and knowledge in a particular field. Mr. Ginger needs Ferret's detective expertise to solve the case.";
+                        resultMessage.classList.add('correct');
+                    } else {
+                        resultMessage.textContent = "That's not correct. 'Expertise' refers to special skills and knowledge in a particular field. The correct answer is highlighted in green.";
+                        resultMessage.classList.add('incorrect');
+                    }
+                    resultMessage.style.display = 'block';
+                    
+                    // Hide check button
+                    document.querySelector('.check-button').style.display = 'none';
+
+                    // Add click handler for next button
+                    nextButton.onclick = closeFlashcard;
+                } else {
+                    console.log("Task not completed yet");
+                    // Reset for new attempt
+                    completionTag.textContent = "Not completed yet";
+                    completionTag.classList.remove('completed');
+                    nextButton.classList.remove('visible');
+                    nextButton.style.display = 'none';
+                    
+                    // Reset UI elements
+                    document.querySelectorAll('.flashcard').forEach(card => {
+                        card.classList.remove('selected', 'correct', 'incorrect');
+                        card.style.opacity = '1';
+                        card.style.cursor = 'pointer';
+                        card.style.pointerEvents = 'auto';
+                    });
+                    
+                    if (document.querySelector('.check-button')) {
+                        document.querySelector('.check-button').style.display = 'block';
+                        document.querySelector('.check-button').disabled = true;
+                    }
+                    
+                    const resultMessage = document.querySelector('.result-message');
+                    resultMessage.textContent = '';
+                    resultMessage.classList.remove('correct', 'incorrect');
+                    resultMessage.style.display = 'none';
+                }
+            } catch (e) {
+                console.error("Error checking completion status:", e);
+            }
+        }
+
+        // Update the checkAnswer function
+        function checkAnswer() {
+            if (!selectedCard || attemptMade) return;
+
+            attemptMade = true;
+            document.querySelector('.check-button').style.display = 'none';
+            
+            const resultMessage = document.querySelector('.result-message');
+            const completionTag = document.getElementById('completionTag');
+            const nextButton = document.getElementById('nextButton');
+
+            document.querySelectorAll('.flashcard').forEach(card => {
+                if (card.dataset.value === correctAnswer) {
+                    card.classList.add('correct');
+                } else {
+                    card.style.opacity = '0.5';
+                }
+            });
+
+            // Store the user's selected answer
+            try {
+                window.parent.localStorage.setItem('flashcard_selected_answer', selectedCard.dataset.value);
+            } catch (e) {
+                console.error("Error storing selected answer:", e);
+            }
+
+            if (selectedCard.dataset.value === correctAnswer) {
+                selectedCard.classList.add('correct');
+                resultMessage.textContent = "That's right! 'Expertise' means having special skills and knowledge in a particular field. Mr. Ginger needs Ferret's detective expertise to solve the case.";
+                resultMessage.classList.add('correct');
+                playVictorySound();
+            } else {
+                selectedCard.classList.add('incorrect');
+                resultMessage.textContent = "That's not correct. 'Expertise' refers to special skills and knowledge in a particular field. The correct answer is highlighted in green.";
+                resultMessage.classList.add('incorrect');
+            }
+            
+            // Mark task as completed
+            completionTag.textContent = "Task Completed!";
+            completionTag.classList.add('completed');
+            nextButton.classList.add('visible');
+            nextButton.style.display = 'flex';
+            taskCompleted = true;
+            
+            // Store completion status immediately
+            try {
+                window.parent.localStorage.setItem('flashcard_completed', 'true');
+                console.log("Flashcard completion status saved");
+            } catch (e) {
+                console.error("Error storing completion status:", e);
+            }
+            
+            resultMessage.style.display = 'block';
+            
+            // Disable all flashcards after attempt
+            document.querySelectorAll('.flashcard').forEach(card => {
+                card.style.cursor = 'default';
+                card.style.pointerEvents = 'none';
+            });
+        }
+
+        // Play button click sound
+        function playButtonClick() {
+            const buttonClickSound = document.getElementById('buttonClickSound');
+            if (buttonClickSound) {
+                buttonClickSound.currentTime = 0;
+                buttonClickSound.play().catch(console.error);
+            }
+        }
+
+        // Play victory sound
+        function playVictorySound() {
+            const victorySound = document.getElementById('victorySound');
+            if (victorySound) {
+                victorySound.currentTime = 0;
+                victorySound.play().catch(console.error);
+            }
+        }
+
+        // Update the click handlers for flashcards
+        document.querySelectorAll('.flashcard').forEach(card => {
+            card.addEventListener('click', () => {
+                // Only allow selection if task is not completed
+                if (!taskCompleted && !attemptMade) {
+                    playButtonClick();
+                    
+                    if (selectedCard) {
+                        selectedCard.classList.remove('selected');
+                    }
+                    
+                    card.classList.add('selected');
+                    selectedCard = card;
+                    
+                    // Enable check button
+                    const checkButton = document.querySelector('.check-button');
+                    checkButton.classList.add('active');
+                    checkButton.disabled = false;
+                }
+            });
+        });
+
+        // Add click outside handler
+        document.addEventListener('click', function(event) {
+            // Check if click is outside the container
+            const container = document.querySelector('.container');
+            if (!container.contains(event.target)) {
+                // Send message to parent to return to current slide
+                window.parent.postMessage({
+                    type: "flashcard_close",
+                    action: "return_to_current"
+                }, "*");
+            }
+        });
+
+        // Prevent clicks on the container from bubbling up
+        document.querySelector('.container').addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+
+        // Initialize when the page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("Flashcard task initialized");
+            initialize();
+            
+            // Listen for messages from parent
+            window.addEventListener('message', function(event) {
+                console.log("Message received:", event.data);
+                
+                if (event.data.type === 'init_flashcard') {
+                    console.log("Received init command from parent with background:", event.data.backgroundImage);
+                    document.body.style.backgroundImage = `url('${event.data.backgroundImage}')`;
+                    initialize();
+                }
+            });
+            
+            // Inform parent that we're ready
+            try {
+                window.parent.postMessage("flashcard_ready", "*");
+                console.log("Ready message posted to parent");
+            } catch (e) {
+                console.error("Error posting ready message:", e);
+            }
+        });
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html>

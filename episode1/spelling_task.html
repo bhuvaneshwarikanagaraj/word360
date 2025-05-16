@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Task</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track spelling task page view
+        LogRocket.track('Spelling Task View');
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent !important;
+            font-family: 'Special Elite', cursive;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 2;
+            pointer-events: auto;
+        }
+
+        .spelling-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95%;
+            max-width: 500px;
+            min-height: 550px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 35px 25px;
+            z-index: 3;
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .spelling-popup h2 {
+            color: white;
+            text-align: center;
+            margin: 0 0 15px;
+            font-size: 1em;
+            line-height: 1.4;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .revealed-letters {
+            color: white;
+            letter-spacing: 3px;
+            text-align: center;
+            margin: 15px 0;
+                font-size: 1.6em;
+            min-height: 35px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin: 25px 0;
+            transform: scale(1.2);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            width: 100%;
+        }
+
+        .key {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .key:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+        }
+
+        .key:active {
+            transform: translateY(1px);
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+            transform: scale(1);
+        }
+
+        .check-button, .hint-button {
+            padding: 6px 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .check-button {
+            background: rgba(76, 175, 80, 0.8);
+            color: white;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .check-button.active {
+            opacity: 1;
+            pointer-events: auto;
+            color: white;
+        }
+
+        .hint-button {
+            background: rgba(155, 107, 158, 0.8);
+            color: white;
+        }
+
+        .hint-text {
+            color: white;
+            text-align: center;
+            margin-top: 12px;
+            font-size: 0.85em;
+            min-height: 18px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            padding: 0 10px;
+        }
+
+        .close-button {
+            position: fixed;
+            bottom: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            animation: none;
+        }
+
+        .close-button.visible {
+            display: flex;
+            animation: blinkButton 2s infinite;
+        }
+
+        @keyframes blinkButton {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 20px 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+
+        .completion-tag {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(76, 175, 80, 0.8);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            visibility: hidden;
+            z-index: 4;
+        }
+
+        .completion-tag.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .completion-tag.completed {
+            background: rgba(76, 175, 80, 0.8);
+        }
+
+        .next-button {
+            position: absolute;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 35px;
+            font-size: 1.1em;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            animation: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 4;
+        }
+
+        .next-button span {
+            margin-left: 8px;
+        }
+
+        .next-button.visible {
+            display: flex;
+            animation: pulseNext 2s infinite;
+        }
+
+        @keyframes pulseNext {
+            0% {
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 2px 10px rgba(76, 175, 80, 0.4);
+            }
+            50% {
+                transform: translateX(-50%) scale(1.05);
+                box-shadow: 0 5px 20px rgba(76, 175, 80, 0.6);
+            }
+            100% {
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 2px 10px rgba(76, 175, 80, 0.4);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .spelling-popup {
+                width: 92%;
+                padding: 25px 15px;
+                min-height: 500px;
+            }
+
+            .keyboard {
+                transform: scale(1);
+                margin: 15px 0;
+            }
+
+            .key {
+                width: 32px;
+                height: 32px;
+                font-size: 1em;
+            }
+
+            .revealed-letters {
+                font-size: 1.4em;
+            }
+
+            .close-button {
+                bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="spelling-popup" id="spellingPopup">
+        <div class="completion-tag" id="completionTag">Task Completed!</div>
+        <button class="close-button" id="closeButton">→</button>
+        <h2>Did you notice there is a mistake in the word 'Disapearences'..?<br>Correct it</h2>
+        <div class="revealed-letters" id="revealedLetters">D _ _ _ _ _ _ _ _ _ _ _ _</div>
+        <div class="keyboard" id="keyboard">
+            <!-- Keys will be added dynamically -->
+        </div>
+        <div class="button-container">
+            <button class="check-button" id="checkButton">CHECK</button>
+            <button class="hint-button" id="hintButton">HINT</button>
+        </div>
+        <div class="hint-text" id="hintText"></div>
+        <button class="next-button" id="nextButton">NEXT <span>→</span></button>
+    </div>
+
+    <audio id="buttonClickSound" src="./button_click.mp3"></audio>
+    <audio id="victorySound" src="./victory_sound.mp3"></audio>
+
+    <script>
+        let attempts = 3;
+        const correctSpelling = "DISAPPEARANCES";
+        let currentAnswer = "";
+        let revealedLetters = new Array(correctSpelling.length).fill(null);
+        let taskCompleted = false; // Track if the task has been successfully completed
+        const hints = [
+            "🔍 Detective's Note: Look for double letters in this word...",
+            "🗒️ Case Hint: When something 'appears', it becomes visible...",
+            "📝 Final Clue: The ending should be '-ANCES', not '-ENCES'"
+        ];
+        // Define the reveal positions for each attempt
+        const revealPositions = [
+            { index: 3, letter: 'A' },  // First reveal: A in "disAppearances"
+            { index: 7, letter: 'A' },  // Second reveal: A in "disappeArances"
+            { index: 10, letter: 'E' }  // Third reveal: E in "disappearancEs"
+        ];
+
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            const rows = [
+                ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+                ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+                ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']
+            ];
+            
+            rows.forEach((row, index) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+                
+                // Add offset for middle row
+                if (index === 1) {
+                    rowDiv.style.marginLeft = '12px';
+                }
+                
+                row.forEach(key => {
+                    const button = document.createElement('button');
+                    button.className = 'key';
+                    if (key === '⌫') {
+                        button.style.width = '40px';
+                        button.style.fontSize = '0.8em';
+                        button.onclick = () => removeLetter();
+                    } else {
+                        button.onclick = () => addLetter(key);
+                    }
+                    button.textContent = key;
+                    rowDiv.appendChild(button);
+                });
+                
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        function addLetter(letter) {
+            // Count positions that are not revealed vowels
+            const availablePositions = revealedLetters.reduce((count, letter, index) => {
+                // If it's not a revealed vowel position, count it as available
+                if (letter === null) {
+                    return count + 1;
+                }
+                return count;
+            }, 0);
+            
+            if (currentAnswer.length < availablePositions) {
+                currentAnswer += letter;
+                updateDisplay();
+            }
+        }
+
+        function removeLetter() {
+            if (currentAnswer.length > 0) {
+                currentAnswer = currentAnswer.slice(0, -1);
+                updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            let display = '';
+            let currentAnswerIndex = 0;
+            let filledCount = 0;
+            
+            for (let i = 0; i < correctSpelling.length; i++) {
+                // If there's a revealed vowel at this position, show it
+                if (revealedLetters[i] !== null) {
+                    display += revealedLetters[i];
+                    filledCount++;
+                }
+                // Otherwise, show user input if available, or underscore
+                else if (currentAnswerIndex < currentAnswer.length) {
+                    display += currentAnswer[currentAnswerIndex++];
+                    filledCount++;
+                } else {
+                    display += '_';
+                }
+                display += ' ';
+            }
+            
+            document.getElementById('revealedLetters').textContent = display.trim();
+
+            // Enable check button only when all positions are filled
+            const checkButton = document.getElementById('checkButton');
+            if (filledCount === correctSpelling.length) {
+                checkButton.classList.add('active');
+            } else {
+                checkButton.classList.remove('active');
+            }
+        }
+
+        function resetAnswer() {
+            currentAnswer = "";
+            // Preserve revealed vowels when resetting
+            updateDisplay();
+        }
+
+        function closePopup() {
+            console.log("Close button clicked");
+            
+            // Play button click sound
+            const buttonClickSound = document.getElementById('buttonClickSound');
+            if (buttonClickSound) {
+                buttonClickSound.currentTime = 0;
+                buttonClickSound.play().catch(console.error);
+            }
+            
+            try {
+                if (taskCompleted) {
+                    console.log("Task completed, sending success message");
+                    // Send message to parent to navigate to next story slide
+                    window.parent.postMessage({
+                        type: "spelling_success",
+                        action: "next_slide"
+                    }, "*");
+                    
+                    // Store completion status
+                    window.parent.localStorage.setItem('spelling_completed', 'true');
+                } else {
+                    console.log("Task not completed, sending close message");
+                    window.parent.postMessage("spelling_close_only", "*");
+                }
+            } catch (e) {
+                console.error("Error closing popup:", e);
+            }
+        }
+
+        function initialize() {
+            createKeyboard();
+            revealedLetters = new Array(correctSpelling.length).fill(null);
+            resetAnswer();
+            attempts = 3;
+            taskCompleted = false;
+            document.getElementById('hintText').textContent = '';
+            document.getElementById('checkButton').classList.remove('active');
+            
+            // Hide next button initially
+            const nextButton = document.getElementById('nextButton');
+            nextButton.classList.remove('visible');
+            
+            // Check completion status from localStorage
+            const isCompleted = window.parent.localStorage.getItem('spelling_completed') === 'true';
+            const completionTag = document.getElementById('completionTag');
+            if (isCompleted) {
+                completionTag.classList.add('visible');
+                nextButton.classList.add('visible');
+                taskCompleted = true;
+            } else {
+                completionTag.classList.remove('visible');
+            }
+            
+            // Add event listener for next button to handle navigation
+            nextButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event from bubbling up
+                closePopup();
+            });
+
+            // Add click outside handler
+            document.addEventListener('click', function(event) {
+                const spellingPopup = document.getElementById('spellingPopup');
+                if (!spellingPopup.contains(event.target)) {
+                    closePopup();
+                }
+            });
+        }
+
+        // Initialize when the page load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("Spelling task initialized");
+            initialize();
+            
+            // Listen for messages from parent
+            window.addEventListener('message', function(event) {
+                console.log("Message received:", event.data);
+                
+                if (event.data.type === 'init_spelling') {
+                    console.log("Received init command from parent with background:", event.data.backgroundImage);
+                    
+                    // Create or update background image div
+                    let backgroundDiv = document.querySelector('.background-image');
+                    if (!backgroundDiv) {
+                        backgroundDiv = document.createElement('div');
+                        backgroundDiv.className = 'background-image';
+                        document.body.insertBefore(backgroundDiv, document.body.firstChild);
+                    }
+                    backgroundDiv.style.backgroundImage = `url('${event.data.backgroundImage}')`;
+                    
+                    initialize();
+                }
+            });
+            
+            // Inform parent that we're ready
+            try {
+                window.parent.postMessage("spelling_ready", "*");
+                console.log("Ready message posted to parent");
+            } catch (e) {
+                console.error("Error posting ready message:", e);
+            }
+        });
+
+        function checkAnswer() {
+            const currentWord = revealedLetters.textContent.replace(/ /g, '');
+            LogRocket.track('Check Spelling Answer', {
+                attempt: currentWord,
+                isCorrect: currentWord === correctSpelling
+            });
+
+            if (currentWord === correctSpelling) {
+                // Success handling
+                LogRocket.track('Spelling Task Completed');
+                window.parent.postMessage('spelling_success', '*');
+            } else {
+                // Incorrect handling
+                LogRocket.track('Spelling Task Failed');
+                document.getElementById('hintText').textContent = "That's not quite right. Try again!";
+            }
+        }
+
+        function showHint() {
+            LogRocket.track('Show Spelling Hint');
+            // ... rest of hint handling ...
+        }
+
+        // Track key presses
+        function handleKeyClick(key) {
+            LogRocket.track('Spelling Key Press', { key: key });
+            // ... rest of key handling ...
+        }
+
+        // Track close button clicks
+        document.getElementById('closeButton').addEventListener('click', function() {
+            LogRocket.track('Close Spelling Task');
+            window.parent.postMessage('spelling_close_only', '*');
+        });
+
+        document.getElementById('checkButton').onclick = () => {
+            if (!document.getElementById('checkButton').classList.contains('active')) {
+                return;
+            }
+
+            // Play button click sound
+            const buttonClickSound = document.getElementById('buttonClickSound');
+            if (buttonClickSound) {
+                buttonClickSound.currentTime = 0;
+                buttonClickSound.play().catch(console.error);
+            }
+
+            // Build full answer string combining revealed letters and user input
+            let fullAnswer = '';
+            let currentAnswerIndex = 0;
+            
+            for (let i = 0; i < correctSpelling.length; i++) {
+                if (revealedLetters[i] !== null) {
+                    fullAnswer += revealedLetters[i];
+                } else if (currentAnswerIndex < currentAnswer.length) {
+                    fullAnswer += currentAnswer[currentAnswerIndex++];
+                } else {
+                    fullAnswer += '_';
+                }
+            }
+
+            if (fullAnswer === correctSpelling) {
+                let congratsMessage = "";
+                const attemptsUsed = 3 - attempts;
+                switch(attemptsUsed) {
+                    case 0:
+                        congratsMessage = "🌟 Outstanding! First try success! You're a spelling master!";
+                        break;
+                    case 1:
+                        congratsMessage = "🎉 Excellent work! You got it on your second try!";
+                        break;
+                    case 2:
+                        congratsMessage = "👏 Well done! Third time's the charm!";
+                        break;
+                    case 3:
+                        congratsMessage = "✨ Good job! You figured it out!";
+                        break;
+                }
+                
+                // Show success message and next button immediately
+                document.getElementById('hintText').textContent = congratsMessage;
+                taskCompleted = true;
+                
+                // Show completion tag and next button right away
+                const completionTag = document.getElementById('completionTag');
+                const nextButton = document.getElementById('nextButton');
+                
+                completionTag.classList.add('visible');
+                nextButton.classList.add('visible');
+                
+                // Store completion status
+                window.parent.localStorage.setItem('spelling_completed', 'true');
+                
+                // Play victory sound
+                const victorySound = document.getElementById('victorySound');
+                if (victorySound) {
+                    victorySound.currentTime = 0;
+                    victorySound.play().catch(console.error);
+                }
+            } else {
+                attempts--;
+                if (attempts > 0) {
+                    document.getElementById('hintText').textContent = `Incorrect! ${attempts} attempts remaining.`;
+                    // Reveal new letter for this attempt
+                    const revealPos = revealPositions[2 - attempts];
+                    if (revealPos) {
+                        revealedLetters[revealPos.index] = revealPos.letter;
+                    }
+                    resetAnswer();
+                    updateDisplay();
+             
+                } else {
+                    currentAnswer = "";
+                    revealedLetters = correctSpelling.split('');
+                    updateDisplay();
+                    document.getElementById('hintText').textContent = "The correct spelling is 'Disappearances'... Keep Learning..!";
+                    
+                    // Mark task as completed and show next button
+                    taskCompleted = true;
+                    
+                    // Update completion tag and show next button
+                    const completionTag = document.getElementById('completionTag');
+                    const nextButton = document.getElementById('nextButton');
+                    completionTag.classList.add('visible');
+                    nextButton.classList.add('visible');
+                    
+                    // Store completion status
+                    window.parent.localStorage.setItem('spelling_completed', 'true');
+                }
+            }
+        };
+
+        document.getElementById('hintButton').onclick = () => {
+            // Play button click sound
+            const buttonClickSound = document.getElementById('buttonClickSound');
+            if (buttonClickSound) {
+                buttonClickSound.currentTime = 0;
+                buttonClickSound.play().catch(console.error);
+            }
+
+            // Get current hint index from attempts (3 - attempts gives us 0, 1, or 2)
+            const hintIndex = Math.min(2, 3 - attempts);
+            document.getElementById('hintText').textContent = hints[hintIndex];
+
+            // Track hint usage
+            LogRocket.track('Show Spelling Hint', {
+                hintNumber: hintIndex + 1,
+                attemptsRemaining: attempts
+            });
+        };
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html>

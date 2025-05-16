@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferret Family Photo</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #F5E6D3;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .scratch-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        #scratchCard {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .card-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            background: #000;
+        }
+
+        .family-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .family-photo.loaded {
+            opacity: 1;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            color: #F5E6D3;
+            font-size: 24px;
+            z-index: 4;
+        }
+
+        .error-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            font-size: 24px;
+            text-align: center;
+            padding: 20px;
+            z-index: 4;
+        }
+
+        .photo-text {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #F5E6D3;
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 1;
+        }
+
+        #nextButton {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(245, 230, 211, 0.8);
+            border: 2px solid #8B4513;
+            color: #8B4513;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 3;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #nextButton:hover {
+            background: #F5E6D3;
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        #nextButton svg {
+            width: 24px;
+            height: 24px;
+            fill: #8B4513;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        #nextButton.visible {
+            display: flex;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #F5E6D3;
+            border-top: 5px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="scratch-container">
+        <div class="card-content">
+            <img src="./panel1_1.webp" alt="Ferret Family" class="family-photo" id="familyPhoto">
+            <div class="photo-text">Ferret Family</div>
+        </div>
+        <canvas id="scratchCard"></canvas>
+        <button id="nextButton" aria-label="Next">
+            <svg viewBox="0 0 24 24">
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+            </svg>
+        </button>
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+        </div>
+        <div class="error-overlay" id="errorOverlay">
+            <p>Failed to load the image. Please try refreshing the page.</p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('scratchCard');
+        const ctx = canvas.getContext('2d');
+        const familyPhoto = document.getElementById('familyPhoto');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const errorOverlay = document.getElementById('errorOverlay');
+        let isScratched = false;
+
+        // Preload image
+        function preloadImage() {
+            familyPhoto.style.display = 'none';
+            loadingOverlay.style.display = 'flex';
+            
+            familyPhoto.onload = function() {
+                familyPhoto.style.display = 'block';
+                familyPhoto.classList.add('loaded');
+                loadingOverlay.style.display = 'none';
+                setCanvasSize();
+            };
+
+            familyPhoto.onerror = function() {
+                loadingOverlay.style.display = 'none';
+                errorOverlay.style.display = 'flex';
+            };
+
+            // Force reload of image
+            familyPhoto.src = familyPhoto.src;
+        }
+
+        function setCanvasSize() {
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            drawScratchLayer();
+        }
+
+        function drawScratchLayer() {
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '24px "Special Elite"';
+            ctx.fillStyle = '#F5E6D3';
+            ctx.textAlign = 'center';
+            ctx.fillText('Scratch to Reveal', canvas.width / 2, canvas.height / 2);
+        }
+
+        // Start preloading immediately
+        preloadImage();
+        window.addEventListener('resize', setCanvasSize);
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function calculateProgress() {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+            let transparentPixels = 0;
+            
+            for (let i = 3; i < pixels.length; i += 4) {
+                if (pixels[i] < 255) transparentPixels++;
+            }
+
+            const totalPixels = pixels.length / 4;
+            const progress = Math.round((transparentPixels / totalPixels) * 100);
+
+            if (progress > 20 && !isScratched) {
+                isScratched = true;
+                // Reveal entire image
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Show next button
+                document.getElementById('nextButton').classList.add('visible');
+            }
+        }
+
+        function scratch(e) {
+            if (!isDrawing) return;
+            
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineWidth = 60;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            lastX = x;
+            lastY = y;
+
+            calculateProgress();
+        }
+
+        function startScratching(e) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            lastX = (e.clientX || e.touches[0].clientX) - rect.left;
+            lastY = (e.clientY || e.touches[0].clientY) - rect.top;
+        }
+
+        function stopScratching() {
+            isDrawing = false;
+        }
+
+        canvas.addEventListener('mousedown', startScratching);
+        canvas.addEventListener('mousemove', scratch);
+        canvas.addEventListener('mouseup', stopScratching);
+        canvas.addEventListener('mouseleave', stopScratching);
+
+        canvas.addEventListener('touchstart', startScratching, { passive: false });
+        canvas.addEventListener('touchmove', scratch, { passive: false });
+        canvas.addEventListener('touchend', stopScratching);
+
+        // Add next button click handler
+        document.getElementById('nextButton').addEventListener('click', function() {
+            // First send message to enable next panel
+            window.parent.postMessage('enableNext', '*');
+            // Then send message to close the modal
+            window.parent.postMessage('closeModal', '*');
+        });
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html> 

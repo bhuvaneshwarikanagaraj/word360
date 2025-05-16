@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Image Panel Navigator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            // Add any custom user data
+            gameProgress: 'episode1'
+        });
+
+        // Custom event tracking
+        LogRocket.track('Game Started');
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #F5E6D3; /* Cream background color */
+            font-family: 'Special Elite', cursive;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px; /* Add overall padding */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            height: calc(100vh - 30px); /* Account for body padding */
+            background-color: #F5E6D3; /* Cream background color */
+            border-radius: 28px; /* Curved corners */
+            overflow: hidden;
+            padding: 20px; /* Padding inside container */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .panels-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .panel.active {
+            transform: translateX(0);
+            opacity: 1;
+            z-index: 5;
+        }
+
+        .panel.prev {
+            transform: translateX(-100%);
+            opacity: 0;
+            z-index: 0;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 85%;
+            position: relative;
+            background-color: #fff;
+            overflow: hidden;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            aspect-ratio: 9/16;
+            max-height: calc(100% - 120px);
+        }
+
+        /* Enhanced hand pointer with stronger glow */
+        #panel-1 .image-container::before {
+            content: '👆';
+            position: absolute;
+            top: 60%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            font-size: 45px; /* Slightly larger */
+            z-index: 5;
+            cursor: pointer;
+            animation: pointer-ripple 2s infinite;
+            text-shadow: 0 0 15px rgba(139, 69, 19, 0.7);
+            filter: drop-shadow(0 0 8px rgba(139, 69, 19, 0.6));
+        }
+
+        /* Enhanced pointer animation */
+        @keyframes pointer-ripple {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                filter: drop-shadow(0 0 8px rgba(139, 69, 19, 0.8));
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.3);
+                opacity: 0.9;
+                filter: drop-shadow(0 0 20px rgba(139, 69, 19, 0.8));
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                filter: drop-shadow(0 0 8px rgba(139, 69, 19, 0.8));
+            }
+        }
+
+        /* First ripple circle */
+        #panel-1 .image-container::after {
+            content: '';
+            position: absolute;
+            top: 60%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: transparent;
+            border: 3px solid rgba(139, 69, 19, 0.8);
+            opacity: 0;
+            z-index: 4;
+            animation: ripple-wave 2s infinite;
+        }
+
+        /* Second ripple circle */
+        #panel-1 .image-container .ripple-2 {
+            content: '';
+            position: absolute;
+            top: 60%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: transparent;
+            border: 3px solid rgba(139, 69, 19, 0.6);
+            opacity: 0;
+            z-index: 3;
+            animation: ripple-wave 2s infinite 0.5s;
+        }
+
+        /* Third ripple circle */
+        #panel-1 .image-container .ripple-3 {
+            content: '';
+            position: absolute;
+            top: 60%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: transparent;
+            border: 3px solid rgba(139, 69, 19, 0.4);
+            opacity: 0;
+            z-index: 2;
+            animation: ripple-wave 2s infinite 1s;
+        }
+
+        /* Enhanced ripple wave animation */
+        @keyframes ripple-wave {
+            0% {
+                width: 60px;
+                height: 60px;
+                opacity: 0.9;
+                border-width: 3px;
+                box-shadow: 0 0 20px rgba(139, 69, 19, 0.4);
+            }
+            50% {
+                opacity: 0.5;
+                box-shadow: 0 0 30px rgba(139, 69, 19, 0.3);
+            }
+            100% {
+                width: 180px; /* Larger maximum size */
+                height: 180px;
+                opacity: 0;
+                border-width: 1px;
+                box-shadow: 0 0 40px rgba(139, 69, 19, 0.2);
+            }
+        }
+
+        /* Container styling */
+        #panel-1 .image-container {
+            cursor: pointer;
+            position: relative;
+            overflow: visible;
+        }
+
+        /* Remove any remaining arrow styles */
+        .click-arrow {
+            display: none;
+        }
+
+        .scratch-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .scratch-frame {
+            width: 90%;
+            max-width: 500px;
+            height: 90vh;
+            border: none;
+            border-radius: 20px;
+            background: #F5E6D3;
+        }
+
+        .pop-sound {
+            display: none;
+        }
+
+        .panel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px; /* Match container border radius */
+            transition: opacity 0.5s ease;
+        }
+
+        .text-box {
+            width: 100%;
+            background: #F5E6D3;
+            border: 2px solid #8B4513;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            margin-top: auto; /* Push to bottom */
+            position: relative;
+            z-index: 2;
+            min-height: 60px; /* Minimum height for the text box */
+            transition: height 0.3s ease; /* Smooth height transition */
+        }
+
+        .text-content {
+            position: relative;
+            color: #333;
+            font-size: 1.1em;
+            line-height: 1.4;
+        }
+
+        .text-content.typing {
+            display: inline-block; /* Allow it to grow with content */
+            white-space: normal; /* Allow text to wrap */
+            word-wrap: break-word; /* Break long words */
+            width: 100%; /* Full width */
+        }
+
+        /* Special styling for panel 6 text box */
+        #text-content-6 {
+            transition: all 0.3s ease;
+        }
+
+        .nav-buttons {
+            position: absolute;
+            z-index: 100;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0 15px;
+            pointer-events: none; /* Allow clicks to pass through container */
+            visibility: hidden; /* Initially hidden, will show after panel 2 */
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .nav-buttons.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .nav-btn {
+            background: rgba(245, 230, 211, 0.8);
+            border: 2px solid #8B4513;
+            color: #8B4513;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto; /* Restore pointer events */
+            font-size: 18px;
+        }
+
+        .nav-btn:hover {
+            background: #F5E6D3;
+            transform: scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* For smaller screens, adjust proportions */
+        @media (max-height: 700px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .image-container {
+                height: 80%;
+            }
+        }
+
+        /* For very small screens */
+        @media (max-height: 500px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .image-container {
+                height: 75%;
+            }
+            
+            .text-content {
+                font-size: 0.9em;
+            }
+            
+            .check-btn, .hint-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+
+        /* Add to existing styles */
+        .spelling-error {
+            text-decoration: underline wavy #FF4444 !important;
+            cursor: pointer;
+            color: #FF4444 !important;
+            transition: all 0.3s ease;
+            display: inline-block;
+            animation: glow-blink 2s infinite;
+            text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+        }
+
+        @keyframes glow-blink {
+            0% {
+                color: #FF4444;
+                text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+            }
+            50% {
+                color: #FF0000;
+                text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+                transform: scale(1.1);
+            }
+            100% {
+                color: #FF4444;
+                text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+            }
+        }
+
+        .spelling-error:hover {
+            color: #FF0000 !important;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+
+        .word-completed {
+            color: #4CAF50 !important;
+            text-decoration: none !important;
+            cursor: default;
+        }
+
+        .spelling-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spelling-frame {
+            width: 90%;
+            max-width: 500px;
+            height: 90vh;
+            border: none;
+            border-radius: 20px;
+            background: #F5E6D3;
+        }
+
+        @keyframes pulse-text {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .flashcard-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .flashcard-frame {
+            width: 90%;
+            max-width: 500px;
+            height: 90vh;
+            border: none;
+            border-radius: 20px;
+            background: #F5E6D3;
+        }
+
+        /* Add diary button styles */
+        .diary-button {
+            display: inline-block;
+            background: #8B4513;
+            color: #F5E6D3 !important;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .diary-button:hover {
+            background: #6B3410;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .lazy {
+            opacity: 0;
+            transition: opacity 0.3s ease-in;
+        }
+
+        .lazy.loaded {
+            opacity: 1;
+        }
+
+        /* Add transition overlay styles */
+        .transition-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 10;
+        }
+        .transition-text {
+            color: #F5E6D3;
+            font-size: 24px;
+            font-family: 'Special Elite', cursive;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panels-container" id="panels-container">
+            <!-- Panels will be generated by JavaScript -->
+        </div>
+        
+        <div class="nav-buttons" id="nav-buttons">
+            <button class="nav-btn" id="prev-btn" title="Previous Panel">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="nav-btn" id="next-btn" title="Next Panel">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="scratch-modal" id="scratch-modal">
+        <iframe class="scratch-frame" id="scratch-frame" src=""></iframe>
+    </div>
+
+    <div class="spelling-modal" id="spelling-modal">
+        <iframe class="spelling-frame" id="spelling-frame" src=""></iframe>
+    </div>
+
+    <div class="flashcard-modal" id="flashcard-modal">
+        <iframe class="flashcard-frame" id="flashcard-frame" src=""></iframe>
+    </div>
+
+    <audio id="narration1" src="./Unknown number.mp3" preload="auto"></audio>
+    <audio id="narration2" src="./Missing huh.mp3" preload="auto"></audio>
+    <audio id="narration3" src="./telephone_bring_bring.mp3" preload="auto"></audio>
+    <audio id="narration4" src="./phone pickup.mp3" preload="auto"></audio>
+    <audio id="rain-effect" src="./rain_effect.mp3" loop preload="auto"></audio>
+    <audio id="pop-sound" class="pop-sound" src="./pop.mp3" preload="auto"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Global audio configuration
+            const globalAudioConfig = {
+                backgrounds: [
+                    {
+                        id: 'bg-rain',
+                        src: './rain_effect.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-telephone',
+                        src: './telephone_bring_bring.mp3',
+                        loop: true,
+                        volume: 1.0
+                    }
+                ]
+            };
+
+            // Create panels
+            const panelsData = [
+                { 
+                    id: 1, 
+                    type: 'image', 
+                    image: './panel1.webp', 
+                    text: "Ferret stares at the photo frame, lost in thoughts of his family",
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                },
+
+                { 
+                    id: 2, 
+                    type: 'image', 
+                    image: './panel2_1.webp',
+                    text: '[Telephone Ringing]',
+                    audio: {
+                        backgrounds: ['bg-rain', 'bg-telephone']
+                    }
+                },
+                { 
+                    id: 3, 
+                    type: 'image', 
+                    image: './panel2_2.webp',
+                    text: "Unknown number at this hour? Can't be good.",
+                    audio: {
+                        backgrounds: ['bg-rain', 'bg-telephone'],
+                        main: {
+                            src: './Unknown number.mp3',
+                            volume: 1.0
+                        }
+                    }
+                },
+                { 
+                    id: 4, 
+                    type: 'image', 
+                    image: './panel2_3.webp',
+                    text: 'Let me see who it is...',
+                    audio: {
+                        backgrounds: ['bg-rain'],
+                        sequence: [
+                            {
+                                src: './phone pickup.mp3',
+                                volume: 1.0
+                            }
+                        ]
+                    }
+                },
+                { 
+                    id: 6, 
+                    type: 'image', 
+                    image: './panel3_ginger1.webp',
+                    text: "Finn........ It's me.",
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                },
+                { 
+                    id: 7, 
+                    type: 'image', 
+                    image: './panel3_1.webp',
+                    text: "Mr. Ginger....it's been a while.",
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                },
+                { 
+                    id: 8, 
+                    type: 'image', 
+                    image: './panel3_ginger2.webp',
+                    text: "It hasn't been that long, honestly. There's a problem we need to talk about.",
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                },
+                { 
+                    id: 9, 
+                    type: 'image', 
+                    image: './panel3_2.webp',
+                    text: "I'm out of the game, remember?",
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                },
+                { 
+                    id: 10, 
+                    type: 'image', 
+                    image: './panel3_ginger3.webp',
+                    text: 'Ferret. Three <span class="spelling-error" onclick="window.showSpellingTask()">disapearences</span>. No leads. It\'s urgent.',
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                },
+                { 
+                    id: 11, 
+                    type: 'image', 
+                    image: './panel3_3.webp',
+                    text: 'Disappearances, oh I told you. I\'m retired, remember?',
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                },
+                { 
+                    id: 12, 
+                    type: 'image', 
+                    image: './panel3_ginger1.webp',
+                    text: "Finn ! Three little ones have gone missing! No clues at all. It's really important!",
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                },
+                { 
+                    id: 13, 
+                    type: 'image', 
+                    image: './panel3_4.webp',
+                    text: "Missing, huh? Happens all the time. Things disappear. People disappear. Some things never come back. Just like i lost my wife and son...",
+                    audio: {
+                        backgrounds: ['bg-rain'],
+                        main: {
+                            src: './Missing huh.mp3',
+                            volume: 1.0
+                        }
+                    }
+                },
+                { 
+                    id: 14, 
+                    type: 'image', 
+                    image: './panel3_ginger2.webp',
+                    text: 'This is serious. We need your <span class="spelling-error" onclick="window.showFlashcardTask()">expertise</span>. You can do it your way.',
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                },
+                { 
+                    id: 15, 
+                    type: 'image', 
+                    image: './panel4_1.webp',
+                    text: "If I'm going to work on this case, I need two things. No one can tell me what to do, and I need Kai with me.",
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                },
+                { 
+                    id: 16, 
+                    type: 'image', 
+                    image: './panel3_ginger3.webp',
+                    text: "Very well, Ferret. You will work independently. And Kai will assist you.",
+                    audio: {
+                        backgrounds: ['bg-rain']
+                    }
+                }
+            ];
+            
+            // Elements
+            const panelsContainer = document.getElementById('panels-container');
+            const navButtons = document.getElementById('nav-buttons');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            // Current panel index
+            let currentPanelIndex = 0;
+            
+            // Add transition overlay styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .transition-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    opacity: 0;
+                    transition: opacity 0.5s ease;
+                    z-index: 10;
+                }
+                .transition-text {
+                    color: #F5E6D3;
+                    font-size: 24px;
+                    font-family: 'Special Elite', cursive;
+                    text-align: center;
+                    padding: 20px;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Create all panels
+            function createPanels() {
+                panelsData.forEach((panel, index) => {
+                    const panelElement = document.createElement('div');
+                    panelElement.className = `panel ${index === 0 ? 'active' : ''}`;
+                    panelElement.id = `panel-${panel.id}`;
+                    
+                    panelElement.innerHTML = `
+                        <div class="image-container">
+                            <img class="panel-image lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                                 data-src="${panel.image}" 
+                                 alt="Panel ${panel.id}" 
+                                 loading="lazy">
+                            ${panel.id === 1 ? '<div class="ripple-2"></div><div class="ripple-3"></div>' : ''}
+                        </div>
+                        <div class="text-box">
+                            <div class="text-content" id="text-content-${panel.id}"></div>
+                        </div>
+                    `;
+                    
+                    panelsContainer.appendChild(panelElement);
+
+                    // Set the text content properly to handle HTML
+                    const textContent = panelElement.querySelector(`#text-content-${panel.id}`);
+                    textContent.innerHTML = panel.text;
+
+                    // Add click handler for spelling error in panel 10 and expertise in panel 14
+                    if (panel.id === 10 || panel.id === 14) {
+                        const spellingError = textContent.querySelector('.spelling-error');
+                        if (spellingError) {
+                            spellingError.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (panel.id === 10) {
+                                    window.showSpellingTask();
+                                } else if (panel.id === 14) {
+                                    window.showFlashcardTask();
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // Initialize lazy loading
+                lazyLoadImages();
+            }
+            
+            // Check for flashcard completion when returning to panel 14
+            function checkForReturnPanel() {
+                const hash = window.location.hash;
+                if (hash === '#panel-14') {
+                    // Find the index of panel 14
+                    const panel14Index = panelsData.findIndex(panel => panel.id === 14);
+                    if (panel14Index !== -1) {
+                        // Set initial panel state
+                        const panels = document.querySelectorAll('.panel');
+                        panels.forEach((panel, i) => {
+                            if (i < panel14Index) {
+                                panel.classList.add('prev');
+                            } else if (i === panel14Index) {
+                                panel.classList.add('active');
+                                currentPanelIndex = panel14Index;
+                                handleAudio(panel14Index);
+                                
+                                // Check if flashcard was completed
+                                if (localStorage.getItem('flashcard_completed') === 'true') {
+                                    const expertiseWord = document.getElementById('expertise-word');
+                                    if (expertiseWord) {
+                                        expertiseWord.className = 'word-completed';
+                                        expertiseWord.style.pointerEvents = 'none';
+                                    }
+                                }
+                            }
+                        });
+                        
+                        // Update navigation buttons
+                        prevBtn.disabled = false;
+                        nextBtn.disabled = panel14Index === panelsData.length - 1;
+                        navButtons.classList.add('visible');
+                        
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            // Initialize panels
+            createPanels();
+            
+            // Updated typeText function to handle HTML content
+            function typeText(element, text, duration) {
+                element.innerHTML = '';
+                element.classList.add('typing');
+                
+                // Clear any existing intervals
+                if (window.typewriterInterval) {
+                    clearInterval(window.typewriterInterval);
+                }
+                
+                // Create a temporary div to parse the HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = text;
+                const textContent = tempDiv.textContent;
+                
+                let i = 0;
+                const delayPerCharacter = duration / textContent.length;
+                
+                window.typewriterInterval = setInterval(function() {
+                    if (i < textContent.length) {
+                        // For panels with HTML content, preserve the structure
+                        if (element.id === 'text-content-10' || element.id === 'text-content-14') {
+                            element.innerHTML = text;
+                            i = textContent.length; // Complete immediately for HTML content
+                        } else {
+                            element.textContent += textContent.charAt(i);
+                            i++;
+                        }
+                    } else {
+                        clearInterval(window.typewriterInterval);
+                        window.typewriterInterval = null;
+                        element.classList.remove('typing');
+                    }
+                }, delayPerCharacter);
+            }
+            
+            function stopTypewriter() {
+                if (window.typewriterInterval) {
+                    clearInterval(window.typewriterInterval);
+                    window.typewriterInterval = null;
+                }
+            }
+            
+            // Create audio elements dynamically
+            function createAudioElements() {
+                // Create background audio elements
+                globalAudioConfig.backgrounds.forEach(bgConfig => {
+                    const backgroundAudio = document.createElement('audio');
+                    backgroundAudio.id = bgConfig.id;
+                    backgroundAudio.src = bgConfig.src;
+                    backgroundAudio.loop = bgConfig.loop;
+                    document.body.appendChild(backgroundAudio);
+                });
+
+                // Create a Set to track unique audio sources
+                const audioSources = new Set();
+
+                // Collect all audio sources from panels
+                panelsData.forEach(panel => {
+                    if (panel.audio) {
+                        if (panel.audio.main) {
+                            audioSources.add(panel.audio.main.src);
+                        }
+                        if (panel.audio.overlay) {
+                            panel.audio.overlay.forEach(audio => audioSources.add(audio.src));
+                        }
+                        if (panel.audio.sequence) {
+                            panel.audio.sequence.forEach(audio => audioSources.add(audio.src));
+                        }
+                    }
+                });
+
+                // Create audio elements for each unique source
+                audioSources.forEach(src => {
+                    const audioId = src.split('/').pop().replace('.mp3', '');
+                    const audioElement = document.createElement('audio');
+                    audioElement.id = audioId;
+                    audioElement.src = src;
+                    audioElement.preload = 'auto';
+                    document.body.appendChild(audioElement);
+                });
+            }
+
+            // Audio playback functions
+            function playAudio(audioConfig) {
+                const audioId = audioConfig.src.split('/').pop().replace('.mp3', '');
+                            const audioElement = document.getElementById(audioId);
+                            if (audioElement) {
+                                audioElement.currentTime = 0;
+                    audioElement.volume = audioConfig.volume;
+                    audioElement.play().catch(error => {
+                        console.error(`Error playing ${audioId}:`, error);
+                    });
+                }
+            }
+
+            function playAudioSequence(sequence) {
+                let currentIndex = 0;
+
+                function playNext() {
+                    if (currentIndex >= sequence.length) return;
+
+                    const audioConfig = sequence[currentIndex];
+                    const audioId = audioConfig.src.split('/').pop().replace('.mp3', '');
+                    const audioElement = document.getElementById(audioId);
+
+                    if (audioElement) {
+                        audioElement.currentTime = 0;
+                        audioElement.volume = audioConfig.volume;
+                        audioElement.addEventListener('ended', () => {
+                            currentIndex++;
+                            playNext();
+                        }, { once: true });
+                                audioElement.play().catch(error => {
+                                    console.error(`Error playing ${audioId}:`, error);
+                                });
+                    }
+                }
+
+                playNext();
+            }
+
+            // Handle background audio playback
+            function handleBackgroundAudio(selectedBackgrounds) {
+                // First, stop all background audio that's not in the selected list
+                globalAudioConfig.backgrounds.forEach(bgConfig => {
+                    const bgAudio = document.getElementById(bgConfig.id);
+                    if (bgAudio) {
+                        if (selectedBackgrounds.includes(bgConfig.id)) {
+                            // Play this background audio if it's selected and not already playing
+                            if (bgAudio.paused) {
+                                bgAudio.volume = bgConfig.volume;
+                                bgAudio.play().catch(error => {
+                                    console.log(`Background audio ${bgConfig.id} needs user interaction:`, error);
+                                });
+                            }
+                    } else {
+                            // Stop this background audio if it's not selected
+                            bgAudio.pause();
+                            bgAudio.currentTime = 0;
+                        }
+                    }
+                });
+            }
+
+            // Stop all audio except background
+            function stopAllAudio(stopBackground = false) {
+                // Get all audio elements
+                document.querySelectorAll('audio').forEach(audio => {
+                    // Check if this is a background audio
+                    const isBackground = globalAudioConfig.backgrounds.some(bg => bg.id === audio.id);
+                    
+                    // Stop if it's not a background audio, or if stopBackground is true
+                    if (!isBackground || stopBackground) {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }
+                });
+            }
+
+            // Handle audio for current panel
+            function handleAudio(index) {
+                const currentPanel = panelsData[index];
+                const textElement = document.getElementById(`text-content-${currentPanel.id}`);
+                
+                // Stop all non-background audio
+                stopAllAudio(false);
+                stopTypewriter();
+                
+                try {
+                    if (textElement) {
+                        const typingDuration = 2000 + (currentPanel.text.length * 50);
+                        typeText(textElement, currentPanel.text, typingDuration);
+                    }
+                    
+                    if (!currentPanel.audio) return;
+
+                    // Handle background audio for current panel
+                    const selectedBackgrounds = currentPanel.audio.backgrounds || [];
+                    handleBackgroundAudio(selectedBackgrounds);
+
+                    if (currentPanel.audio.main) {
+                        playAudio(currentPanel.audio.main);
+                    }
+
+                    if (currentPanel.audio.overlay) {
+                        currentPanel.audio.overlay.forEach(audio => playAudio(audio));
+                    }
+
+                    if (currentPanel.audio.sequence) {
+                        playAudioSequence(currentPanel.audio.sequence);
+                    }
+
+                    if (currentPanel.audio) {
+                        LogRocket.track('Audio Started', {
+                            panelId: currentPanel.id,
+                            audioType: Object.keys(currentPanel.audio).join(',')
+                        });
+                    }
+                } catch (e) {
+                    console.error("Audio error:", e);
+                    LogRocket.error('Audio Error', { 
+                        error: e.message,
+                        panelId: currentPanel.id 
+                    });
+                }
+            }
+            
+            // Panel navigation
+            function showPanel(index) {
+                if (index < 0) index = 0;
+                if (index >= panelsData.length) {
+                    LogRocket.track('Navigate to Diary');
+                    localStorage.setItem('returnToPanel16', 'true');
+                    window.location.href = './diary.html';
+                    return;
+                }
+
+                // Check if we can proceed based on task completion
+                const currentPanelId = panelsData[currentPanelIndex].id;
+                if (index > currentPanelIndex) {
+                    if (currentPanelId === 10 && !localStorage.getItem('spelling_completed')) {
+                        console.log('Cannot proceed: Spelling task not completed');
+                        return;
+                    }
+                    if (currentPanelId === 14 && !localStorage.getItem('flashcard_completed')) {
+                        console.log('Cannot proceed: Flashcard task not completed');
+                        return;
+                    }
+                }
+
+                const panels = document.querySelectorAll('.panel');
+                panels.forEach((panel, i) => {
+                    panel.classList.remove('active', 'prev');
+                    if (i < index) {
+                        panel.classList.add('prev');
+                    } else if (i === index) {
+                        panel.classList.add('active');
+                    }
+                });
+
+                currentPanelIndex = index;
+                handleAudio(index);
+
+                // Hide navigation buttons on Panel 1, show on others
+                if (panelsData[index].id === 1) {
+                    navButtons.classList.remove('visible');
+                } else {
+                    navButtons.classList.add('visible');
+                }
+
+                // Update navigation buttons
+                prevBtn.disabled = currentPanelIndex === 0;
+                
+                // Update next button based on task completion
+                if (currentPanelIndex === 10) {
+                    nextBtn.disabled = !localStorage.getItem('spelling_completed');
+                } else if (currentPanelIndex === 14) {
+                    nextBtn.disabled = !localStorage.getItem('flashcard_completed');
+                } else {
+                    nextBtn.disabled = false;
+                }
+
+                // Update task completion states
+                updateTaskCompletionStates();
+            }
+            
+            // Navigation event listeners
+            nextBtn.addEventListener('click', () => {
+                if (currentPanelIndex === panelsData.length - 1) {
+                    // If on last panel, show transition overlay and navigate to diary
+                    const currentPanel = document.querySelector('.panel.active');
+                    const imageContainer = currentPanel.querySelector('.image-container');
+                    
+                    // Create transition overlay
+                    const overlay = document.createElement('div');
+                    overlay.className = 'transition-overlay';
+                    overlay.innerHTML = '<div class="transition-text">To be continued</div>';
+                    imageContainer.appendChild(overlay);
+                    
+                    // Show overlay
+                    setTimeout(() => {
+                        overlay.style.opacity = '1';
+                    }, 100);
+                    
+                    // Navigate after 2 seconds
+                    setTimeout(() => {
+                    window.location.href = './diary.html';
+                    }, 2000);
+                } else if (currentPanelIndex < panelsData.length - 1) {
+                    showPanel(currentPanelIndex + 1);
+                }
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                if (currentPanelIndex > 0) {
+                    showPanel(currentPanelIndex - 1);
+                }
+            });
+            
+            // Touch navigation
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+            
+            document.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                if (touchEndX + swipeThreshold < touchStartX && currentPanelIndex < panelsData.length - 1) {
+                        showPanel(currentPanelIndex + 1);
+                } else if (touchEndX > touchStartX + swipeThreshold && currentPanelIndex > 0) {
+                        showPanel(currentPanelIndex - 1);
+                }
+            }
+
+            // Initialize background audio event listeners
+            function initializeBackgroundAudio() {
+                globalAudioConfig.backgrounds.forEach(bgConfig => {
+                    const bgAudio = document.getElementById(bgConfig.id);
+                    if (bgAudio) {
+                        // Ensure looping
+                        bgAudio.addEventListener('ended', () => {
+                            bgAudio.currentTime = 0;
+                            bgAudio.play().catch(error => {
+                                console.log(`Background audio ${bgConfig.id} replay failed:`, error);
+                            });
+                        });
+
+                        // Handle errors
+                        bgAudio.addEventListener('error', (e) => {
+                            console.error(`Background audio ${bgConfig.id} error:`, e);
+                        });
+                    }
+                });
+            }
+
+            // Listen for messages from scratch card iframe
+            window.addEventListener('message', function(event) {
+                if (event.data === 'enableNext') {
+                    window.scratchCardCompleted = true;
+                    nextBtn.disabled = false;
+                    // Automatically proceed to next panel
+                    showPanel(currentPanelIndex + 1);
+                } else if (event.data === 'closeModal') {
+                    const modal = document.getElementById('scratch-modal');
+                    modal.style.display = 'none';
+                    // Clear the iframe src
+                    document.getElementById('scratch-frame').src = '';
+                }
+            });
+
+            // Handle arrow click in panel 1
+            function handleArrowClick() {
+                const popSound = document.getElementById('pop-sound');
+                if (popSound) {
+                    popSound.play().catch(console.error);
+                }
+
+                // Show the scratch card modal
+                const modal = document.getElementById('scratch-modal');
+                const frame = document.getElementById('scratch-frame');
+                frame.src = './scratch_card.html';
+                modal.style.display = 'flex';
+
+                // Disable next button until scratch card is revealed
+                if (!window.scratchCardCompleted) {
+                    nextBtn.disabled = true;
+                }
+
+                // Proceed to next panel after showing the modal
+                setTimeout(() => {
+                    showPanel(currentPanelIndex + 1);
+                }, 500);
+            }
+
+            // Add click handler for panel 1 arrow
+            function initializeArrowHandler() {
+                const arrow = document.getElementById('click-arrow');
+                if (arrow) {
+                    arrow.addEventListener('click', handleArrowClick);
+                    // Show arrow after a delay
+                    setTimeout(() => {
+                        arrow.style.display = 'flex';
+                    }, 2000);
+                }
+            }
+
+            // Function to show spelling task - make it globally accessible
+            window.showSpellingTask = function() {
+                console.log("Opening spelling task...");
+                LogRocket.track('Open Spelling Task');
+                const modal = document.getElementById('spelling-modal');
+                const frame = document.getElementById('spelling-frame');
+                
+                // Get current panel image
+                const currentPanel = document.querySelector('.panel.active');
+                const currentImage = currentPanel.querySelector('.panel-image').src;
+                
+                frame.src = './spelling_task.html';
+                modal.style.display = 'flex';
+                
+                frame.onload = function() {
+                    console.log("Spelling task iframe loaded");
+                    try {
+                        frame.contentWindow.postMessage({
+                            type: 'init_spelling',
+                            backgroundImage: currentImage
+                        }, '*');
+                    } catch (e) {
+                        console.error("Error initializing spelling task:", e);
+                        LogRocket.error('Spelling Task Error', { error: e.message });
+                    }
+                };
+            };
+
+            // Function to check if flashcard is completed when returning to panel 14
+            function checkFlashcardCompletion() {
+                if (localStorage.getItem('flashcard_completed') === 'true') {
+                    const panel14Text = document.querySelector('#text-content-14');
+                    if (panel14Text) {
+                        panel14Text.innerHTML = panel14Text.innerHTML.replace(
+                            /<span[^>]*>expertise<\/span>/,
+                            '<span style="color: #4CAF50;">expertise</span>'
+                        );
+                    }
+                }
+            }
+
+            // Function to check if spelling task is completed
+            function checkSpellingCompletion() {
+                if (localStorage.getItem('spelling_completed') === 'true') {
+                    const panel10Text = document.querySelector('#text-content-10');
+                    if (panel10Text) {
+                        panel10Text.innerHTML = panel10Text.innerHTML.replace(
+                            /<span[^>]*>disapearences<\/span>/,
+                            '<span style="color: #4CAF50;">disappearances</span>'
+                        );
+                    }
+                }
+            }
+
+            // Listen for messages from task iframes
+            window.addEventListener('message', function(event) {
+                console.log("Received message:", event.data);
+                
+                // Handle spelling messages with new message format
+                if (event.data.type === 'spelling_success' && event.data.action === 'next_slide') {
+                    localStorage.setItem('spelling_completed', 'true');
+                    // Update the text immediately when task is completed
+                    const panel10Text = document.querySelector('#text-content-10');
+                    if (panel10Text) {
+                        panel10Text.innerHTML = panel10Text.innerHTML.replace(
+                            /<span[^>]*>.*?<\/span>/,
+                            '<span style="color: #4CAF50; text-decoration: none; cursor: default;">disappearances</span>'
+                        );
+                    }
+                    
+                    // Close the spelling modal
+                    const modal = document.getElementById('spelling-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                        const frame = document.getElementById('spelling-frame');
+                        if (frame) {
+                            frame.src = '';
+                        }
+                    }
+
+                    // Find the index of panel with ID 11
+                    const panel11Index = panelsData.findIndex(panel => panel.id === 11);
+                    if (panel11Index !== -1) {
+                        // Enable next button and show panel 11
+                        nextBtn.disabled = false;
+                        showPanel(panel11Index);
+                    }
+                } else if (event.data === 'spelling_close_only') {
+                    // Just close the modal without navigating
+                    const modal = document.getElementById('spelling-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                        const frame = document.getElementById('spelling-frame');
+                        if (frame) {
+                            frame.src = '';
+                        }
+                    }
+                }
+                
+                // Handle flashcard messages
+                if (event.data.type === 'flashcard_success' && event.data.action === 'next_slide') {
+                    localStorage.setItem('flashcard_completed', 'true');
+                    // Close the flashcard modal
+                    const modal = document.getElementById('flashcard-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                        const frame = document.getElementById('flashcard-frame');
+                        if (frame) {
+                            frame.src = '';
+                        }
+                    }
+
+                    // Find the index of panel with ID 15
+                    const panel15Index = panelsData.findIndex(panel => panel.id === 15);
+                    if (panel15Index !== -1) {
+                        // Enable next button and show panel 15
+                        nextBtn.disabled = false;
+                        showPanel(panel15Index);
+                    }
+                } else if (event.data.type === 'flashcard_close' && event.data.action === 'return_to_current') {
+                    // Close the flashcard modal and stay on current slide
+                    const modal = document.getElementById('flashcard-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                        const frame = document.getElementById('flashcard-frame');
+                        if (frame) {
+                            frame.src = '';
+                        }
+                    }
+                }
+
+                // Re-enable next button if task is completed
+                if (event.data === 'spelling_success' || event.data === 'flashcard_success') {
+                    nextBtn.disabled = false;
+                }
+            });
+
+            // Function to show flashcard task
+            window.showFlashcardTask = function() {
+                console.log("Opening flashcard task...");
+                LogRocket.track('Open Flashcard Task');
+                const modal = document.getElementById('flashcard-modal');
+                const frame = document.getElementById('flashcard-frame');
+                
+                // Get current panel image
+                const currentPanel = document.querySelector('.panel.active');
+                const currentImage = currentPanel.querySelector('.panel-image').src;
+                
+                frame.src = './flashcards.html';
+                modal.style.display = 'flex';
+                
+                // Wait for iframe to load, then send the background image
+                frame.onload = function() {
+                    console.log("Flashcard task iframe loaded");
+                    try {
+                        frame.contentWindow.postMessage({
+                            type: 'init_flashcard',
+                            backgroundImage: currentImage
+                        }, '*');
+                    } catch (e) {
+                        console.error("Error initializing flashcard task:", e);
+                        LogRocket.error('Flashcard Task Error', { error: e.message });
+                    }
+                };
+            };
+
+            // Initialize audio elements and start first panel
+            createAudioElements();
+            initializeBackgroundAudio();
+            handleBackgroundAudio([]); // Start background audio
+            
+            // Check if returning from diary
+            const returnFromDiary = localStorage.getItem('returnToPanel16');
+            if (returnFromDiary === 'true') {
+                // Clear the flag
+                localStorage.removeItem('returnToPanel16');
+                // Show the last panel (panel 16)
+                const lastPanelIndex = panelsData.length - 1;
+                currentPanelIndex = lastPanelIndex; // Set current index immediately
+                
+                // Update panel classes
+                const panels = document.querySelectorAll('.panel');
+                panels.forEach((panel, i) => {
+                    panel.classList.remove('active', 'prev');
+                    if (i < lastPanelIndex) {
+                        panel.classList.add('prev');
+                    } else if (i === lastPanelIndex) {
+                        panel.classList.add('active');
+                    }
+                });
+
+                // Show navigation buttons
+                navButtons.classList.add('visible');
+                prevBtn.disabled = false;
+                nextBtn.disabled = false;
+
+                // Handle audio for last panel
+                handleAudio(lastPanelIndex);
+            } else {
+                showPanel(0);
+            }
+
+            // Add JavaScript to handle the click
+            const panel1Container = document.querySelector('#panel-1 .image-container');
+            if (panel1Container) {
+                panel1Container.addEventListener('click', function(e) {
+                    const modal = document.getElementById('scratch-modal');
+                    const frame = document.getElementById('scratch-frame');
+                    frame.src = './scratch_card.html';
+                    modal.style.display = 'flex';
+                });
+            }
+
+            // Clear any existing completion states when starting fresh
+            if (!window.location.hash && !localStorage.getItem('returnToPanel16')) {
+                localStorage.removeItem('spelling_completed');
+                localStorage.removeItem('flashcard_completed');
+            }
+
+            // Function to update text colors based on completion state
+            function updateTaskCompletionStates() {
+                const panels = document.querySelectorAll('.panel');
+                panels.forEach(panel => {
+                    // Update spelling task (Panel 10)
+                    if (panel.id === 'panel-10') {
+                        const textContent = panel.querySelector('#text-content-10');
+                        if (textContent && localStorage.getItem('spelling_completed') === 'true') {
+                            textContent.innerHTML = textContent.innerHTML.replace(
+                                /<span[^>]*>.*?<\/span>/,
+                                '<span style="color: #4CAF50; text-decoration: none; cursor: default;">disappearances</span>'
+                            );
+                        }
+                    }
+                    
+                    // Update flashcard task (Panel 14)
+                    if (panel.id === 'panel-14') {
+                        const textContent = panel.querySelector('#text-content-14');
+                        if (textContent && localStorage.getItem('flashcard_completed') === 'true') {
+                            textContent.innerHTML = textContent.innerHTML.replace(
+                                /<span[^>]*>.*?<\/span>/,
+                                '<span style="color: #4CAF50; text-decoration: none; cursor: default;">expertise</span>'
+                            );
+                        }
+                    }
+                });
+            }
+
+            // Call updateTaskCompletionStates when the page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                updateTaskCompletionStates();
+            });
+
+            // Add this function after createPanels function
+            function lazyLoadImages() {
+                const images = document.querySelectorAll('.panel-image');
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src;
+                            img.classList.remove('lazy');
+                            observer.unobserve(img);
+                        }
+                    });
+                });
+
+                images.forEach(img => {
+                    imageObserver.observe(img);
+                });
+            }
+
+            // Initialize Firebase and Firestore
+            let db;
+            let auth;
+            try {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyDO7cACg6BNA8KiYvMhoxonDxCSKBTgwiE",
+                    authDomain: "yevvolearn.firebaseapp.com",
+                    projectId: "yevvolearn",
+                    storageBucket: "yevvolearn.firebasestorage.app",
+                    messagingSenderId: "114822749369",
+                    appId: "1:114822749369:web:599d567dd36e3ce7870f68",
+                    measurementId: "G-9V2E5C1M9V"
+                };
+
+                // Initialize Firebase if not already initialized
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.firestore();
+                auth = firebase.auth();
+                console.log('Firebase initialized successfully');
+
+                // Function to check authentication
+                async function checkAuthentication() {
+                    console.log('Starting authentication check...');
+                    
+                    // First check session storage
+                    const userDataStr = sessionStorage.getItem('userData');
+                    console.log('Session storage data:', userDataStr);
+                    
+                    if (userDataStr) {
+                        try {
+                            const userData = JSON.parse(userDataStr);
+                            console.log('Parsed user data:', { ...userData, password: '[REDACTED]' });
+                            
+                            // Verify user exists in Firestore
+                            const userDoc = await db.collection('users').doc(userData.uid).get();
+                            console.log('Firestore user check:', userDoc.exists ? 'User found' : 'User not found');
+                            
+                            if (userDoc.exists) {
+                                console.log('Authentication successful via session storage');
+                                return true;
+                            }
+                        } catch (error) {
+                            console.error('Error checking session storage:', error);
+                        }
+                    }
+
+                    // If session storage check fails, try Firebase auth
+                    return new Promise((resolve) => {
+                        const unsubscribe = auth.onAuthStateChanged((user) => {
+                            console.log('Firebase auth state:', user ? 'User logged in' : 'No user');
+                            unsubscribe();
+                            resolve(!!user);
+                        });
+                    });
+                }
+
+                // Check authentication and handle redirect
+                async function handleAuth() {
+                    console.log('Handling authentication...');
+                    const isAuthenticated = await checkAuthentication();
+                    console.log('Authentication result:', isAuthenticated);
+                    
+                    if (!isAuthenticated) {
+                        console.log('User not authenticated, redirecting to login...');
+                        window.location.href = '../index.html';
+                    } else {
+                        console.log('User authenticated, proceeding to page...');
+                    }
+                }
+
+                // Run authentication check when page loads
+                document.addEventListener('DOMContentLoaded', () => {
+                    console.log('Page loaded, checking authentication...');
+                    handleAuth();
+                });
+
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+            }
+        });
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html> 

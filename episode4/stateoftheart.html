@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State of the art</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track activity page view
+        LogRocket.track('State of the Art Quiz View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode4_stateoftheart'
+        });
+    </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            font-family: 'Special Elite', cursive;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .prank-popup {
+            position: relative;
+            background: #F5E6D3;
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: calc(100% - 40px);
+            box-sizing: border-box;
+            height: 100%;
+            overflow: visible;
+            margin: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .close-button {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 40px;
+            height: 40px;
+            background: #8B4513;
+            border: 2px solid #6B3410;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #F5E6D3;
+            font-size: 1.4em;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+        }
+        .close-button:hover {
+            background: #95562B;
+            transform: scale(1.1);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+        }
+        .close-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+        }
+        .prank-popup h2 {
+            color: #8B4513;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            line-height: 1.3;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(139, 69, 19, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .option:hover {
+            background: rgba(139, 69, 19, 0.2);
+        }
+        .option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #8B4513;
+        }
+        .option label {
+            color: #8B4513;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .button-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .check-button, .hint-button, .next-button {
+            padding: 10px 20px;
+            border: 2px solid;
+            border-radius: 8px;
+            font-family: 'Special Elite', cursive;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .check-button {
+            background: #4CAF50;
+            border-color: #45a049;
+            color: white;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .check-button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .hint-button {
+            background: #9B6B9E;
+            border-color: #7B4B7E;
+            color: white;
+        }
+        .hint-button:hover {
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            background: #8B5B8E;
+        }
+        .hint-button:active {
+            transform: translateY(2px);
+            box-shadow: none;
+            background: #7B4B7E;
+        }
+        .hint-text {
+            color: #8B4513;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1em;
+            min-height: 20px;
+            padding: 10px;
+            font-style: italic;
+        }
+        .close-instruction {
+            color: #8B4513;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9em;
+            padding: 10px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .close-instruction.visible {
+            opacity: 1;
+        }
+        .next-button {
+            background: #4CAF50;
+            border-color: #45a049;
+            color: white;
+            display: none;
+        }
+        .next-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        .completion-message {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            width: auto;
+            max-width: 85%;
+            white-space: nowrap;
+            display: none;
+            z-index: 1001;
+        }
+        @media (max-height: 600px), (max-width: 400px) {
+            .prank-popup {
+                padding: 15px 10px;
+            }
+            .prank-popup h2 {
+                font-size: 0.95em;
+                margin-bottom: 10px;
+            }
+            .options-container {
+                gap: 10px;
+                margin: 15px 0;
+            }
+            .option {
+                padding: 8px;
+            }
+            .option input[type="radio"] {
+                width: 18px;
+                height: 18px;
+            }
+            .option label {
+                font-size: 0.9em;
+            }
+            .button-container {
+                margin-top: 15px;
+            }
+            .check-button, .hint-button, .next-button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+            .hint-text {
+                font-size: 0.9em;
+                margin-top: 10px;
+                padding: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="prank-popup" id="prankPopup">
+        <button class="close-button" id="closeButton">&times;</button>
+        <h2>What does the  "state of the art" mean?</h2>
+        <div class="options-container" id="optionsContainer">
+            <div class="option">
+                <input type="radio" id="optionA" name="prank" value="a">
+                <label for="optionA">A messy, old room 🗑️</label>
+            </div>
+            <div class="option">
+                <input type="radio" id="optionB" name="prank" value="b">
+                <label for="optionB">The newest and most advanced technology 💻✨</label>
+            </div>
+            <div class="option">
+                <input type="radio" id="optionC" name="prank" value="c">
+                <label for="optionC">A government building 🏛️</label>
+            </div>
+        </div>
+        <div class="button-container">
+            <button class="check-button" id="checkButton">CHECK</button>
+            <button class="hint-button" id="hintButton">HINT</button>
+            <button class="next-button" id="nextButton">NEXT</button>
+        </div>
+        <div class="hint-text" id="hintText"></div>
+        <div class="close-instruction" id="closeInstruction">Click the close button to finish the task</div>
+        <div class="completion-message" id="completionMessage">Task Completed</div>
+    </div>
+    <audio id="buttonClickSound" src="./button_click.mp3"></audio>
+    <audio id="victorySound" src="./victory_sound.mp3"></audio>
+    <script>
+        let taskCompleted = false;
+        const correctAnswer = "b";
+        const hints = [
+            "🔍 Think about technology and innovation...",
+            "🗒️ It's often used to describe the latest developments...",
+            "📝 It refers to the most advanced version of something..."
+        ];
+
+        function initialize() {
+            const checkButton = document.getElementById('checkButton');
+            const hintButton = document.getElementById('hintButton');
+            const nextButton = document.getElementById('nextButton');
+            const closeButton = document.getElementById('closeButton');
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            
+            // Check if activity was already completed
+            if (localStorage.getItem('stateofthartActivityCompleted') === 'true') {
+                document.getElementById('completionMessage').style.display = 'block';
+                nextButton.style.display = 'block';
+                taskCompleted = true;
+                // Disable all radio buttons and buttons
+                radioButtons.forEach(radio => radio.disabled = true);
+                checkButton.disabled = true;
+                hintButton.disabled = true;
+                checkButton.classList.remove('active');
+            }
+            
+            // Enable check button when an option is selected
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    checkButton.classList.add('active');
+                });
+            });
+
+            checkButton.onclick = () => {
+                if (!checkButton.classList.contains('active')) return;
+                
+                const buttonClickSound = document.getElementById('buttonClickSound');
+                if (buttonClickSound) {
+                    buttonClickSound.currentTime = 0;
+                    buttonClickSound.play().catch(console.error);
+                }
+
+                const selectedOption = document.querySelector('input[name="prank"]:checked');
+                if (!selectedOption) return;
+
+                // Track answer submission in LogRocket
+                if (window.LogRocket) {
+                    LogRocket.track('Quiz Answer Submitted', {
+                        selectedOption: selectedOption.value,
+                        isCorrect: selectedOption.value === correctAnswer
+                    });
+                }
+
+                // Disable all radio buttons and check button after first attempt
+                radioButtons.forEach(radio => radio.disabled = true);
+                checkButton.disabled = true;
+                hintButton.disabled = true;
+
+                if (selectedOption.value === correctAnswer) {
+                    document.getElementById('hintText').textContent = "🌟 Correct! 'State of the art' means the newest and most advanced technology.";
+                    const victorySound = document.getElementById('victorySound');
+                    if (victorySound) {
+                        victorySound.currentTime = 0;
+                        victorySound.play().catch(console.error);
+                    }
+                    
+                    // Track success in LogRocket
+                    if (window.LogRocket) {
+                        LogRocket.track('State of the Art Activity Completed', {
+                            success: true
+                        });
+                    }
+                    
+                    document.getElementById('completionMessage').style.display = 'block';
+                    localStorage.setItem('stateofthartActivityCompleted', 'true');
+                } else {
+                    document.getElementById('hintText').textContent = "The correct answer is 'The newest and most advanced technology'. Keep learning!";
+                    
+                    // Track incorrect answer in LogRocket
+                    if (window.LogRocket) {
+                        LogRocket.track('Quiz Incorrect Answer', {
+                            selectedOption: selectedOption.value
+                        });
+                    }
+                    
+                    document.getElementById('completionMessage').style.display = 'block';
+                    localStorage.setItem('stateofthartActivityCompleted', 'true');
+                }
+
+                // Show next button regardless of correct/incorrect answer
+                nextButton.style.display = 'block';
+                taskCompleted = true;
+            };
+
+            hintButton.onclick = () => {
+                const buttonClickSound = document.getElementById('buttonClickSound');
+                if (buttonClickSound) {
+                    buttonClickSound.currentTime = 0;
+                    buttonClickSound.play().catch(console.error);
+                }
+                
+                // Track hint usage in LogRocket
+                if (window.LogRocket) {
+                    LogRocket.track('Quiz Hint Used');
+                }
+                
+                document.getElementById('hintText').textContent = hints[0];
+            };
+
+            nextButton.onclick = () => {
+                const buttonClickSound = document.getElementById('buttonClickSound');
+                if (buttonClickSound) {
+                    buttonClickSound.currentTime = 0;
+                    buttonClickSound.play().catch(console.error);
+                }
+                try {
+                    handleGameCompletion();
+                } catch (e) {
+                    console.error("Error sending completion message:", e);
+                }
+            };
+
+            closeButton.onclick = () => {
+                const buttonClickSound = document.getElementById('buttonClickSound');
+                if (buttonClickSound) {
+                    buttonClickSound.currentTime = 0;
+                    buttonClickSound.play().catch(console.error);
+                }
+                try {
+                    closeGame();
+                } catch (e) {
+                    console.error("Error closing game:", e);
+                }
+            };
+        }
+
+        function closeGame() {
+            // Set target panel to 12 for returning to the correct panel
+            localStorage.setItem('targetPanel', '12');
+            // Navigate back to episode4.html
+            window.location.href = 'episode4.html';
+        }
+
+        function handleGameCompletion() {
+            // Mark activity as completed
+            localStorage.setItem('stateofthartActivityCompleted', 'true');
+            // Set target panel to 13 for next navigation
+            localStorage.setItem('targetPanel', '13');
+            window.location.href = 'episode4.html';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("State of the art task initialized");
+            initialize();
+            window.addEventListener('message', function(event) {
+                console.log("Message received:", event.data);
+                if (event.data === 'init_stateoftheart') {
+                    console.log("Received init command from parent");
+                    initialize();
+                }
+            });
+            try {
+                window.parent.postMessage("stateoftheart_ready", "*");
+                console.log("Ready message posted to parent");
+            } catch (e) {
+                console.error("Error posting ready message:", e);
+            }
+        });
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html>

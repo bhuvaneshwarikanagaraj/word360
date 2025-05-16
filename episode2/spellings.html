@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Departure Board Word Game</title>
+
+  <!-- LogRocket initialization -->
+  <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+  <script>
+      window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+      
+      // Track spellings page view
+      LogRocket.track('Spellings Page View');
+      
+      // Identify user if needed
+      LogRocket.identify('USER_ID', {
+          name: 'Detective Ferret Player',
+          gameProgress: 'episode2_spellings'
+      });
+  </script>
+
+  <style>
+    body {
+      font-family: 'Special Elite', cursive;
+      background-color: transparent;
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+    
+    .board {
+      background-color: #5D4037;
+      border: 4px solid #8B4513;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 320px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .icon {
+      width: 28px;
+      height: 28px;
+      background-color: #FFD700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      margin-right: 10px;
+      color: #5D4037;
+      font-weight: bold;
+    }
+    
+    .title {
+      color: #FFD700;
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      min-height: 24px;
+    }
+    
+    .flight-info {
+      color: #FFD700;
+      font-size: 10px;
+      margin-bottom: 2px;
+    }
+    
+    .flight-header, .flight-row {
+      display: flex;
+      margin-bottom: 6px;
+    }
+    
+    .time { width: 50px; }
+    .destination { flex: 1; }
+    .flight { width: 60px; }
+    .gate { width: 40px; }
+    .remark { width: 70px; }
+    
+    .word-slots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin: 1px 0 10px 0;
+      flex-wrap: wrap;
+    }
+    
+    .word-slot {
+      width: 28px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #FFD700;
+      background-color: #3E2723;
+      border: 2px solid #8B4513;
+      border-radius: 4px;
+      position: relative;
+    }
+    
+    .word-slot .remove-letter {
+      position: absolute;
+      top: 50%;
+      right: 50%;
+      transform: translate(50%, -50%);
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #FFD700;
+      cursor: pointer;
+      visibility: hidden;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+    }
+    
+    .word-slot:hover .remove-letter {
+      visibility: visible;
+    }
+    
+    .controls-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 320px;
+      margin-bottom: 10px;
+      padding: 0 45px;
+    }
+    
+    .game-controls {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .sound-control {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .attempts-counter {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      color: #5D4037;
+      font-weight: bold;
+    }
+    
+    .result-message {
+      margin-top: 16px;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      font-weight: bold;
+      color: #F5E6D3;
+      background-color: #5D4037;
+      display: none;
+      width: 100%;
+      max-width: 320px;
+      font-size: 14px;
+    }
+    
+    .continue-button {
+      padding: 10px 20px;
+      font-weight: bold;
+      color: #FFD700;
+      background-color: #5D4037;
+      border-radius: 4px;
+      border: 2px solid #3E2723;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transform: scale(1);
+      transition: transform 0.2s;
+      font-family: 'Special Elite', cursive;
+      margin-top: 16px;
+      display: none;
+      font-size: 14px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .continue-button:active {
+      transform: scale(0.95);
+    }
+    
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      max-width: 360px;
+      width: 100%;
+    }
+    
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      background-color: #5D4037;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #F5E6D3;
+      cursor: pointer;
+      font-size: 16px;
+      border: none;
+      z-index: 10;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .close-button:active {
+      transform: scale(0.9);
+    }
+    
+    .title-text {
+      font-size: 16px;
+      font-weight: bold;
+      color: #5D4037;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    /* Add completion tag styles */
+    .completion-tag {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(139, 69, 19, 0.9);
+        color: #F5E6D3;
+        padding: 5px 15px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-family: 'Special Elite', cursive;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    /* Add completion message styles */
+    .completion-message {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(139, 69, 19, 0.9);
+        color: #F5E6D3;
+        padding: 10px 20px;
+        border-radius: 15px;
+        font-family: 'Special Elite', cursive;
+        font-size: 16px;
+        z-index: 1000;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        display: none;
+    }
+    
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+    
+    .control-button.blink {
+        animation: blink 1.5s infinite;
+        background-color: #FFD700;
+        color: #5D4037;
+    }
+
+    .shuffled-letters {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      background-color: #8B4513;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 6px;
+      margin-bottom: 12px;
+      width: 100%;
+      max-width: 320px;
+      position: relative;
+    }
+
+    .letter-tile {
+      width: 28px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      background-color: #3E2723;
+      color: #FFD700;
+      border: 2px solid #8B4513;
+      border-radius: 4px;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .letter-tile:active {
+      transform: scale(0.95);
+      background-color: #2D1E19;
+    }
+
+    .letter-tile.used {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .control-button {
+      width: 36px;
+      height: 36px;
+      background-color: #8B4513;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #FFD700;
+      font-size: 16px;
+      border: 2px solid #5D4037;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .control-button:active {
+      transform: scale(0.9);
+    }
+
+    .control-button#resetButton {
+      left: -45px;
+    }
+
+    .control-button#soundButton {
+      right: -45px;
+    }
+
+    .submit-button {
+      padding: 10px 20px;
+      font-weight: bold;
+      color: #FFD700;
+      background-color: #5D4037;
+      border-radius: 4px;
+      border: 2px solid #3E2723;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transform: scale(1);
+      transition: transform 0.2s;
+      font-family: 'Special Elite', cursive;
+      margin-top: 10px;
+      font-size: 14px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .submit-button:active {
+      transform: scale(0.95);
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="completion-tag" id="completionTag">COMPLETED</div>
+  <div class="completion-message" id="completionMessage">Task Completed</div>
+  <div class="game-container">
+    <button class="close-button" id="close-button">&times;</button>
+    
+    <div class="title-text" id="puzzle-title">Correct the spelling on the board</div>
+    
+    <div class="board">
+      <div class="header">
+        <div class="icon">✈</div>
+        <div class="word-slots" id="word-slots">
+          <!-- Word slots will be generated here -->
+        </div>
+      </div>
+      
+      <div class="flight-info">
+        <div class="flight-header">
+          <div class="time">TIME</div>
+          <div class="destination">DESTINATION</div>
+          <div class="flight">FLIGHT</div>
+          <div class="gate">GATE</div>
+          <div class="remark">REMARK</div>
+         
+        </div>
+        
+        <div class="flight-row">
+          <div class="time">09:45</div>
+          <div class="destination">BARCELONA</div>
+          <div class="flight">A4405</div>
+          <div class="gate">D17</div>
+          <div class="remark">ON TIME</div>
+        </div>
+        <div class="flight-row">
+          <div class="time">09:57</div>
+          <div class="destination">NEW YORK</div>
+          <div class="flight">A1873</div>
+          <div class="gate">D08</div>
+          <div class="remark">ON TIME</div>
+        </div>
+        <div class="flight-row">
+          <div class="time">10:03</div>
+          <div class="destination">DUBAI</div>
+          <div class="flight">A2960</div>
+          <div class="gate">C05</div>
+          <div class="remark">BOARDING</div>
+        </div>
+        <div class="flight-row">
+          <div class="time">10:08</div>
+          <div class="destination">SHANGHAI</div>
+          <div class="flight">B0334</div>
+          <div class="gate">D14</div>
+          <div class="remark">DELAYED</div>
+        </div>
+        <div class="flight-row">
+          <div class="time">10:14</div>
+          <div class="destination">DHAKA</div>
+          <div class="flight">B3700</div>
+          <div class="gate">F20</div>
+          <div class="remark">ON TIME</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="controls-container">
+      <div class="game-controls">
+        <div class="control-button" id="resetButton">⌫</div>
+      </div>
+      <div class="attempts-counter" id="attempts-counter">Attempts: 0/3</div>
+      <div class="sound-control">
+        <div class="control-button" id="soundButton">🔊</div>
+      </div>
+    </div>
+    
+    <div class="shuffled-letters" id="shuffled-letters">
+      <!-- Shuffled letters will be generated here -->
+    </div>
+    
+    <button class="submit-button" id="submit-button">SUBMIT</button>
+    
+    <div class="result-message" id="result-message"></div>
+    
+    <button class="continue-button" id="continue-button">CONTINUE</button>
+  </div>
+
+  <audio id="departure-sound" src="audio/DEPARTURE.mp3" preload="auto"></audio>
+  <audio id="arrival-sound" src="audio/ARRIVAL.mp3" preload="auto"></audio>
+
+  <script>
+    // Game state
+    let currentGameState = "departure"; // Can be "departure" or "arrival"
+    let targetWord = "DEPARTURE";
+    let wordSlots = [];
+    let shuffledLetters = [];
+    let isComplete = false;
+    let attempts = 0;
+    const maxAttempts = 3;
+    let currentLetterIndex = 0;
+    
+    // Initialize the game
+    function initGame() {
+      // Set target word based on game state
+      targetWord = currentGameState === "departure" ? "DEPARTURE" : "ARRIVAL";
+      
+      // Reset word slots
+      wordSlots = Array(targetWord.length).fill(null);
+      isComplete = false;
+      attempts = 0;
+      currentLetterIndex = 0;
+      
+      // Update title
+      document.getElementById('puzzle-title').textContent = "Correct the spelling on the board";
+      
+      // Generate and shuffle letters
+      generateShuffledLetters();
+      
+      // Reset UI
+      document.getElementById('result-message').style.display = 'none';
+      document.getElementById('continue-button').style.display = 'none';
+      document.getElementById('submit-button').disabled = false;
+      document.getElementById('submit-button').style.display = 'block';
+      document.getElementById('attempts-counter').textContent = `Attempts: ${attempts}/${maxAttempts}`;
+      
+      // Render the game
+      renderGame();
+      
+      // Set up event listeners
+      document.getElementById('close-button').addEventListener('click', function() {
+        // Set flag to return to panel 11
+        localStorage.setItem('returnToCurrentPanel', 'true');
+        window.location.href = 'index1.html?panel=11';
+      });
+      
+      document.getElementById('submit-button').addEventListener('click', evaluateAnswer);
+      document.getElementById('continue-button').addEventListener('click', continueGame);
+      document.getElementById('resetButton').addEventListener('click', resetLastLetter);
+      document.getElementById('soundButton').addEventListener('click', playSound);
+      
+      // Add blinking to sound button
+      const soundButton = document.getElementById('soundButton');
+      soundButton.classList.add('blink');
+      
+      // Remove blinking when clicked
+      soundButton.addEventListener('click', function() {
+        this.classList.remove('blink');
+        playSound();
+      });
+    }
+    
+    // Generate shuffled letters
+    function generateShuffledLetters() {
+      // Start with the target word letters
+      shuffledLetters = targetWord.split('').map((letter, index) => ({
+        id: index + 1,
+        letter: letter,
+        used: false
+      }));
+      
+      // Shuffle the letters
+      for (let i = shuffledLetters.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledLetters[i], shuffledLetters[j]] = [shuffledLetters[j], shuffledLetters[i]];
+      }
+    }
+    
+    // Render the game
+    function renderGame() {
+      // Render word slots
+      const slotsContainer = document.getElementById('word-slots');
+      slotsContainer.innerHTML = '';
+      
+      for (let i = 0; i < targetWord.length; i++) {
+        const slotDiv = document.createElement('div');
+        slotDiv.className = 'word-slot';
+        slotDiv.textContent = wordSlots[i] || '';
+        slotDiv.dataset.index = i;
+        
+        // Add remove button (backspace) if there's a letter in the slot
+        if (wordSlots[i]) {
+          const removeButton = document.createElement('div');
+          removeButton.className = 'remove-letter';
+          removeButton.innerHTML = '⌫';
+          removeButton.onclick = (e) => {
+            e.stopPropagation();
+            handleSlotClick(i);
+          };
+          slotDiv.appendChild(removeButton);
+        }
+        
+        slotDiv.onclick = () => handleSlotClick(i);
+        slotsContainer.appendChild(slotDiv);
+      }
+      
+      // Render shuffled letters
+      const lettersContainer = document.getElementById('shuffled-letters');
+      lettersContainer.innerHTML = '';
+      
+      for (const letter of shuffledLetters) {
+        const letterDiv = document.createElement('div');
+        letterDiv.className = `letter-tile ${letter.used ? 'used' : ''}`;
+        letterDiv.textContent = letter.letter;
+        letterDiv.dataset.id = letter.id;
+        if (!letter.used) {
+          letterDiv.addEventListener('click', () => handleLetterClick(letter));
+        }
+        lettersContainer.appendChild(letterDiv);
+      }
+      
+      // Update attempts counter
+      document.getElementById('attempts-counter').textContent = `Attempts: ${attempts}/${maxAttempts}`;
+    }
+    
+    // Handle letter click
+    function handleLetterClick(letter) {
+      // Find the next empty slot
+      const emptyIndex = wordSlots.findIndex(slot => slot === null);
+      
+      if (emptyIndex !== -1 && !letter.used) {
+        // Place the letter in the slot
+        wordSlots[emptyIndex] = letter.letter;
+        
+        // Mark the letter as used
+        letter.used = true;
+        
+        // Re-render the game
+        renderGame();
+      }
+    }
+    
+    // Handle slot click
+    function handleSlotClick(index) {
+      const letter = wordSlots[index];
+      
+      if (letter) {
+        // Find the corresponding shuffled letter that matches this letter
+        const shuffledLetter = shuffledLetters.find(l => l.letter === letter && l.used);
+        
+        if (shuffledLetter) {
+          // Mark the letter as unused
+          shuffledLetter.used = false;
+          
+          // Remove the letter from the slot
+          wordSlots[index] = null;
+          
+          // Re-render the game
+          renderGame();
+        }
+      }
+    }
+    
+    // Reset last placed letter
+    function resetLastLetter() {
+      // Find the last filled slot
+      for (let i = wordSlots.length - 1; i >= 0; i--) {
+        if (wordSlots[i] !== null) {
+          // Call the existing handler for this slot
+          handleSlotClick(i);
+          return;
+        }
+      }
+      // If no letters are placed, nothing happens
+    }
+    
+    // Fill slots with the correct answer
+    function showCorrectAnswer() {
+      // Take the letters from the target word and place them in order
+      wordSlots = targetWord.split('');
+      
+      // Mark all letters as used
+      shuffledLetters.forEach(letter => {
+        letter.used = true;
+      });
+      
+      // Re-render the game
+      renderGame();
+    }
+    
+    // Evaluate the answer
+    function evaluateAnswer() {
+      // Check if all slots are filled
+      if (wordSlots.includes(null)) {
+        alert('Please fill all the letter slots before submitting!');
+        return;
+      }
+      
+      // Increment attempts
+      attempts++;
+      
+      // Check if the answer is correct
+      const submittedWord = wordSlots.join('');
+      isComplete = submittedWord === targetWord;
+      
+      // Update UI
+      const resultMessage = document.getElementById('result-message');
+      resultMessage.style.display = 'block';
+      
+      if (isComplete) {
+        // Success!
+        resultMessage.textContent = `Correct! You spelled ${targetWord} correctly!`;
+        document.getElementById('continue-button').style.display = 'block';
+        document.getElementById('submit-button').style.display = 'none';
+      } else if (attempts >= maxAttempts) {
+        // Out of attempts
+        resultMessage.textContent = `Sorry, you're out of attempts. The correct word is ${targetWord}.`;
+        document.getElementById('continue-button').style.display = 'block';
+        document.getElementById('submit-button').style.display = 'none';
+        
+        // Show correct answer
+        showCorrectAnswer();
+      } else {
+        // Try again
+        resultMessage.textContent = `That's not correct. Try again! ${maxAttempts - attempts} attempts left.`;
+        resetWordSlots();
+      }
+      
+      // Update attempts counter
+      document.getElementById('attempts-counter').textContent = `Attempts: ${attempts}/${maxAttempts}`;
+    }
+    
+    // Reset word slots
+    function resetWordSlots() {
+      wordSlots = Array(targetWord.length).fill(null);
+      
+      // Reset all letters to unused
+      shuffledLetters.forEach(letter => {
+        letter.used = false;
+      });
+      
+      renderGame();
+    }
+    
+    // Continue to the next step
+    function continueGame() {
+      if (currentGameState === "departure") {
+        // Switch to arrival game
+        currentGameState = "arrival";
+        initGame();
+        // Add blinking to sound button for new game
+        const soundButton = document.getElementById('soundButton');
+        soundButton.classList.add('blink');
+      } else {
+        // Both games completed
+        localStorage.setItem('spellingsActivityCompleted', 'true');
+        document.getElementById('completionTag').style.display = 'block';
+        window.location.href = 'index1.html?panel=12';
+      }
+    }
+    
+    // Play sound function
+    function playSound() {
+      try {
+        const audioId = currentGameState === "departure" ? "departure-sound" : "arrival-sound";
+        const audio = document.getElementById(audioId);
+        if (audio) {
+          audio.currentTime = 0;
+          audio.play().catch(e => {
+            console.log('Audio play failed:', e);
+            alert("Audio couldn't play. Please tap again or check your device settings.");
+          });
+        } else {
+          console.log('Audio element not found');
+        }
+      } catch (e) {
+        console.log('Error playing sound:', e);
+      }
+    }
+    
+    // Add global touchstart handler for mobile devices
+    document.addEventListener('touchstart', function() {
+      // This allows audio to play on iOS because it requires user interaction
+      const departureAudio = document.getElementById('departure-sound');
+      if (departureAudio) {
+        departureAudio.play().then(() => {
+          departureAudio.pause();
+          departureAudio.currentTime = 0;
+        }).catch(e => console.log('Audio preload failed:', e));
+      }
+      
+      const arrivalAudio = document.getElementById('arrival-sound');
+      if (arrivalAudio) {
+        arrivalAudio.play().then(() => {
+          arrivalAudio.pause();
+          arrivalAudio.currentTime = 0;
+        }).catch(e => console.log('Audio preload failed:', e));
+      }
+    }, { once: true });
+    
+    // Add completion tag check on load
+    window.addEventListener('DOMContentLoaded', () => {
+        // Check if activity was previously completed
+        if (localStorage.getItem('spellingsActivityCompleted') === 'true') {
+            document.getElementById('completionTag').style.display = 'block';
+        }
+    });
+    // Check if activity was completed when page loads
+    window.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('SPELLINGS_ACTIVITY_KEY') === 'true') {
+            document.getElementById('completionMessage').style.display = 'block';
+        }
+    });
+    
+    // Initialize the game on load
+    window.onload = initGame;
+  </script>
+  <script src="../disable-search.js"></script>
+</body>
+</html>

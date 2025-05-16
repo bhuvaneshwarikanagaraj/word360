@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boarding Pass</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: transparent;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            max-width: 400px;
+            max-height: 800px;
+            background-color: #F5E6D3;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ticket-section {
+            flex: 0 0 auto;
+            padding: 10px 15px;
+            background: #fff;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            margin: 15px 15px 5px;
+            border-radius: 10px;
+        }
+
+        .ticket-section::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: repeating-linear-gradient(
+                90deg,
+                #8B4513,
+                #8B4513 10px,
+                transparent 10px,
+                transparent 20px
+            );
+        }
+
+        /* Remove ticket holes */
+        /*.ticket-section::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10px;
+            width: 15px;
+            height: 15px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            box-shadow: 
+                0 -120px #1a1a1a,
+                0 120px #1a1a1a;
+        }*/
+
+        .elements-section {
+            flex: 0 0 auto;
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .keyboard-section {
+            flex: 0 0 auto;
+            padding: 5px 15px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .ticket-container {
+            display: flex;
+            gap: 12px;
+            padding: 8px;
+            background-color: #fff;
+            border-radius: 10px;
+        }
+
+        .photo-section {
+            flex: 0 0 90px;
+        }
+
+        .details-section {
+            flex: 1;
+        }
+
+        .ticket-header {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #8B4513;
+        }
+
+        .input-group {
+            margin-bottom: 8px;
+        }
+
+        .input-label {
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #8B4513;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .input-field {
+            width: 100%;
+            min-height: 28px;
+            border: 1px solid #8B4513;
+            border-radius: 4px;
+            background-color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            padding: 4px;
+            font-size: 13px;
+            color: #8B4513;
+            transition: box-shadow 0.3s;
+            position: relative;
+        }
+
+        .input-field.dragover {
+            box-shadow: 0 0 10px 3px #8B4513;
+        }
+
+        .destination-dashes {
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+            padding: 5px;
+            flex: 1;
+            margin-right: 30px; /* Add space for the hint button */
+        }
+
+        .dash {
+            position: relative;
+            width: 15px;
+            height: 2px;
+            background-color: #8B4513;
+            opacity: 0.9;
+        }
+
+        .dash.filled {
+            opacity: 1;
+        }
+        
+        .dash-text {
+            position: absolute;
+            top: -18px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 14px;
+            color: #8B4513;
+        }
+
+        .photo-box {
+            width: 90px;
+            height: 90px;
+            border: 1px solid #8B4513;
+            border-radius: 4px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .draggable-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .text-elements {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .draggable {
+            padding: 8px;
+            background-color: #8B4513;
+            color: #F5E6D3;
+            border-radius: 4px;
+            cursor: move;
+            user-select: none;
+            text-align: center;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            -webkit-user-drag: element;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .draggable.dragging {
+            opacity: 0.7;
+            transform: scale(0.95);
+        }
+
+        .draggable.photo-draggable {
+            width: 60px;
+            height: 60px;
+            padding: 0;
+            overflow: hidden;
+            background: none;
+            box-shadow: none;
+            cursor: move;
+            -webkit-user-drag: element;
+        }
+
+        .draggable.photo-draggable img {
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            pointer-events: none;
+        }
+
+        .keyboard {
+            width: 100%;
+            display: grid;
+            grid-template-rows: repeat(3, 1fr);
+            gap: 3px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        .key {
+            width: 24px;
+            height: 24px;
+            background-color: #8B4513;
+            color: #F5E6D3;
+            border: none;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: 'Special Elite', cursive;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .key:active {
+            background-color: #6b310f;
+            transform: translateY(1px);
+        }
+
+        .success-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(245, 230, 211, 0.9);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .success-message {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #8B4513;
+            font-size: 14px;
+        }
+
+        .submit-button {
+            margin-top: 15px;
+            padding: 8px 16px;
+            font-size: 14px;
+            background: linear-gradient(to bottom, #14a257,#14a257);
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            font-family: 'Special Elite', cursive;
+            display: none;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            background: linear-gradient(to bottom, #9B5523, #7b411f);
+        }
+
+        .submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .barcode {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .barcode-img {
+            height: 35px;
+            width: 80%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='white'/%3E%3Cg fill='%238B4513'%3E%3Crect x='5%25' width='1%25' height='100%25'/%3E%3Crect x='7%25' width='2%25' height='100%25'/%3E%3Crect x='11%25' width='1%25' height='100%25'/%3E%3Crect x='15%25' width='3%25' height='100%25'/%3E%3Crect x='20%25' width='2%25' height='100%25'/%3E%3Crect x='25%25' width='1%25' height='100%25'/%3E%3Crect x='28%25' width='3%25' height='100%25'/%3E%3Crect x='33%25' width='2%25' height='100%25'/%3E%3Crect x='37%25' width='1%25' height='100%25'/%3E%3Crect x='40%25' width='3%25' height='100%25'/%3E%3Crect x='45%25' width='1%25' height='100%25'/%3E%3Crect x='48%25' width='2%25' height='100%25'/%3E%3Crect x='52%25' width='3%25' height='100%25'/%3E%3Crect x='57%25' width='2%25' height='100%25'/%3E%3Crect x='61%25' width='1%25' height='100%25'/%3E%3Crect x='65%25' width='2%25' height='100%25'/%3E%3Crect x='70%25' width='3%25' height='100%25'/%3E%3Crect x='75%25' width='1%25' height='100%25'/%3E%3Crect x='78%25' width='2%25' height='100%25'/%3E%3Crect x='82%25' width='1%25' height='100%25'/%3E%3Crect x='85%25' width='3%25' height='100%25'/%3E%3Crect x='90%25' width='2%25' height='100%25'/%3E%3Crect x='94%25' width='1%25' height='100%25'/%3E%3C/g%3E%3C/svg%3E");
+            margin: 0 auto;
+        }
+
+        .barcode-number {
+            font-size: 9px;
+            color: #8B4513;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .hint-button {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            z-index: 3;
+            padding: 5px;
+            transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+
+        .hint-button:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .hint-button i {
+            font-size: 16px;
+            color: #8B4513;
+        }
+
+        .hint-text {
+            display: none;
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 10px;
+            width: 180px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            color: #8B4513;
+            font-size: 12px;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .hint-text.visible {
+            display: block;
+        }
+        
+        .prev-button {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: none;
+            border: none;
+            color: #8B4513;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 20;
+            font-family: 'Special Elite', cursive;
+            padding: 10px;
+        }
+        
+        .prev-button:hover {
+            transform: scale(1.1);
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #8B4513;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 20;
+            padding: 10px;
+        }
+        
+        .close-button:hover {
+            transform: scale(1.1);
+        }
+        
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            z-index: 1;
+            border: 2px solid rgba(139, 67, 19, 0.2);
+        }
+        
+        .watermark-text {
+            text-align: center;
+            color: rgba(139, 67, 19, 0.4);
+            font-size: 10px;
+            font-weight: bold;
+            line-height: 1.2;
+            padding: 5px;
+        }
+
+        @media (max-height: 600px) {
+            .ticket-section {
+                margin: 10px 15px 5px;
+            }
+            .ticket-header {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+            .elements-section, .keyboard-section {
+                padding: 5px 10px;
+            }
+            .barcode-img {
+                height: 30px;
+            }
+            .key {
+                width: 22px;
+                height: 22px;
+                font-size: 11px;
+            }
+        }
+
+        /* Add completion tag styles */
+        .completion-tag {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-family: 'Special Elite', cursive;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Add completion message styles */
+        .completion-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-family: 'Special Elite', cursive;
+            font-size: 16px;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        @keyframes blink-sound {
+            0% { transform: scale(1); color: #8B4513; }
+            50% { transform: scale(1.2); color: #FFD700; }
+            100% { transform: scale(1); color: #8B4513; }
+        }
+    </style>
+</head>
+<body>
+    <div class="completion-tag" id="completionTag">COMPLETED</div>
+    <div class="completion-message" id="completionMessage">Task Completed</div>
+    <div class="container">
+        <button class="close-button" onclick="closeActivity()">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="ticket-section">
+            <div class="ticket-header">Boarding Pass</div>
+            <div class="watermark">
+                <div class="watermark-text">RUSSIAN AIRLINES</div>
+            </div>
+            <div class="ticket-container">
+                <div class="photo-section">
+                    <div class="photo-box" id="photo-field" ondrop="drop(event)" ondragover="allowDrop(event)">
+                        <span style="color: #8B4513">Drag Photo</span>
+                    </div>
+                </div>
+                <div class="details-section">
+                    <div class="input-group">
+                        <div class="input-label">Name</div>
+                        <div class="input-field" id="name-field" ondrop="drop(event)" ondragover="allowDrop(event)">
+                            <span style="color: #8B4513">Drag Name</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-label">Ticket Number</div>
+                        <div class="input-field" id="ticket-field" ondrop="drop(event)" ondragover="allowDrop(event)">
+                            <span style="color: #8B4513">Drag Number</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-label">Destination</div>
+                        <div class="input-field" id="destination-field">
+                            <div class="destination-dashes">
+                                <div class="dash"><div class="dash-text"></div></div>
+                                <div class="dash"><div class="dash-text"></div></div>
+                                <div class="dash"><div class="dash-text"></div></div>
+                                <div class="dash"><div class="dash-text"></div></div>
+                                <div class="dash"><div class="dash-text"></div></div>
+                                <div class="dash"><div class="dash-text"></div></div>
+                            </div>
+                            <button class="hint-button" onclick="toggleHint()">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+            <div class="hint-text" id="hint-text">
+                Move to the previous slides to find the answer...!
+            </div>
+            <div class="barcode">
+                <div class="barcode-img"></div>
+                <div class="barcode-number">DF23456789UK</div>
+            </div>
+        </div>
+        <div class="elements-section">
+            <div class="draggable-container">
+                <div class="text-elements">
+                    <div class="draggable" draggable="true" ondragstart="drag(event)" id="name" data-type="name">
+                        Mr. Finn Ferret
+                    </div>
+                    <div class="draggable" draggable="true" ondragstart="drag(event)" id="ticket" data-type="ticket">
+                        5428798489472326
+                    </div>
+                </div>
+                <div class="draggable photo-draggable" draggable="true" ondragstart="drag(event)" id="photo" data-type="photo">
+                    <img src="images/passport.webp" alt="Detective Ferret">
+                </div>
+            </div>
+        </div>
+        <div class="keyboard-section">
+            <div class="keyboard" id="keyboard"></div>
+        </div>
+        <button class="submit-button" id="submitButton" onclick="handleSubmit()">Submit Boarding Pass</button>
+        <button class="prev-button" onclick="navigateBack()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+    </div>
+
+    <div id="success-container" style="display: none;" class="success-container">
+        <div class="success-message">Congratulations! Boarding pass completed correctly!</div>
+        <div class="success-message" style="font-size: 12px; margin-top: -5px;">Proceeding to next panel...</div>
+    </div>
+
+    <script>
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+
+        function drag(ev) {
+            // Get the draggable element (either the target or its parent if target is an image)
+            let draggableElement = ev.target;
+            if (ev.target.tagName === 'IMG' && ev.target.parentElement.classList.contains('draggable')) {
+                draggableElement = ev.target.parentElement;
+            }
+            
+            // Set the drag data
+            ev.dataTransfer.setData("text", draggableElement.id);
+            ev.dataTransfer.effectAllowed = "move";
+            
+            // Add dragging class
+            draggableElement.classList.add('dragging');
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            
+            const data = ev.dataTransfer.getData("text");
+            const draggedElement = document.getElementById(data);
+            
+            if (!draggedElement) return;
+            
+            // Remove dragging class
+            draggedElement.classList.remove('dragging');
+            
+            // Find the proper drop zone
+            let dropZone = ev.target;
+            while (dropZone && !dropZone.id.endsWith('-field')) {
+                dropZone = dropZone.parentElement;
+            }
+            
+            if (!dropZone) return;
+            
+            const draggedType = draggedElement.dataset.type;
+            const isValidDrop = dropZone.id === draggedType + '-field';
+            
+            if (isValidDrop) {
+                // Clear the drop zone
+                dropZone.innerHTML = '';
+                
+                // Create clone of dragged element
+                const clone = draggedElement.cloneNode(true);
+                clone.style.cursor = 'default';
+                
+                if (draggedType === 'photo') {
+                    // Special handling for photo
+                    clone.style.width = '100%';
+                    clone.style.height = '100%';
+                    clone.style.padding = '0';
+                    clone.style.margin = '0';
+                    clone.style.display = 'flex';
+                    clone.style.justifyContent = 'center';
+                    clone.style.alignItems = 'center';
+                    clone.style.background = 'none';
+                    clone.style.boxShadow = 'none';
+                    
+                    const img = clone.querySelector('img');
+                    if (img) {
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '4px';
+                    }
+                } else {
+                    // Handling for text elements (name and ticket)
+                    clone.style.width = '100%';
+                    clone.style.height = 'auto';
+                    clone.style.padding = '5px';
+                    clone.style.margin = '0';
+                    clone.style.boxSizing = 'border-box';
+                    clone.style.background = 'none';
+                    clone.style.color = '#8B4513';
+                    clone.style.boxShadow = 'none';
+                    clone.style.display = 'block';
+                    clone.style.textAlign = 'left';
+                }
+                
+                // Add clone to drop zone
+                dropZone.appendChild(clone);
+                
+                // Remove original element
+                draggedElement.remove();
+                
+                // Check completion
+                checkCompletion();
+            }
+        }
+
+        function typeLetter(letter) {
+            const destinationField = document.getElementById('destination-field');
+            const dashes = destinationField.querySelectorAll('.dash');
+            const currentText = Array.from(dashes).filter(dash => dash.querySelector('.dash-text').textContent).length;
+            
+            if (currentText < 6) {
+                const dashText = dashes[currentText].querySelector('.dash-text');
+                dashText.textContent = letter;
+                dashes[currentText].classList.add('filled');
+                checkCompletion();
+            }
+        }
+
+        function deleteLetter() {
+            const destinationField = document.getElementById('destination-field');
+            const dashes = destinationField.querySelectorAll('.dash');
+            const currentText = Array.from(dashes).filter(dash => dash.querySelector('.dash-text').textContent).length;
+            
+            if (currentText > 0) {
+                const dashText = dashes[currentText - 1].querySelector('.dash-text');
+                dashText.textContent = '';
+                dashes[currentText - 1].classList.remove('filled');
+            }
+        }
+
+        function checkCompletion() {
+            const nameField = document.getElementById('name-field');
+            const ticketField = document.getElementById('ticket-field');
+            const photoField = document.getElementById('photo-field');
+            const dashes = document.querySelectorAll('.dash');
+            const destinationText = Array.from(dashes)
+                .map(dash => dash.querySelector('.dash-text').textContent)
+                .join('');
+            const submitButton = document.getElementById('submitButton');
+
+            // Check if photo is properly dropped (should contain an img element)
+            const hasPhoto = photoField.querySelector('img') !== null;
+            
+            // Check if name is properly dropped (should contain the draggable element)
+            const hasName = nameField.querySelector('.draggable') !== null;
+            
+            // Check if ticket is properly dropped (should contain the draggable element)
+            const hasTicket = ticketField.querySelector('.draggable') !== null;
+            
+            // Check if destination has all 6 characters (regardless of what they are)
+            const hasDestination = destinationText.length === 6;
+            
+            // Show submit button if all fields are filled (regardless of destination text content)
+            const isComplete = hasPhoto && hasName && hasTicket && hasDestination;
+            
+            // Show/hide submit button based on completion
+            submitButton.style.display = isComplete ? 'block' : 'none';
+
+            // If task is completed, disable drag and drop
+            if (localStorage.getItem('DRAGDROP_ACTIVITY_KEY') === 'true') {
+                disableDragAndDrop();
+            }
+        }
+
+        function disableDragAndDrop() {
+            // Disable draggable elements
+            const draggables = document.querySelectorAll('.draggable');
+            draggables.forEach(draggable => {
+                draggable.draggable = false;
+                draggable.style.cursor = 'default';
+                draggable.style.opacity = '0.7';
+                // Remove event listeners
+                draggable.removeEventListener('dragstart', drag);
+                draggable.removeEventListener('touchstart', handleTouchStart);
+                draggable.removeEventListener('touchmove', handleTouchMove);
+                draggable.removeEventListener('touchend', handleTouchEnd);
+            });
+
+            // Disable drop zones
+            const dropZones = document.querySelectorAll('[id$="-field"]');
+            dropZones.forEach(zone => {
+                zone.removeEventListener('dragover', allowDrop);
+                zone.removeEventListener('drop', drop);
+                zone.removeEventListener('dragenter', handleDragEnter);
+                zone.removeEventListener('dragleave', handleDragLeave);
+            });
+
+            // Disable keyboard
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                key.disabled = true;
+                key.style.opacity = '0.7';
+                key.style.cursor = 'default';
+            });
+        }
+
+        function showSuccessMessage(message) {
+            const successContainer = document.getElementById('success-container');
+            const messageElement = successContainer.querySelector('.success-message');
+            messageElement.textContent = message;
+            successContainer.style.display = 'flex';
+        }
+
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            const layout = [
+                ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+                ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+                ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']
+            ];
+            
+            layout.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+                
+                row.forEach(key => {
+                    const button = document.createElement('button');
+                    button.className = 'key';
+                    button.textContent = key;
+                    button.onclick = key === '⌫' ? deleteLetter : () => typeLetter(key);
+                    rowDiv.appendChild(button);
+                });
+                
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        // Polyfill for mobile drag and drop
+        function setupMobileDragDrop() {
+            const draggables = document.querySelectorAll('.draggable');
+            const dropZones = document.querySelectorAll('[id$="-field"]');
+            let currentDraggedElement = null;
+            
+            draggables.forEach(draggable => {
+                draggable.addEventListener('touchstart', handleTouchStart, { passive: false });
+                draggable.addEventListener('touchmove', handleTouchMove, { passive: false });
+                draggable.addEventListener('touchend', handleTouchEnd, { passive: false });
+            });
+            
+            function handleTouchStart(e) {
+                e.preventDefault();
+                currentDraggedElement = this;
+                this.style.opacity = '0.7';
+                
+                const touchFeedback = document.createElement('div');
+                touchFeedback.id = 'touch-feedback';
+                touchFeedback.style.position = 'fixed';
+                touchFeedback.style.pointerEvents = 'none';
+                touchFeedback.style.zIndex = '1000';
+                touchFeedback.style.opacity = '0.8';
+                touchFeedback.style.transform = 'scale(0.8)';
+                
+                // Special handling for photo draggable
+                if (this.classList.contains('photo-draggable')) {
+                    const img = this.querySelector('img');
+                    if (img) {
+                        const imgClone = img.cloneNode(true);
+                        imgClone.style.width = '60px';
+                        imgClone.style.height = '60px';
+                        imgClone.style.objectFit = 'cover';
+                        imgClone.style.borderRadius = '4px';
+                        touchFeedback.appendChild(imgClone);
+                    }
+                } else {
+                    touchFeedback.appendChild(this.cloneNode(true));
+                }
+                
+                document.body.appendChild(touchFeedback);
+                
+                const touch = e.touches[0];
+                touchFeedback.style.left = touch.clientX - 50 + 'px';
+                touchFeedback.style.top = touch.clientY - 25 + 'px';
+            }
+            
+            function handleTouchMove(e) {
+                e.preventDefault();
+                if (!currentDraggedElement) return;
+                
+                const touch = e.touches[0];
+                const touchFeedback = document.getElementById('touch-feedback');
+                if (touchFeedback) {
+                    touchFeedback.style.left = touch.clientX - 50 + 'px';
+                    touchFeedback.style.top = touch.clientY - 25 + 'px';
+                }
+                
+                // Highlight potential drop zones
+                const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+                let dropZone = elementAtPoint;
+                while (dropZone && !dropZone.id.endsWith('-field')) {
+                    dropZone = dropZone.parentElement;
+                }
+                
+                // Reset all drop zone highlights
+                dropZones.forEach(zone => {
+                    zone.style.boxShadow = 'none';
+                });
+                
+                // Highlight current drop zone if valid
+                if (dropZone) {
+                    const draggedType = currentDraggedElement.dataset.type;
+                    const isValidDrop = dropZone.id === draggedType + '-field';
+                    
+                    if (isValidDrop) {
+                        dropZone.style.boxShadow = '0 0 10px 3px #8B4513';
+                    }
+                }
+            }
+            
+            function handleTouchEnd(e) {
+                e.preventDefault();
+                if (!currentDraggedElement) return;
+                
+                this.style.opacity = '1';
+                
+                const touchFeedback = document.getElementById('touch-feedback');
+                if (touchFeedback) {
+                    document.body.removeChild(touchFeedback);
+                }
+                
+                const touch = e.changedTouches[0];
+                const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                let dropZone = elementAtPoint;
+                while (dropZone && !dropZone.id.endsWith('-field')) {
+                    dropZone = dropZone.parentElement;
+                }
+                
+                dropZones.forEach(zone => {
+                    zone.style.boxShadow = 'none';
+                });
+                
+                if (dropZone) {
+                    const draggedType = currentDraggedElement.dataset.type;
+                    const isValidDrop = dropZone.id === draggedType + '-field';
+                    
+                    if (isValidDrop) {
+                        dropZone.innerHTML = '';
+                        const clone = currentDraggedElement.cloneNode(true);
+                        clone.style.cursor = 'default';
+                        clone.style.opacity = '1';
+                        
+                        if (draggedType === 'photo') {
+                            clone.style.width = '100%';
+                            clone.style.height = '100%';
+                            clone.style.display = 'flex';
+                            clone.style.justifyContent = 'center';
+                            clone.style.alignItems = 'center';
+                            clone.style.padding = '0';
+                            const img = clone.querySelector('img');
+                            if (img) {
+                                img.style.width = '100%';
+                                img.style.height = '100%';
+                                img.style.objectFit = 'cover';
+                                img.style.borderRadius = '4px';
+                            }
+                        } else {
+                            clone.style.width = '100%';
+                            clone.style.height = 'auto';
+                            clone.style.padding = '5px';
+                            clone.style.margin = '0';
+                            clone.style.boxSizing = 'border-box';
+                        }
+                        
+                        dropZone.appendChild(clone);
+                        currentDraggedElement.remove();
+                        checkCompletion();
+                    }
+                }
+                
+                currentDraggedElement = null;
+            }
+        }
+
+        // Navigation functions
+        function navigateBack() {
+            try {
+                // Set flag to return to panel 5
+                localStorage.setItem('returnToPanelFive', 'true');
+                window.location.href = 'index1.html?panel=5';
+            } catch (e) {
+                console.error('Error navigating back:', e);
+                localStorage.setItem('returnToPanelFive', 'true');
+                window.location.href = 'index1.html?panel=5';
+            }
+        }
+
+        function closeActivity() {
+            try {
+                // Clear any existing navigation flags
+                localStorage.removeItem('returnToCurrentPanel');
+                localStorage.removeItem('returnToPanelFive');
+                
+                // If activity is completed, notify parent window
+                if (localStorage.getItem('DRAGDROP_ACTIVITY_KEY') === 'true') {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage('boarding_pass_success', '*');
+                    }
+                }
+                
+                // Navigate specifically to panel 6
+                window.location.href = 'index1.html?panel=6';
+            } catch (e) {
+                console.error('Error closing activity:', e);
+                // Fallback navigation to panel 6
+                window.location.href = 'index1.html?panel=6';
+            }
+        }
+
+        function navigateToNextPanel() {
+            // Navigate directly to panel 7
+            window.location.href = 'index1.html?panel=7';
+        }
+
+        function toggleHint() {
+            const hintText = document.getElementById('hint-text');
+            hintText.classList.toggle('visible');
+            
+            const hintIcon = document.querySelector('.hint-button i');
+            if (hintText.classList.contains('visible')) {
+                hintIcon.classList.remove('fa-eye');
+                hintIcon.classList.add('fa-eye-slash');
+            } else {
+                hintIcon.classList.remove('fa-eye-slash');
+                hintIcon.classList.add('fa-eye');
+            }
+        }
+
+        function handleSubmit() {
+            const dashes = document.querySelectorAll('.dash');
+            const destinationText = Array.from(dashes)
+                .map(dash => dash.querySelector('.dash-text').textContent)
+                .join('');
+
+            // Show appropriate message based on correct/incorrect answer
+            const successContainer = document.getElementById('success-container');
+            successContainer.style.display = 'flex';
+            
+            if (destinationText.toLowerCase() === 'london') {
+                successContainer.querySelector('.success-message').textContent = "Congratulations! Boarding pass completed correctly!";
+            } else {
+                successContainer.querySelector('.success-message').textContent = "Incorrect destination. The correct destination is LONDON. Check panel 5 for the answer!";
+            }
+
+            // Mark as completed
+            localStorage.setItem('DRAGDROP_ACTIVITY_KEY', 'true');
+            localStorage.setItem('dragdrop_completed', 'true');
+            localStorage.setItem('navigateToPanel7', 'true');
+
+            // Simple direct navigation after delay
+            setTimeout(() => {
+                window.location.href = 'index1.html?panel=7';
+            }, 2000);
+        }
+
+        // Add beforeunload event to ensure navigation
+        window.addEventListener('beforeunload', function() {
+            if (localStorage.getItem('dragdrop_completed') === 'true') {
+                localStorage.setItem('currentPanel', '7');
+            }
+        });
+
+        // Add completion check on load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check if activity was previously completed
+            if (localStorage.getItem('DRAGDROP_ACTIVITY_KEY') === 'true') {
+                document.getElementById('completionMessage').style.display = 'block';
+                disableDragAndDrop();
+            } else {
+                // Initialize draggable elements only if not completed
+                const draggables = document.querySelectorAll('.draggable');
+                draggables.forEach(draggable => {
+                    draggable.addEventListener('dragstart', drag);
+                    draggable.addEventListener('dragend', (e) => {
+                        e.target.classList.remove('dragging');
+                    });
+                });
+                
+                // Initialize drop zones
+                const dropZones = document.querySelectorAll('[id$="-field"]');
+                dropZones.forEach(zone => {
+                    zone.addEventListener('dragover', allowDrop);
+                    zone.addEventListener('drop', drop);
+                    zone.addEventListener('dragenter', handleDragEnter);
+                    zone.addEventListener('dragleave', handleDragLeave);
+                });
+                
+                // Initialize other features
+                createKeyboard();
+                setupMobileDragDrop();
+            }
+
+            // Check current panel from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPanel = urlParams.get('panel');
+
+            // Hide back button if on panel 7
+            if (currentPanel === '7') {
+                const prevButton = document.querySelector('.prev-button');
+                if (prevButton) {
+                    prevButton.style.display = 'none';
+                }
+            }
+        });
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            if (e.dataTransfer.types.includes('text/plain')) {
+                this.classList.add('dragover');
+            }
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        }
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html> 

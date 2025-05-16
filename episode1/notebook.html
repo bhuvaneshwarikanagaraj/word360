@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Detective Ferret's Notebook</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #E8E4D9;
+            font-family: 'Special Elite', cursive;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            position: relative;
+            width: 90%;
+            max-width: 450px;
+            height: 85vh;
+            margin: 0 auto;
+            overflow: visible;
+        }
+
+        .book {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            perspective: 1500px;
+        }
+
+        .cover {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #8B4513;
+            transform-origin: left center;
+            transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 0 5px 5px 0;
+            overflow: hidden;
+        }
+
+        .front {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #8B4513;
+            color: #F5E6D3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .book.open .cover {
+            transform: rotateY(-160deg);
+        }
+
+        .cover-image {
+            width: 40%;
+            max-width: 130px;
+            margin: 20px 0;
+            opacity: 0.9;
+        }
+
+        .cover-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            border: 2px solid #F5E6D3;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            opacity: 0.85;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin: 0 0 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            margin: 10px 0 30px;
+            font-style: italic;
+            opacity: 0.8;
+            letter-spacing: 1px;
+        }
+
+        .open-button {
+            padding: 10px 20px;
+            background-color: #F5E6D3;
+            color: #8B4513;
+            border: 2px solid #d4b483;
+            border-radius: 3px;
+            font-family: 'Special Elite', cursive;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            letter-spacing: 1px;
+        }
+
+        .open-button:hover {
+            background-color: #ECD9C6;
+            transform: scale(1.05);
+        }
+
+        .pages-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #F3EAD3;
+            transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1), 
+                        box-shadow 1.2s ease;
+            transform-origin: left center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            backface-visibility: hidden;
+            border-radius: 0 5px 5px 0;
+            display: flex;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .page.next {
+            transform: rotateY(0deg);
+            z-index: 7;
+        }
+
+        .page.active {
+            transform: rotateY(0deg);
+            z-index: 9;
+        }
+
+        .page.previous {
+            transform: rotateY(-160deg);
+            z-index: 6;
+            box-shadow: -5px 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .page.turning {
+            box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .content-area {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .bookmark-tabs {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 20px;
+            height: 100%;
+            z-index: 10;
+        }
+
+        .bookmark {
+            position: absolute;
+            right: 0;
+            width: 20px;
+            height: 80px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.2);
+            border-radius: 3px 0 0 3px;
+        }
+
+        .bookmark[data-section="section1"] {
+            top: 20%;
+            background-color: #FFA07A;
+        }
+
+        .bookmark[data-section="section2"] {
+            top: 40%;
+            background-color: #98FB98;
+        }
+
+        .bookmark[data-section="section3"] {
+            top: 60%;
+            background-color: #87CEFA;
+        }
+
+        .bookmark[data-section="section4"] {
+            top: 80%;
+            background-color: #DDA0DD;
+        }
+
+        .bookmark.active {
+            width: 25px;
+            box-shadow: -3px 3px 7px rgba(0, 0, 0, 0.3);
+        }
+
+        .lined-paper {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            background-color: #F3EAD3;
+            background-image: 
+                linear-gradient(#C3B091 1px, transparent 1px),
+                linear-gradient(90deg, #C3B091 1px, transparent 1px);
+            background-size: 100% 40px, 40px 40px;
+            padding: 0;
+            overflow-y: auto;
+            margin-right: 20px;
+        }
+
+        .lined-paper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 38px;
+            height: 100%;
+            width: 1px;
+            background-color: #C3B091;
+            z-index: 1;
+        }
+
+        .title-bar {
+            width: 100%;
+            padding: 10px;
+            background-color: #8B4513;
+            color: #F3EAD3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            border-bottom: 1px solid #6B3410;
+            font-size: 1.4rem;
+        }
+
+        .title-bar span:first-child {
+            text-decoration: none;
+        }
+
+        .text-container {
+            width: 100%;
+            height: 100%;
+            padding: 10px 0;
+            position: relative;
+            background-image: 
+                linear-gradient(#C3B091 1px, transparent 1px),
+                linear-gradient(90deg, #C3B091 1px, transparent 1px);
+            background-size: 100% 40px, 40px 40px;
+            overflow-y: auto;
+        }
+
+        .prompt-container {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            z-index: 3;
+            padding: 0 25px 0 50px;
+            box-sizing: border-box;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .prompt-text {
+            font-size: 1.3rem;
+            line-height: 40px;
+            color: #000000;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 50px 10px 50px;
+            margin-bottom: 40px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .prompt-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 120px; /* Match the textarea padding-top */
+            z-index: 2;
+            cursor: text;
+            pointer-events: auto; /* Allow clicks to focus on textarea */
+            background-color: transparent;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            border: none;
+            resize: none;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.2rem;
+            line-height: 40px;
+            color: #000000;
+            outline: none;
+            padding: 0 25px 0 50px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            tab-size: 4;
+            -moz-tab-size: 4;
+            -o-tab-size: 4;
+        }
+
+        #notes-1 {
+            padding-top: 160px;
+            min-height: 200px;
+        }
+
+        .image-boxes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px 40px;
+        }
+
+        .image-box {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            background-color: rgba(243, 234, 211, 0.5);
+            border: 2px dashed #8B4513;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .image-box.drag-over {
+            background-color: rgba(139, 69, 19, 0.1);
+            transform: scale(1.02);
+        }
+
+        .image-box.has-image {
+            border-style: solid;
+            background-color: #F3EAD3;
+        }
+
+        .placeholder-text {
+            color: #8B4513;
+            opacity: 0.7;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .page-controls {
+            padding: 10px;
+            background-color: #F3EAD3;
+            border-top: 1px solid #C3B091;
+            margin-right: 20px;
+        }
+
+        .page-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .prev-page, .next-page {
+            padding: 8px 15px;
+            background-color: #F3EAD3;
+            color: #8B4513;
+            border: 1px solid #8B4513;
+            border-radius: 2px;
+            font-family: 'Special Elite', cursive;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .save-button, .close-notebook, .submit-button {
+            padding: 8px 20px;
+            background-color: #F3EAD3;
+            color: #8B4513;
+            border: 1px solid #8B4513;
+            border-radius: 2px;
+            font-family: 'Special Elite', cursive;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            margin: 0 5px;
+            text-align: center;
+        }
+
+        .submit-button {
+            background-color: #8B4513;
+            color: #F3EAD3;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .submit-button:hover {
+            background-color: #A0522D;
+            transform: scale(1.05);
+        }
+
+        .section {
+            display: none;
+            height: 100%;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .container {
+                width: 95%;
+                height: 80vh;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .bookmark {
+                width: 15px;
+                height: 60px;
+            }
+            
+            .bookmark.active {
+                width: 20px;
+            }
+            
+            .image-boxes {
+                grid-gap: 10px;
+                padding: 10px 40px;
+            }
+            
+            .image-box {
+                height: 100px;
+            }
+            
+            .save-button, .close-notebook, .prev-page, .next-page {
+                padding: 7px 15px;
+                font-size: 0.8rem;
+            }
+            
+            textarea {
+                font-size: 0.85rem;
+            }
+        }
+
+        .book.closing .cover {
+            transform: rotateY(0deg);
+        }
+
+        /* For pages turning right to left (next button) */
+        .page.turning-forward {
+            animation: pageTurnForward 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+        }
+
+        /* For pages turning left to right (previous button) */
+        .page.turning-backward {
+            animation: pageTurnBackward 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+        }
+
+        @keyframes pageTurnForward {
+            0% {
+                transform: rotateY(0deg);
+                z-index: 9;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+            25% {
+                box-shadow: -5px 5px 20px rgba(0, 0, 0, 0.4);
+            }
+            50% {
+                transform: rotateY(-100deg);
+                z-index: 8;
+                box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.4);
+            }
+            100% {
+                transform: rotateY(-160deg);
+                z-index: 6;
+                box-shadow: -5px 5px 10px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        @keyframes pageTurnBackward {
+            0% {
+                transform: rotateY(-160deg);
+                z-index: 6;
+                box-shadow: -5px 5px 10px rgba(0, 0, 0, 0.2);
+            }
+            25% {
+                box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.4);
+            }
+            50% {
+                transform: rotateY(-100deg);
+                z-index: 8;
+                box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.4);
+            }
+            100% {
+                transform: rotateY(0deg);
+                z-index: 9;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        /* Ensure text visibility */
+        textarea {
+            font-size: 1.2rem !important;
+            line-height: 1.6 !important;
+            color: #000000 !important;
+            background-color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .prompt-text {
+            font-size: 1.3rem !important;
+            line-height: 1.6 !important;
+            color: #000000 !important;
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            padding: 10px !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="book">
+            <div class="cover">
+                <div class="front">
+                    <h1>Detective's Notebook</h1>
+                    <div class="cover-image">
+                        <img src="../assets/ferret.png" alt="Detective Ferret">
+                    </div>
+                    <p class="subtitle">JOURNAL</p>
+                    <button class="open-button" onclick="openBook()">Open Notebook</button>
+                </div>
+            </div>
+            
+            <div class="pages-container">
+                <div class="page active" data-page="1">
+                    <div class="content-area">
+                        <div class="bookmark-tabs">
+                            <button class="bookmark active" data-section="section1"></button>
+                            <button class="bookmark" data-section="section2"></button>
+                            <button class="bookmark" data-section="section3"></button>
+                            <button class="bookmark" data-section="section4"></button>
+                        </div>
+                        <div class="title-bar">
+                            <span id="section-title">Journal</span>
+                            <span class="page-number">1</span>
+                        </div>
+                        <div class="lined-paper">
+                            <div id="section1" class="section active">
+                                <div class="text-container">
+                                    <div class="prompt-container">
+                                        <div class="prompt-text">How was the call from Mr. Ginger? Write down your thoughts and feelings as felt by Ferret.</div>
+                                    </div>
+                                    <div class="prompt-overlay" onclick="focusAfterPrompt()"></div>
+                                    <textarea id="notes-1" placeholder="Continue your notes here..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div id="section2" class="section">
+                                <div class="image-boxes">
+                                    <div class="image-box" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                                        <div class="placeholder-text">Drop Evidence Here</div>
+                                    </div>
+                                    <div class="image-box" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                                        <div class="placeholder-text">Drop Evidence Here</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="section3" class="section">
+                                <div class="text-container">
+                                    <textarea id="tasks" placeholder="List your investigation tasks here..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div id="section4" class="section">
+                                <div class="text-container">
+                                    <textarea id="contacts" placeholder="Add important contact information here..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="page-controls">
+                            <div class="page-nav">
+                                <button class="prev-page" onclick="previousPage()" disabled>← Previous</button>
+                                <button class="next-page" onclick="nextPage()">Next →</button>
+                            </div>-
+                            <div class="button-container">
+                                <button class="save-button" onclick="saveNotes()">Save Notes</button>
+                                <button class="close-notebook" onclick="closeBook()">Close</button>
+                            </div>
+                            <button class="submit-button" onclick="submitNotebook()">Submit Notebook</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="page next" data-page="2">
+                    <div class="content-area">
+                        <div class="bookmark-tabs">
+                            <button class="bookmark active" data-section="section1"></button>
+                            <button class="bookmark" data-section="section2"></button>
+                            <button class="bookmark" data-section="section3"></button>
+                            <button class="bookmark" data-section="section4"></button>
+                        </div>
+                        <div class="title-bar">
+                            <span>Journal</span>
+                            <span class="page-number">2</span>
+                        </div>
+                        <div class="lined-paper">
+                            <div class="text-container">
+                                <textarea id="notes-2" placeholder="Continue your notes here..."></textarea>
+                            </div>
+                        </div>
+                        <div class="page-controls">
+                            <div class="page-nav">
+                                <button class="prev-page" onclick="previousPage()">← Previous</button>
+                                <button class="next-page" onclick="nextPage()">Next →</button>
+                            </div>
+                            <div class="button-container">
+                                <button class="save-button" onclick="saveNotes()">Save Notes</button>
+                                <button class="close-notebook" onclick="closeBook()">Close</button>
+                            </div>
+                            <button class="submit-button" onclick="submitNotebook()">Submit Notebook</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="page next" data-page="3">
+                    <div class="content-area">
+                        <div class="bookmark-tabs">
+                            <button class="bookmark active" data-section="section1"></button>
+                            <button class="bookmark" data-section="section2"></button>
+                            <button class="bookmark" data-section="section3"></button>
+                            <button class="bookmark" data-section="section4"></button>
+                        </div>
+                        <div class="title-bar">
+                            <span>Journal</span>
+                            <span class="page-number">3</span>
+                        </div>
+                        <div class="lined-paper">
+                            <div class="text-container">
+                                <textarea id="notes-3" placeholder="Continue your notes here..."></textarea>
+                            </div>
+                        </div>
+                        <div class="page-controls">
+                            <div class="page-nav">
+                                <button class="prev-page" onclick="previousPage()">← Previous</button>
+                                <button class="next-page" onclick="nextPage()" disabled>Next →</button>
+                            </div>
+                            <div class="button-container">
+                                <button class="save-button" onclick="saveNotes()">Save Notes</button>
+                                <button class="close-notebook" onclick="closeBook()">Close</button>
+                            </div>
+                            <button class="submit-button" onclick="submitNotebook()">Submit Notebook</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+    
+    <!-- LogRocket Script -->
+    <script src="https://cdn.logrocket.io/LogRocket.min.js"></script>
+    
+    <script>
+        let currentPage = 1;
+        let totalPages = 3;
+        let isAnimating = false;
+
+        function openBook() {
+            document.querySelector('.book').classList.add('open');
+            
+            // First load saved notes
+            loadSavedNotes();
+            
+            // Reset page positions
+            resetPages();
+            
+            // Ensure focus is in the right place when opening directly to page 1
+            if (currentPage === 1) {
+                // Small delay to ensure DOM is ready after animation
+                setTimeout(() => {
+                    const notes1 = document.getElementById('notes-1');
+                    if (notes1) {
+                        notes1.focus();
+                        notes1.selectionStart = notes1.value.length;
+                        notes1.selectionEnd = notes1.value.length;
+                    }
+                }, 1300);
+            }
+        }
+        
+        function resetPages() {
+            // Reset all pages to their initial state
+            const pages = document.querySelectorAll('.page');
+            pages.forEach((page, index) => {
+                // Remove all animation and position classes
+                page.classList.remove('previous', 'next', 'turning', 'turning-forward', 'turning-backward', 'active');
+                page.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
+                page.style.display = 'flex';
+                // Clear any inline transform styles
+                page.style.transform = '';
+                
+                if (index === 0) {
+                    // First page is active
+                    page.classList.add('active');
+                } else {
+                    // Other pages are next
+                    page.classList.add('next');
+                }
+            });
+            
+            // Reset current page to 1
+            currentPage = 1;
+            updatePageNavigation();
+        }
+
+        function closeBook() {
+            // Always save all notes before closing
+            saveAllNotes();
+            
+            if (document.querySelector('.book').classList.contains('closing')) return;
+            document.querySelector('.book').classList.add('closing');
+            setTimeout(() => {
+                document.querySelector('.book').classList.remove('open', 'closing');
+            }, 1200);
+        }
+
+        function saveAllNotes() {
+            // Explicitly collect all textarea values from all pages
+            const notes = {};
+            
+            // First page textareas
+            const notes1 = document.getElementById('notes-1');
+            const tasks = document.getElementById('tasks');
+            const contacts = document.getElementById('contacts');
+            
+            // Second and third page textareas
+            const notes2 = document.getElementById('notes-2');
+            const notes3 = document.getElementById('notes-3');
+            
+            // Save with consistent keys
+            if (notes1) notes.section1 = notes1.value;
+            if (tasks) notes.section3 = tasks.value;
+            if (contacts) notes.section4 = contacts.value;
+            if (notes2) notes['notes-2'] = notes2.value;
+            if (notes3) notes['notes-3'] = notes3.value;
+            
+            // Save to local storage
+            localStorage.setItem('notebookNotes', JSON.stringify(notes));
+            console.log("All notes saved with keys:", Object.keys(notes));
+            
+            // Update UI
+            const saveButtons = document.querySelectorAll('.save-button');
+            saveButtons.forEach(btn => {
+                btn.textContent = 'Saved!';
+                setTimeout(() => {
+                    btn.textContent = 'Save Notes';
+                }, 2000);
+            });
+        }
+
+        // Replace the old saveNotes function
+        function saveNotes() {
+            saveAllNotes();
+        }
+
+        function loadSavedNotes() {
+            const savedNotes = JSON.parse(localStorage.getItem('notebookNotes') || '{}');
+            console.log("Loading saved notes:", savedNotes);
+            
+            // First, ensure all textareas are initialized
+            const textareas = {
+                'notes-1': document.getElementById('notes-1'),
+                'tasks': document.getElementById('tasks'),
+                'contacts': document.getElementById('contacts'),
+                'notes-2': document.getElementById('notes-2'),
+                'notes-3': document.getElementById('notes-3')
+            };
+            
+            // Map stored keys to textarea IDs
+            const keyMapping = {
+                'section1': 'notes-1',
+                'section3': 'tasks',
+                'section4': 'contacts',
+                'notes-2': 'notes-2',
+                'notes-3': 'notes-3'
+            };
+            
+            // Load content into all textareas
+            Object.keys(savedNotes).forEach(key => {
+                const targetId = keyMapping[key] || key;
+                const element = textareas[targetId];
+                
+                if (element && savedNotes[key]) {
+                    console.log(`Restoring content to ${targetId}:`, savedNotes[key].substring(0, 20) + "...");
+                    element.value = savedNotes[key];
+                }
+            });
+            
+            // Specifically check section1/notes-1 to ensure it's loaded properly
+            if (savedNotes.section1 && textareas['notes-1']) {
+                textareas['notes-1'].value = savedNotes.section1;
+                console.log("Explicitly set notes-1 value to:", savedNotes.section1.substring(0, 20) + "...");
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dropZone = e.currentTarget;
+            dropZone.classList.remove('drag-over');
+            alert("Evidence collection features will be added soon!");
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleBookmarkClick(bookmark) {
+            const sectionId = bookmark.getAttribute('data-section');
+            const page = bookmark.closest('.page');
+            
+            // Find all sections in this page
+            const sections = page.querySelectorAll('.section');
+            
+            // Hide all sections
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section if it exists on this page
+            const targetSection = page.querySelector(`#${sectionId}`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Update section title
+            let sectionTitle = 'Journal';
+            switch(sectionId) {
+                case 'section1': sectionTitle = 'Journal'; break;
+                case 'section2': sectionTitle = 'Evidence Collection'; break;
+                case 'section3': sectionTitle = 'Task List'; break;
+                case 'section4': sectionTitle = 'Important Contacts'; break;
+            }
+            
+            page.querySelector('.title-bar span:first-child').textContent = sectionTitle;
+            
+            // Update active bookmark
+            document.querySelectorAll('.bookmark').forEach(b => {
+                b.classList.remove('active');
+            });
+            
+            document.querySelectorAll(`.bookmark[data-section="${sectionId}"]`).forEach(b => {
+                b.classList.add('active');
+            });
+            
+            // Save current section to localStorage
+            localStorage.setItem('currentSection', sectionId);
+        }
+
+        // Function to focus after the prompt when prompt area is clicked
+        function focusAfterPrompt() {
+            const textarea = document.getElementById('notes-1');
+            textarea.focus();
+            
+            // Check if localStorage has saved notes for section1
+            const savedNotes = JSON.parse(localStorage.getItem('notebookNotes') || '{}');
+            
+            // If section1 has notes in storage, restore them
+            if (savedNotes.section1) {
+                textarea.value = savedNotes.section1;
+            } else {
+                // If no saved notes, ensure there's a line break after the prompt
+                textarea.value = "\n";
+                // Position cursor after line break
+                textarea.selectionStart = 1;
+                textarea.selectionEnd = 1;
+            }
+        }
+
+        function countVisibleLines(textarea) {
+            const lineHeight = 40; // Match the CSS line-height
+            const textareaHeight = textarea.clientHeight;
+            const paddingTop = parseInt(window.getComputedStyle(textarea).paddingTop);
+            const availableHeight = textareaHeight - paddingTop;
+            return Math.floor(availableHeight / lineHeight);
+        }
+
+        function countTextLines(text) {
+            if (!text) return 0;
+            return text.split('\n').length;
+        }
+
+        function checkIfPageFull(textarea) {
+            // Get the current scroll position and the total scrollable height
+            const visibleLines = countVisibleLines(textarea);
+            const currentLines = countTextLines(textarea.value);
+            
+            console.log("Visible lines:", visibleLines, "Current lines:", currentLines);
+            
+            // If we're at the limit of visible lines, go to next page
+            if (currentLines >= visibleLines) {
+                nextPage();
+                return true;
+            }
+            return false;
+        }
+
+        function handleTextareaInput(event) {
+            const textarea = event.target;
+            
+            // Check if we should auto-page-turn for any page
+            // Notes from page 1 or 2 should auto-turn when full
+            const onFirstPage = currentPage === 1 && textarea.id === 'notes-1';
+            const onSecondPage = currentPage === 2 && textarea.id === 'notes-2';
+            const onLastPage = currentPage === totalPages;
+            
+            if (onFirstPage || onSecondPage || onLastPage) {
+                checkIfPageFull(textarea);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const bookmarks = document.querySelectorAll('.bookmark');
+            
+            bookmarks.forEach(bookmark => {
+                bookmark.addEventListener('click', function() {
+                    handleBookmarkClick(this);
+                });
+            });
+            
+            // Set up input handlers for all textareas
+            const textareas = document.querySelectorAll('textarea');
+            textareas.forEach(textarea => {
+                textarea.addEventListener('input', handleTextareaInput);
+                
+                // Also check for Enter key to detect new lines
+                textarea.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        // We need to wait for the new line to be added before checking
+                        setTimeout(() => {
+                            // Check auto-pagination for pages 1, 2 or last page
+                            const onFirstPage = currentPage === 1 && this.id === 'notes-1';
+                            const onSecondPage = currentPage === 2 && this.id === 'notes-2'; 
+                            const onLastPage = currentPage === totalPages;
+                            
+                            if ((onFirstPage || onSecondPage || onLastPage) && checkIfPageFull(this)) {
+                                e.preventDefault();
+                            }
+                        }, 0);
+                    }
+                });
+            });
+            
+            // Load last active section from localStorage
+            const lastSection = localStorage.getItem('currentSection');
+            if (lastSection) {
+                const bookmark = document.querySelector(`.bookmark[data-section="${lastSection}"]`);
+                if (bookmark) {
+                    bookmark.click();
+                }
+            }
+            
+            // Clear any duplicate text in the textarea that matches the prompt
+            const textarea = document.getElementById('notes-1');
+            const promptText = document.querySelector('.prompt-text').textContent;
+            if (textarea.value.includes(promptText)) {
+                textarea.value = textarea.value.replace(promptText, '').trim();
+            }
+            
+            // Make sure we start with page 1 when the page loads
+            resetPages();
+        });
+
+        function nextPage() {
+            if (currentPage < totalPages && !isAnimating) {
+                isAnimating = true;
+                console.log("Next page transition started");
+                
+                const pages = document.querySelectorAll('.page');
+                const currentPageElem = pages[currentPage - 1];
+                const nextPageElem = pages[currentPage];
+                
+                // Save text overflow to next page if applicable
+                const currentTextarea = currentPageElem.querySelector('textarea');
+                const nextTextarea = nextPageElem.querySelector('textarea');
+                
+                if (currentTextarea && nextTextarea) {
+                    // Check for content overflow based on current page
+                    if ((currentPage === 1 && currentTextarea.id === 'notes-1') || 
+                        (currentPage === 2 && currentTextarea.id === 'notes-2')) {
+                        const visibleLines = countVisibleLines(currentTextarea);
+                        const allLines = currentTextarea.value.split('\n');
+                        
+                        if (allLines.length > visibleLines) {
+                            // Take overflow lines and move them to the next page
+                            const visibleContent = allLines.slice(0, visibleLines).join('\n');
+                            const overflowContent = allLines.slice(visibleLines).join('\n');
+                            
+                            // Update current page with only visible content
+                            currentTextarea.value = visibleContent;
+                            
+                            // Append overflow to next page
+                            if (nextTextarea.value) {
+                                nextTextarea.value = overflowContent + '\n' + nextTextarea.value;
+                            } else {
+                                nextTextarea.value = overflowContent;
+                            }
+                        }
+                    }
+                    
+                    // Always save changes
+                    saveNotes();
+                }
+                
+                // Prepare next page to be visible but behind current page
+                nextPageElem.style.display = 'flex';
+                nextPageElem.classList.remove('previous');
+                nextPageElem.classList.add('next');
+                
+                // Remove any previous classes that might interfere
+                currentPageElem.classList.remove('turning', 'turning-backward');
+                
+                // Force reflow
+                void currentPageElem.offsetWidth;
+                
+                // Add the turning animation class
+                currentPageElem.classList.add('turning-forward');
+                currentPageElem.classList.remove('active');
+                
+                // After animation completes
+                setTimeout(() => {
+                    // Update page states
+                    currentPageElem.classList.remove('turning-forward');
+                    currentPageElem.classList.add('previous');
+                    nextPageElem.classList.remove('next');
+                    nextPageElem.classList.add('active');
+                    
+                    // Focus on the textarea of the next page
+                    if (nextTextarea) {
+                        nextTextarea.focus();
+                        nextTextarea.selectionStart = nextTextarea.value.length;
+                        nextTextarea.selectionEnd = nextTextarea.value.length;
+                    }
+                    
+                    currentPage++;
+                    updatePageNavigation();
+                    isAnimating = false;
+                    console.log("Next page transition complete");
+                }, 1200);
+            }
+        }
+
+        function previousPage() {
+            if (currentPage > 1 && !isAnimating) {
+                isAnimating = true;
+                console.log("Previous page transition started");
+                
+                // Save any changes before moving
+                saveNotes();
+                
+                const pages = document.querySelectorAll('.page');
+                const currentPageElem = pages[currentPage - 1];
+                const prevPageElem = pages[currentPage - 2];
+                
+                // Make sure both pages are visible
+                currentPageElem.style.display = 'flex';
+                prevPageElem.style.display = 'flex';
+                
+                // Temporarily move the previous page to starting position
+                prevPageElem.classList.remove('active', 'next');
+                prevPageElem.classList.add('previous');
+                
+                // Clear any conflicting animation classes
+                prevPageElem.classList.remove('turning-forward', 'turning-backward');
+                currentPageElem.classList.remove('turning-forward', 'turning-backward');
+                
+                // Force browser to recognize the state change
+                void prevPageElem.offsetWidth;
+                
+                // Apply the animation class
+                prevPageElem.classList.add('turning-backward');
+                
+                // Wait for animation to complete
+                setTimeout(() => {
+                    // Update page states
+                    prevPageElem.classList.remove('turning-backward', 'previous');
+                    prevPageElem.classList.add('active');
+                    currentPageElem.classList.remove('active');
+                    currentPageElem.classList.add('next');
+                    
+                    // Focus on the textarea of the previous page
+                    const prevTextarea = prevPageElem.querySelector('textarea');
+                    if (prevTextarea) {
+                        prevTextarea.focus();
+                        // Place cursor at end of text
+                        prevTextarea.selectionStart = prevTextarea.value.length;
+                        prevTextarea.selectionEnd = prevTextarea.value.length;
+                    }
+                    
+                    // Update page number and navigation
+                    currentPage--;
+                    updatePageNavigation();
+                    isAnimating = false;
+                    console.log("Previous page transition complete");
+                }, 1200);
+            }
+        }
+
+        function updatePageNavigation() {
+            const prevButtons = document.querySelectorAll('.prev-page');
+            const nextButtons = document.querySelectorAll('.next-page');
+            
+            prevButtons.forEach(btn => {
+                btn.disabled = currentPage === 1;
+            });
+            
+            nextButtons.forEach(btn => {
+                btn.disabled = currentPage === totalPages;
+            });
+        }
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDO7cACg6BNA8KiYvMhoxonDxCSKBTgwiE",
+            authDomain: "yevvolearn.firebaseapp.com",
+            projectId: "yevvolearn",
+            storageBucket: "yevvolearn.firebasestorage.app",
+            messagingSenderId: "114822749369",
+            appId: "1:114822749369:web:599d567dd36e3ce7870f68",
+            measurementId: "G-9V2E5C1M9V"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Get the database reference
+        const database = firebase.database();
+
+        // Function to get content from all pages
+        function getAllPageContent() {
+            const pages = document.querySelectorAll('.page');
+            let combinedContent = '';
+            
+            pages.forEach((page, index) => {
+                const content = page.querySelector('.content-area').innerText;
+                combinedContent += `Page ${index + 1}:\n${content}\n\n`;
+            });
+            
+            return combinedContent;
+        }
+
+        // LogRocket configuration
+        LogRocket.init('biy3cl/spelling', {
+            dom: {
+                inputSanitizer: true,
+                textSanitizer: true
+            },
+            network: {
+                requestSanitizer: (request) => {
+                    if (request.url.includes('firebase')) {
+                        request.body = '[REDACTED]';
+                    }
+                    return request;
+                },
+                responseSanitizer: (response) => {
+                    if (response.url.includes('firebase')) {
+                        response.body = '[REDACTED]';
+                    }
+                    return response;
+                }
+            },
+            recording: {
+                enabled: true,
+                recordAll: true,
+                recordCanvas: true,
+                recordIframes: true,
+                recordVideo: true,
+                recordAudio: true,
+                recordConsole: true,
+                recordNetwork: true,
+                recordPerformance: true,
+                recordUserActions: true,
+                recordErrors: true,
+                recordCrashes: true
+            }
+        });
+
+        // Track notebook page view
+        LogRocket.track('Notebook Page View', {
+            timestamp: new Date().toISOString()
+        });
+
+        // Track notebook interactions
+        document.addEventListener('input', (e) => {
+            if (e.target.tagName === 'TEXTAREA') {
+                LogRocket.track('Notebook Input', {
+                    page: currentPage,
+                    section: e.target.id,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+
+        // Track notebook submission
+        function submitNotebook() {
+            // Save notes before navigating
+            saveAllNotes();
+            
+            // Clear saved notes
+            localStorage.removeItem('notebookNotes');
+            
+            // Navigate to index.html
+            window.location.href = 'index.html';
+        }
+
+        // Track session end
+        window.addEventListener('beforeunload', () => {
+            LogRocket.track('Notebook Session End', {
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // Check auth state
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html>

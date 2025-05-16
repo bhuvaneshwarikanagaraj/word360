@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Image Panel Navigator</title>
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track episode page view
+        LogRocket.track('Episode 2 Page View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode2'
+        });
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #F5E6D3;
+            font-family: 'Special Elite', cursive;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            height: calc(100vh - 30px);
+            background-color: #F5E6D3;
+            border-radius: 28px;
+            overflow: hidden;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .panels-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out;
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .panel.active {
+            transform: translateX(0);
+            opacity: 1;
+            z-index: 5;
+        }
+
+        .panel.prev {
+            transform: translateX(-100%);
+            opacity: 0;
+            z-index: 0;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 85%;
+            position: relative;
+            background-color: #fff;
+            overflow: hidden;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            aspect-ratio: 9/16;
+            max-height: calc(100% - 120px);
+        }
+
+        .panel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+            transition: opacity 0.5s ease;
+        }
+
+        .text-box {
+            width: 100%;
+            background: #F5E6D3;
+            border: 2px solid #8B4513;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            margin-top: auto;
+            position: relative;
+            z-index: 2;
+            min-height: 60px;
+            transition: height 0.3s ease;
+        }
+
+        .text-content {
+            position: relative;
+            color: #333;
+            font-size: 1.1em;
+            line-height: 1.4;
+            white-space: pre-line;
+        }
+
+        .text-content.typing {
+            display: inline-block;
+            white-space: pre-line;
+            word-wrap: break-word;
+            width: 100%;
+        }
+
+        .nav-buttons {
+            position: absolute;
+            z-index: 100;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0 15px;
+            pointer-events: none;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .nav-buttons.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .nav-btn {
+            background: rgba(245, 230, 211, 0.8);
+            border: 2px solid #8B4513;
+            color: #8B4513;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            font-size: 18px;
+        }
+
+        .nav-btn:hover {
+            background: #F5E6D3;
+            transform: scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .lazy {
+            opacity: 0;
+            transition: opacity 0.3s ease-in;
+        }
+
+        .lazy.loaded {
+            opacity: 1;
+        }
+
+        @media (max-height: 700px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .image-container {
+                height: 80%;
+            }
+        }
+
+        @media (max-height: 500px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .image-container {
+                height: 75%;
+            }
+            
+            .text-content {
+                font-size: 0.9em;
+            }
+        }
+
+        .pointer-icon {
+            display: none;
+            position: absolute;
+            top: 60%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            font-size: 45px;
+            z-index: 5;
+            cursor: pointer;
+            animation: pointer-ripple 2s infinite;
+            text-shadow: 0 0 15px rgba(139, 69, 19, 0.7);
+            filter: drop-shadow(0 0 8px rgba(139, 69, 19, 0.6));
+        }
+
+        .pointer-icon::before {
+            content: '👆';
+        }
+
+        @keyframes pointer-ripple {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                filter: drop-shadow(0 0 8px rgba(139, 69, 19, 0.8));
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.3);
+                opacity: 0.9;
+                filter: drop-shadow(0 0 20px rgba(139, 69, 19, 0.8));
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                filter: drop-shadow(0 0 8px rgba(139, 69, 19, 0.8));
+            }
+        }
+
+        .ripple-circle {
+            display: none;
+            position: absolute;
+            top: 60%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: transparent;
+            border: 3px solid rgba(139, 69, 19, 0.8);
+            opacity: 0;
+            z-index: 4;
+            animation: ripple-wave 2s infinite;
+        }
+
+        @keyframes ripple-wave {
+            0% {
+                width: 60px;
+                height: 60px;
+                opacity: 0.9;
+                border-width: 3px;
+                box-shadow: 0 0 20px rgba(139, 69, 19, 0.4);
+            }
+            50% {
+                opacity: 0.5;
+                box-shadow: 0 0 30px rgba(139, 69, 19, 0.3);
+            }
+            100% {
+                width: 180px;
+                height: 180px;
+                opacity: 0;
+                border-width: 1px;
+                box-shadow: 0 0 40px rgba(139, 69, 19, 0.2);
+            }
+        }
+
+        .pointer-icon.completed {
+            filter: none;
+        }
+
+        .completed-badge {
+            position: absolute;
+            top: 55%;
+            left: 70%;
+            background: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+                font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 6;
+        }
+
+        .activity-completed-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(52, 211, 153, 0.1);
+            border-radius: 20px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .activity-completed-text {
+            font-family: 'Special Elite', cursive;
+            font-size: 24px;
+            font-weight: bold;
+            color: #34D399;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            transform: rotate(-15deg);
+        }
+
+        .transition-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .transition-text {
+            font-family: 'Special Elite', cursive;
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .image-container:hover .activity-completed-overlay {
+            opacity: 1;
+        }
+
+        .medal-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            z-index: 11;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panels-container" id="panels-container">
+            <!-- Panels will be generated by JavaScript -->
+        </div>
+        
+        <div class="nav-buttons" id="nav-buttons">
+            <button class="nav-btn" id="prev-btn" title="Previous Panel">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="nav-btn" id="next-btn" title="Next Panel">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const globalAudioConfig = {
+                backgrounds: [
+                    {
+                        id: 'bg-rain',
+                        src: './audio/positive.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-airport',
+                        src: './audio/p2.1.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-walk',
+                        src: './audio/p2.2.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-airport1',
+                        src: './audio/p2.8.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-airport3',
+                        src: './audio/airplane-67733.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-police',
+                        src: './audio/police.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-suspense',
+                        src: './audio/p4.9.mp3',
+                        loop: true,
+                        volume: 0.3
+                    }
+                ]
+            };
+
+            // Create panels
+            const panelsData = [
+                { 
+                    id: 1, 
+                    type: 'image', 
+                    image: './images/1.webp', 
+                    text: '[ Ferret gears up for his case. ]',
+                    audio: {
+                        backgrounds: ['bg-rain'],
+                        main: { src: './audio/1.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 2, 
+                    type: 'image', 
+                    image: './images/2.webp', 
+                    text: 'Ferret to himself : Alright, time to head out and tackle the day! \n Let us see what good things are waiting.\n[ Click the bag to zip it up.]',
+                    audio: {
+                        backgrounds: ['bg-rain'],
+                        main: { src: './audio/2.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 3, 
+                    type: 'image', 
+                    image: './images/3.webp', 
+                    text: "Ferret to himself : Hope I didn't forget my snacks. \n No turning back now... my city's right there.",
+                    audio: {
+                        backgrounds: ['bg-rain'],
+                        main: { src: './audio/3.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 4, 
+                    type: 'image', 
+                    image: './images/4.webp', 
+                    text: '[ Ferret joins the crowd of passengers arriving at the airport. ]',
+                    audio: {
+                        backgrounds: ['bg-rain'],
+                        main: { src: './audio/4.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 5, 
+                    type: 'image', 
+                    image: './images/5.webp', 
+                    text: '[ Announcement echoes through the airport as Ferret weaves through the crowd. ]',
+                    audio: {
+                        backgrounds: ['bg-airport'],
+                        main: { src: './audio/5.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 6, 
+                    type: 'image', 
+                    image: './images/6.webp', 
+                    text: '[ Tap the boarding pass to get Ferret ready to fly. ]',
+                    audio: {
+                        backgrounds: ['bg-airport'],
+                        main: { src: './audio/6.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 7, 
+                    type: 'image', 
+                    image: './images/7.webp', 
+                    text: '[ Its boarding time. Ferret makes his way to the plane. ]',
+                    audio: {
+                        backgrounds: ['bg-walk'],
+                        main: { src: './audio/7.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 8, 
+                    type: 'image', 
+                    image: './images/8.webp', 
+                    text: '[Ferret dashes over a man in the hurry.] \n Ferret: Out of my way, you giant! ',
+                    audio: {
+                        backgrounds: [''],
+                        main: { src: './audio/p2.3.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 9, 
+                    type: 'image', 
+                    image: './images/9.webp', 
+                    text: 'Man: What? Did that loud, fluffy ferret just talk?',
+                    audio: {
+                        backgrounds: ['bg-airport1'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 10, 
+                    type: 'image', 
+                    image: './images/10.webp', 
+                    text: '[ Breaking news alert ]',
+                    audio: {
+                        backgrounds: [''],
+                        main: { src: './audio/p2.6.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 11, 
+                    type: 'image', 
+                    image: './images/11.webp', 
+                    text: 'Ferret : Three have gone missing this month… \n And the airport is still crowded. People don\'t react unless it happens to them. \n [ Click on the board ]',
+                    audio: {
+                        backgrounds: ['bg-airport1'],
+                        main: { src: '', volume: 5.0 }
+                    }
+                },
+                { 
+                    id: 12, 
+                    type: 'image', 
+                    image: './images/12.webp', 
+                    text: '[ Boarding call ]',
+                    audio: {
+                        backgrounds: [''],
+                        main: { src: './audio/p3.2.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 13, 
+                    type: 'image', 
+                    image: './images/13.webp', 
+                    text: '[ Ferret to himself : Hope they serve peanuts on this flight! ]',
+                    audio: {
+                        backgrounds: ['./audio/p3.1.mp3'],
+                        main: { src: '.', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 14, 
+                    type: 'image', 
+                    image: './images/14.webp', 
+                    text: "Ferret to himself: Let's hope the turbulence stays outside - I've got enough storms in my head already.",
+                    audio: {
+                        backgrounds: ['bg-airport3'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 15, 
+                    type: 'image', 
+                    image: './images/15.webp', 
+                    text: 'Air Hostess: Welcome aboard, sir. Window seat for you!',
+                    audio: {
+                        backgrounds: ['bg-airport3'],
+                        main: { src: './audio/p3.3.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 16, 
+                    type: 'image', 
+                    image: './images/16.webp', 
+                    text: "Ferret: I'm a little scared, but this seems like a good place to work.",
+                    audio: {
+                        backgrounds: ['bg-airport3'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 17, 
+                    type: 'image', 
+                    image: './images/17.webp', 
+                    text: 'Air Hostess: Sir, would you like to have some food? ',
+                    audio: {
+                        backgrounds: ['bg-airport3'],
+                        main: { src: '/audio/p3.5.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 18, 
+                    type: 'image', 
+                    image: './images/18.webp', 
+                    text: 'Ferret: Oh! menu, yeah please.',
+                    audio: {
+                        backgrounds: ['bg-airport3'],
+                        main: { src: '.', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 19, 
+                    type: 'image', 
+                    image: './images/19.webp', 
+                    text: 'Air Hostess: Here is your food sir, if you need anything let me know.',
+                    audio: {
+                        backgrounds: ['bg-airport3'],
+                        main: { src: './audio/19.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 20, 
+                    type: 'image', 
+                    image: './images/20.webp', 
+                    text: 'Ferret: London. Right. This is it then. Either we sort this out here or it all goes sideways. No turning back now.',
+                    audio: {
+                        backgrounds: ['bg-airport3'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 21, 
+                    type: 'image', 
+                    image: './images/21.webp', 
+                    text: '[ Ferret sits nervously, his thoughts racing through the case. ]',
+                    audio: {
+                        backgrounds: ['bg-airport3'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 22, 
+                    type: 'image', 
+                    image: './images/22.webp', 
+                    text: 'Captain : Looks like, we will have some moderate weather ahead, approaching London. ',
+                    audio: {
+                        backgrounds: ['bg-airport3'],
+                        main: { src: './audio/p4.1.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 23, 
+                    type: 'image', 
+                    image: './images/23.webp', 
+                    text: 'Ferret to himself : Yeah! A new place to make the same old boring shadows. Wow, so exciting!',
+                    audio: {
+                        backgrounds: [],
+                        main: { src: './audio/p4.3.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 24, 
+                    type: 'image', 
+                    image: './images/24.webp', 
+                    text: '[Ferret hurries through the airport, the atmosphere charging with tension as a police siren blares in the distance. ]',
+                    audio: {
+                        backgrounds: ['bg-police'],
+                        main: { src: '.', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 25, 
+                    type: 'image', 
+                    image: './images/25.webp', 
+                    text: 'Policeman: YOU ARE UNDER ARREST!',
+                    audio: {
+                        backgrounds: ['bg-police'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 26, 
+                    type: 'image', 
+                    image: './images/26.webp', 
+                    text: 'Ferret: But why? You know what, I am a detective. I came here to solve a case.',
+                    audio: {
+                        backgrounds: ['bg-police'],
+                        main: { src: '.', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 27, 
+                    type: 'image', 
+                    image: './images/27.webp', 
+                    text: 'Policeman: No more explanations sir!',
+                    audio: {
+                        backgrounds: ['bg-police'],
+                        main: { src: './audio/27.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 28, 
+                    type: 'image', 
+                    image: './images/28.webp', 
+                    text: '[ Ferret gets locked up, his mind racing with questions and doubts. ]',
+                    audio: {
+                        backgrounds: [],
+                        main: { src: './audio/p4.8.mp3', volume: 1.0 }
+                    }
+                },
+                { 
+                    id: 29, 
+                    type: 'image', 
+                    image: './images/29.webp', 
+                    text: ' Ferret sits in the cell, his thoughts swirling.\n Who did this to me?',
+                    audio: {
+                        backgrounds: ['bg-suspense'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                }
+            ];
+            
+            // Elements
+            const panelsContainer = document.getElementById('panels-container');
+            const navButtons = document.getElementById('nav-buttons');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            // Current panel index
+            let currentPanelIndex = 0;
+            
+            // Add state management variables
+            let zipActivityCompleted = false;
+            let dragdropActivityCompleted = false;
+            let spellingsActivityCompleted = false;
+            const ZIP_ACTIVITY_KEY = 'zipActivityCompleted';
+            const DRAGDROP_ACTIVITY_KEY = 'dragdropActivityCompleted';
+            const SPELLINGS_ACTIVITY_KEY = 'spellingsActivityCompleted';
+            const FRESH_SESSION_KEY = 'freshSession';
+
+            // Check if this is a fresh session
+            if (!sessionStorage.getItem(FRESH_SESSION_KEY)) {
+                // Reset completion states on fresh session
+                localStorage.removeItem(ZIP_ACTIVITY_KEY);
+                localStorage.removeItem(DRAGDROP_ACTIVITY_KEY);
+                localStorage.removeItem(SPELLINGS_ACTIVITY_KEY);
+                sessionStorage.setItem(FRESH_SESSION_KEY, 'true');
+            }
+
+            // Load saved completion states
+            zipActivityCompleted = localStorage.getItem(ZIP_ACTIVITY_KEY) === 'true';
+            dragdropActivityCompleted = localStorage.getItem(DRAGDROP_ACTIVITY_KEY) === 'true';
+            spellingsActivityCompleted = localStorage.getItem(SPELLINGS_ACTIVITY_KEY) === 'true';
+
+            function createPanels() {
+                panelsData.forEach((panel, index) => {
+                    const panelElement = document.createElement('div');
+                    panelElement.className = `panel ${index === 0 ? 'active' : ''}`;
+                    panelElement.id = `panel-${panel.id}`;
+                    
+                    let panelContent = `
+                        <div class="image-container">
+                            <img class="panel-image lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                                 data-src="${panel.image}" 
+                                 alt="Panel ${panel.id}" 
+                                 loading="lazy">
+                            ${panel.id === 2 ? `
+                                <div class="pointer-icon ${zipActivityCompleted ? 'completed' : ''}"></div>
+                                <div class="ripple-circle"></div>
+                                <div class="ripple-circle" style="animation-delay: 0.5s"></div>
+                                <div class="ripple-circle" style="animation-delay: 1s"></div>
+                            ` : ''}
+                            ${panel.id === 6 ? `
+                                <div class="pointer-icon ${dragdropActivityCompleted ? 'completed' : ''}"></div>
+                                <div class="ripple-circle"></div>
+                                <div class="ripple-circle" style="animation-delay: 0.5s"></div>
+                                <div class="ripple-circle" style="animation-delay: 1s"></div>
+                            ` : ''}
+                            ${panel.id === 11 ? `
+                                <div class="pointer-icon ${spellingsActivityCompleted ? 'completed' : ''}" style="top: 30%; left: 50%;"></div>
+                                <div class="ripple-circle" style="top: 30%; left: 50%;"></div>
+                                <div class="ripple-circle" style="top: 30%; left: 50%; animation-delay: 0.5s"></div>
+                                <div class="ripple-circle" style="top: 30%; left: 50%; animation-delay: 1s"></div>
+                            ` : ''}
+                            ${panel.id === 18 ? `
+                                <div class="pointer-icon" style="top: 60%; left: 20%;"></div>
+                                <div class="ripple-circle" style="top: 60%; left: 20%;"></div>
+                                <div class="ripple-circle" style="top: 60%; left: 20%; animation-delay: 0.5s"></div>
+                                <div class="ripple-circle" style="top: 60%; left: 20%; animation-delay: 1s"></div>
+                            ` : ''}
+                            ${panel.id === 29 ? `
+                                <div class="activity-completed-overlay">
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="text-box">
+                            <div class="text-content" id="text-content-${panel.id}"></div>
+                        </div>
+                    `;
+                    
+                    panelElement.innerHTML = panelContent;
+                    panelsContainer.appendChild(panelElement);
+
+                    // Add click handlers for interactive panels
+                    if (panel.id === 2) {
+                        const pointerIcon = panelElement.querySelector('.pointer-icon');
+                        const rippleCircles = panelElement.querySelectorAll('.ripple-circle');
+                        
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.target.classList.contains('active')) {
+                                    pointerIcon.style.display = 'block';
+                                    rippleCircles.forEach(circle => circle.style.display = 'block');
+                                } else {
+                                    pointerIcon.style.display = 'none';
+                                    rippleCircles.forEach(circle => circle.style.display = 'none');
+                                }
+                            });
+                        });
+                        
+                        observer.observe(panelElement, { attributes: true });
+
+                        pointerIcon.addEventListener('click', () => {
+                            window.location.href = 'zip.html';
+                        });
+                    }
+
+                    if (panel.id === 6) {
+                        const pointerIcon = panelElement.querySelector('.pointer-icon');
+                        const rippleCircles = panelElement.querySelectorAll('.ripple-circle');
+                        
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.target.classList.contains('active')) {
+                                    pointerIcon.style.display = 'block';
+                                    rippleCircles.forEach(circle => circle.style.display = 'block');
+                                } else {
+                                    pointerIcon.style.display = 'none';
+                                    rippleCircles.forEach(circle => circle.style.display = 'none');
+                                }
+                            });
+                        });
+                        
+                        observer.observe(panelElement, { attributes: true });
+
+                        pointerIcon.addEventListener('click', () => {
+                            localStorage.setItem('returnToStoryFromDragdrop', 'true');
+                            window.location.href = 'dragdrop.html';
+                        });
+                    }
+
+                    if (panel.id === 11) {
+                        const pointerIcon = panelElement.querySelector('.pointer-icon');
+                        const rippleCircles = panelElement.querySelectorAll('.ripple-circle');
+                        
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.target.classList.contains('active')) {
+                                    pointerIcon.style.display = 'block';
+                                    rippleCircles.forEach(circle => circle.style.display = 'block');
+                                } else {
+                                    pointerIcon.style.display = 'none';
+                                    rippleCircles.forEach(circle => circle.style.display = 'none');
+                                }
+                            });
+                        });
+                        
+                        observer.observe(panelElement, { attributes: true });
+
+                        pointerIcon.addEventListener('click', () => {
+                            localStorage.setItem('returnToStoryFromSpellings', 'true');
+                            window.location.href = 'spellings.html';
+                        });
+                    }
+
+                    if (panel.id === 18) {
+                        const pointerIcon = panelElement.querySelector('.pointer-icon');
+                        const rippleCircles = panelElement.querySelectorAll('.ripple-circle');
+                        
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.target.classList.contains('active')) {
+                                    pointerIcon.style.display = 'block';
+                                    rippleCircles.forEach(circle => circle.style.display = 'block');
+                                } else {
+                                    pointerIcon.style.display = 'none';
+                                    rippleCircles.forEach(circle => circle.style.display = 'none');
+                                }
+                            });
+                        });
+                        
+                        observer.observe(panelElement, { attributes: true });
+
+                        pointerIcon.addEventListener('click', () => {
+                            // Navigate to menu.html
+                            window.location.href = './menu.html';
+                        });
+                    }
+
+                    if (panel.id === 29) {
+                        const imageContainer = panelElement.querySelector('.image-container');
+                        // Remove click handler and cursor style
+                        imageContainer.style.cursor = 'default';
+                    }
+                });
+
+                lazyLoadImages();
+            }
+            
+            // Initialize panels
+            createPanels();
+            
+            // Updated typeText function to handle HTML content
+            function typeText(element, text, duration) {
+                element.innerHTML = '';
+                element.classList.add('typing');
+                
+                if (window.typewriterInterval) {
+                    clearInterval(window.typewriterInterval);
+                }
+                
+                // Convert \n to <br> for proper line breaks
+                const formattedText = text.replace(/\n/g, '<br>');
+                
+                let i = 0;
+                const delayPerCharacter = duration / formattedText.length;
+                
+                window.typewriterInterval = setInterval(function() {
+                    if (i < formattedText.length) {
+                        if (formattedText.slice(i, i + 4) === '<br>') {
+                            element.innerHTML += '<br>';
+                            i += 4;
+                        } else {
+                            element.innerHTML += formattedText.charAt(i);
+                            i++;
+                        }
+                    } else {
+                        clearInterval(window.typewriterInterval);
+                        window.typewriterInterval = null;
+                        element.classList.remove('typing');
+                    }
+                }, delayPerCharacter);
+            }
+            
+            function stopTypewriter() {
+                if (window.typewriterInterval) {
+                    clearInterval(window.typewriterInterval);
+                    window.typewriterInterval = null;
+                }
+            }
+            
+            // Create audio elements dynamically
+            function createAudioElements() {
+                globalAudioConfig.backgrounds.forEach(bgConfig => {
+                    const backgroundAudio = document.createElement('audio');
+                    backgroundAudio.id = bgConfig.id;
+                    backgroundAudio.src = bgConfig.src;
+                    backgroundAudio.loop = bgConfig.loop;
+                    document.body.appendChild(backgroundAudio);
+                });
+
+                const audioSources = new Set();
+                panelsData.forEach(panel => {
+                    if (panel.audio?.main) {
+                        audioSources.add(panel.audio.main.src);
+                    }
+                });
+
+                audioSources.forEach(src => {
+                    const audioId = src.split('/').pop().replace('.mp3', '');
+                    const audioElement = document.createElement('audio');
+                    audioElement.id = audioId;
+                    audioElement.src = src;
+                    audioElement.preload = 'auto';
+                    document.body.appendChild(audioElement);
+                });
+            }
+
+            // Audio playback functions
+            function playAudio(audioConfig) {
+                const audioId = audioConfig.src.split('/').pop().replace('.mp3', '');
+                const audioElement = document.getElementById(audioId);
+                if (audioElement) {
+                    audioElement.currentTime = 0;
+                    audioElement.volume = audioConfig.volume;
+                    audioElement.play().catch(console.error);
+                }
+            }
+
+            // Handle background audio playback
+            function handleBackgroundAudio(selectedBackgrounds) {
+                globalAudioConfig.backgrounds.forEach(bgConfig => {
+                    const bgAudio = document.getElementById(bgConfig.id);
+                    if (bgAudio) {
+                        if (selectedBackgrounds.includes(bgConfig.id)) {
+                            if (bgAudio.paused) {
+                                bgAudio.volume = bgConfig.volume;
+                                bgAudio.play().catch(console.error);
+                            }
+                        } else {
+                            bgAudio.pause();
+                            bgAudio.currentTime = 0;
+                        }
+                    }
+                });
+            }
+
+            // Stop all audio except background
+            function stopAllAudio(stopBackground = false) {
+                document.querySelectorAll('audio').forEach(audio => {
+                    const isBackground = globalAudioConfig.backgrounds.some(bg => bg.id === audio.id);
+                    if (!isBackground || stopBackground) {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }
+                });
+            }
+
+            // Handle audio for current panel
+            function handleAudio(index) {
+                const currentPanel = panelsData[index];
+                const textElement = document.getElementById(`text-content-${currentPanel.id}`);
+                
+                stopAllAudio(false);
+                stopTypewriter();
+                
+                if (textElement && currentPanel.text) {
+                    const typingDuration = 2000 + (currentPanel.text.length * 50);
+                    typeText(textElement, currentPanel.text, typingDuration);
+                }
+                
+                if (!currentPanel.audio) return;
+
+                const selectedBackgrounds = currentPanel.audio.backgrounds || [];
+                handleBackgroundAudio(selectedBackgrounds);
+
+                if (currentPanel.audio.main) {
+                    playAudio(currentPanel.audio.main);
+                }
+            }
+            
+            // Panel navigation
+            function showPanel(index) {
+                if (index < 0) index = 0;
+                if (index >= panelsData.length) {
+                    // If we've reached the end, navigate to diary2.html
+                    window.location.href = 'diary2.html';
+                    return;
+                }
+
+                // Check if trying to navigate to panel 3 from panel 2
+                if (index === 2) {
+                    const zipCompleted = localStorage.getItem('ZIP_ACTIVITY_KEY') === 'true';
+                    if (!zipCompleted) {
+                        return;
+                    }
+                }
+                
+                const panels = document.querySelectorAll('.panel');
+                panels.forEach((panel, i) => {
+                    panel.classList.remove('active', 'prev');
+                    if (i < index) {
+                        panel.classList.add('prev');
+                    } else if (i === index) {
+                        panel.classList.add('active');
+                    }
+                });
+
+                currentPanelIndex = index;
+                handleAudio(index);
+                
+                navButtons.classList.add('visible');
+                prevBtn.disabled = currentPanelIndex === 0;
+                nextBtn.disabled = false; // Enable next button by default
+                nextBtn.style.opacity = '1';
+                nextBtn.style.cursor = 'pointer';
+            }
+            
+            // Navigation event listeners
+            nextBtn.addEventListener('click', () => {
+                // Check if we're on panel 2 and zip activity is completed
+                if (currentPanelIndex === 1) {
+                    const zipCompleted = localStorage.getItem('ZIP_ACTIVITY_KEY') === 'true';
+                    if (!zipCompleted) return;
+                }
+                
+                // Check if we're on panel 6 and dragdrop activity is completed
+                if (currentPanelIndex === 5) {
+                    const dragdropCompleted = localStorage.getItem('DRAGDROP_ACTIVITY_KEY') === 'true';
+                    if (!dragdropCompleted) return;
+                }
+                
+                // Check other activity completions
+                if (currentPanelIndex === 10 && !spellingsActivityCompleted) return;
+                if (currentPanelIndex === 17 && !localStorage.getItem('MENU_ACTIVITY_COMPLETED')) return;
+                
+                // Check if we're on the last panel
+                if (currentPanelIndex === panelsData.length - 1) {
+                    const currentPanel = document.querySelector('.panel.active');
+                    const imageContainer = currentPanel.querySelector('.image-container');
+                    
+                    // Create transition overlay
+                    const overlay = document.createElement('div');
+                    overlay.className = 'transition-overlay';
+                    overlay.innerHTML = '<div class="transition-text">To be continued</div>';
+                    imageContainer.appendChild(overlay);
+                    
+                    // Show overlay
+                    setTimeout(() => {
+                        overlay.style.opacity = '1';
+                    }, 100);
+                    
+                    // Navigate after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'diary2.html';
+                    }, 2000);
+                    return;
+                }
+                
+                // Navigate to next panel
+                showPanel(currentPanelIndex + 1);
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                if (currentPanelIndex > 0) {
+                    showPanel(currentPanelIndex - 1);
+                }
+            });
+            
+            // Touch navigation
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+            
+            document.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                if (currentPanelIndex === 1) {
+                    const zipCompleted = localStorage.getItem('ZIP_ACTIVITY_KEY') === 'true';
+                    if (!zipCompleted) return;
+                }
+                if (currentPanelIndex === 5 && !dragdropActivityCompleted) return;
+                if (currentPanelIndex === 10 && !spellingsActivityCompleted) return;
+                
+                if (touchEndX + swipeThreshold < touchStartX && currentPanelIndex < panelsData.length - 1) {
+                    showPanel(currentPanelIndex + 1);
+                } else if (touchEndX > touchStartX + swipeThreshold && currentPanelIndex > 0) {
+                    showPanel(currentPanelIndex - 1);
+                }
+            }
+
+            // Initialize background audio event listeners
+            function initializeBackgroundAudio() {
+                globalAudioConfig.backgrounds.forEach(bgConfig => {
+                    const bgAudio = document.getElementById(bgConfig.id);
+                    if (bgAudio) {
+                        bgAudio.addEventListener('ended', () => {
+                            bgAudio.currentTime = 0;
+                            bgAudio.play().catch(console.error);
+                        });
+                    }
+                });
+            }
+
+            function lazyLoadImages() {
+                const images = document.querySelectorAll('.panel-image');
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src;
+                            img.classList.remove('lazy');
+                            observer.unobserve(img);
+                        }
+                    });
+                });
+
+                images.forEach(img => {
+                    imageObserver.observe(img);
+                });
+            }
+
+            // Add message listener for zip activity completion
+            window.addEventListener('message', function(event) {
+                if (event.data === 'zip_success') {
+                    zipActivityCompleted = true;
+                    localStorage.setItem(ZIP_ACTIVITY_KEY, 'true');
+                    showPanel(2); // This will show panel 3 (0-based index)
+                }
+            });
+
+            // Add message listener for dragdrop activity completion
+            window.addEventListener('message', function(event) {
+                if (event.data === 'boarding_pass_success') {
+                    dragdropActivityCompleted = true;
+                    localStorage.setItem(DRAGDROP_ACTIVITY_KEY, 'true');
+                    showPanel(6); // Show panel 7 (zero-based index)
+                }
+            });
+
+            // Add message listener for spellings activity completion
+            window.addEventListener('message', function(event) {
+                if (event.data === 'spellings_success') {
+                    spellingsActivityCompleted = true;
+                    localStorage.setItem(SPELLINGS_ACTIVITY_KEY, 'true');
+                    showPanel(11); // Stay on panel 11 after completion
+                }
+            });
+
+            // Initialize audio and start first panel
+            createAudioElements();
+            initializeBackgroundAudio();
+            handleBackgroundAudio([]);
+
+            // Add function to get panel from URL
+            function getTargetPanelFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const panel = parseInt(urlParams.get('panel'));
+                return !isNaN(panel) ? panel - 1 : null; // Convert to 0-based index
+            }
+
+            // Modify DOMContentLoaded event handler
+            window.addEventListener('DOMContentLoaded', () => {
+                // Check if coming from dragdrop completion first
+                if (localStorage.getItem('navigateToPanel7') === 'true') {
+                    localStorage.removeItem('navigateToPanel7');
+                    localStorage.removeItem('dragdrop_completed');
+                    dragdropActivityCompleted = true;
+                    localStorage.setItem(DRAGDROP_ACTIVITY_KEY, 'true');
+                    showPanel(6); // Show panel 7 (zero-based index 6 for panel 7)
+                    return;
+                }
+
+                // Check URL parameters
+                const targetPanel = getTargetPanelFromURL();
+                if (targetPanel !== null && targetPanel >= 0 && targetPanel < panelsData.length) {
+                    // Only allow navigation to panel 7 if dragdrop is completed
+                    if (targetPanel === 6 && !dragdropActivityCompleted) {
+                        showPanel(5); // Stay on panel 6
+                    } else {
+                        showPanel(targetPanel);
+                    }
+                    return;
+                }
+
+                // Check localStorage flags
+                if (localStorage.getItem('targetPanel')) {
+                    const panel = parseInt(localStorage.getItem('targetPanel')) - 1;
+                    localStorage.removeItem('targetPanel');
+                    if (panel >= 0 && panel < panelsData.length) {
+                        showPanel(panel);
+                        return;
+                    }
+                }
+
+                // Check activity return flags
+                if (localStorage.getItem('returnToStoryFromDragdrop') === 'true') {
+                    localStorage.removeItem('returnToStoryFromDragdrop');
+                    dragdropActivityCompleted = true;
+                    localStorage.setItem(DRAGDROP_ACTIVITY_KEY, 'true');
+                    showPanel(6); // Show panel 7 (zero-based index 6 for panel 7)
+                } else if (localStorage.getItem('returnToPanelFive') === 'true') {
+                    localStorage.removeItem('returnToPanelFive');
+                    showPanel(4);
+                } else {
+                    // Default to first panel if no specific navigation is needed
+                    showPanel(0);
+                }
+            });
+
+            // Add direct navigation function that can be called from other files
+            window.navigateToPanel = function(panelNumber) {
+                const index = panelNumber - 1; // Convert to 0-based index
+                if (index >= 0 && index < panelsData.length) {
+                    showPanel(index);
+                }
+            };
+        });
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html> 

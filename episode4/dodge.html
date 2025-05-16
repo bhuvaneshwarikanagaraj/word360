@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Escape Game</title>
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track activity page view
+        LogRocket.track('Car Escape Game View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode4_dodge'
+        });
+    </script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            touch-action: manipulation;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background-color: #87CEEB;
+            overflow: hidden;
+        }
+        #road {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50px;
+            background-color: #555;
+        }
+        #road-line {
+            position: absolute;
+            bottom: 25px;
+            height: 5px;
+            width: 100%;
+            background: repeating-linear-gradient(to right, white, white 30px, transparent 30px, transparent 60px);
+        }
+        #car {
+            position: absolute;
+            width: 60px;
+            height: 30px;
+            bottom: 50px;
+            left: 50px;
+            background-color: red;
+            border-radius: 5px;
+            z-index: 10;
+        }
+        .wheel {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: black;
+            border-radius: 50%;
+        }
+        #wheel1 {
+            bottom: -7px;
+            left: 10px;
+        }
+        #wheel2 {
+            bottom: -7px;
+            right: 10px;
+        }
+        .obstacle {
+            position: absolute;
+            width: 20px;
+            height: 40px;
+            bottom: 50px;
+            background-color: orange;
+            border-radius: 3px;
+        }
+        #jail {
+            position: absolute;
+            width: 100px;
+            height: 120px;
+            bottom: 50px;
+            left: -150px;
+            background-color: #666;
+            border: 3px solid #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .jail-window {
+            width: 15px;
+            height: 20px;
+            background-color: #333;
+            margin: 5px;
+        }
+        .jail-bars {
+            display: flex;
+            justify-content: space-around;
+            width: 80%;
+            margin-top: 10px;
+        }
+        .jail-bar {
+            width: 5px;
+            height: 40px;
+            background-color: #333;
+        }
+        .jail-label {
+            font-size: 12px;
+            color: white;
+            margin-bottom: 10px;
+            position: absolute;
+            top: 5px;
+            width: 100%;
+            text-align: center;
+        }
+        #diamond-tower {
+            position: absolute;
+            width: 150px;
+            height: 250px;
+            bottom: 50px;
+            right: -200px;
+            background: linear-gradient(to right, #6495ED, #4169E1);
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+        }
+        .tower-floor {
+            height: 30px;
+            width: 100%;
+            border-bottom: 2px solid #fff;
+            display: flex;
+            justify-content: space-around;
+        }
+        .tower-window {
+            width: 15px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.5);
+            margin-top: 5px;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 18px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 100;
+        }
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .game-btn {
+            padding: 12px 24px;
+            font-size: 18px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #jump-btn {
+            background-color: #4CAF50;
+            min-width: 100px;
+            font-size: 24px;
+        }
+        #start-btn {
+            background-color: #2196F3;
+        }
+        #next-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            display: none;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 120px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        #next-btn:hover {
+            background-color: #45a049;
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+        #close-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #f44336;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            line-height: 30px;
+            text-align: center;
+            cursor: pointer;
+            z-index: 100;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        #victory {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(76, 175, 80, 0.95);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        #victory h2 {
+            font-size: 28px;
+            margin: 0 0 20px 0;
+            color: white;
+        }
+        #victory p {
+            font-size: 18px;
+            margin: 10px 0;
+            color: white;
+        }
+        #next-level-btn {
+            background-color: white;
+            color: #4CAF50;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+        #next-level-btn:hover {
+            transform: scale(1.05);
+            background-color: #f0f0f0;
+        }
+        #retry-message {
+            color: #FF5722;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .completion-message {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.95);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 1001;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
+        }
+        
+        /* Mobile specific styles */
+        @media (max-width: 768px) {
+            #game-container {
+                height: 85vh;
+                max-height: 600px;
+            }
+            #controls {
+                bottom: 30px;
+            }
+            .game-btn {
+                padding: 15px 25px;
+                font-size: 20px;
+                min-width: 100px;
+                color: black;
+            }
+            #jump-btn {
+                min-width: 150px;
+                min-height: 60px;
+                font-size: 24px;
+                padding: 20px 30px;
+                border-radius: 10px;
+            }
+            #score {
+                font-size: 16px;
+                padding: 8px 16px;
+            }
+            #close-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                line-height: 40px;
+                top: 20px;
+                left: 20px;
+            }
+            #game-over, #victory {
+                width: 85%;
+                padding: 25px;
+            }
+            #game-over h2, #victory h2 {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+            #game-over p, #victory p {
+                font-size: 16px;
+            }
+            #next-level-btn {
+                padding: 12px 30px;
+                font-size: 18px;
+                min-width: 130px;
+            }
+            .completion-message {
+                font-size: 14px;
+                padding: 10px 20px;
+                width: auto;
+                max-width: 90%;
+            }
+        }
+
+        /* Additional styles for very small screens */
+        @media (max-width: 380px) {
+            #game-container {
+                height: 80vh;
+            }
+            .game-btn {
+                padding: 12px 20px;
+                font-size: 18px;
+            }
+            #jump-btn {
+                min-width: 130px;
+                min-height: 50px;
+                font-size: 22px;
+            }
+            #score {
+                font-size: 14px;
+            }
+            #next-level-btn {
+                padding: 10px 25px;
+                font-size: 16px;
+            }
+            .completion-message {
+                font-size: 12px;
+                padding: 8px 16px;
+            }
+        }
+
+        /* Landscape mode optimization */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #game-container {
+                height: 80vh;
+            }
+            #controls {
+                bottom: 10px;
+            }
+            .game-btn {
+                padding: 10px 20px;
+            }
+            #jump-btn {
+                min-height: 45px;
+            }
+            #victory {
+                padding: 15px;
+            }
+            #victory h2 {
+                font-size: 20px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="score">Hurdles: 0/5</div>
+        <div id="road"></div>
+        <div id="road-line"></div>
+        <div id="close-btn">X</div>
+        <div class="completion-message" id="completionMessage">Task Completed</div>
+        
+        <div id="jail">
+            <div class="jail-label">JAIL</div>
+            <div class="jail-bars">
+                <div class="jail-bar"></div>
+                <div class="jail-bar"></div>
+                <div class="jail-bar"></div>
+                <div class="jail-bar"></div>
+            </div>
+            <div style="display: flex;">
+                <div class="jail-window"></div>
+                <div class="jail-window"></div>
+            </div>
+        </div>
+        
+        <div id="diamond-tower">
+            <div class="tower-floor">
+                <div class="tower-window"></div>
+                <div class="tower-window"></div>
+                <div class="tower-window"></div>
+            </div>
+            <div class="tower-floor">
+                <div class="tower-window"></div>
+                <div class="tower-window"></div>
+                <div class="tower-window"></div>
+            </div>
+            <div class="tower-floor">
+                <div class="tower-window"></div>
+                <div class="tower-window"></div>
+                <div class="tower-window"></div>
+            </div>
+            <div class="tower-floor">
+                <div class="tower-window"></div>
+                <div class="tower-window"></div>
+                <div class="tower-window"></div>
+            </div>
+            <div class="tower-floor">
+                <div class="tower-window"></div>
+                <div class="tower-window"></div>
+                <div class="tower-window"></div>
+            </div>
+            <div style="font-size: 14px; color: white; text-align: center; margin-top: 10px;">DIAMOND TOWER</div>
+        </div>
+        
+        <div id="car">
+            <div class="wheel" id="wheel1"></div>
+            <div class="wheel" id="wheel2"></div>
+        </div>
+        
+        <div id="game-over">
+            <h2>Game Over!</h2>
+            <p>You crashed into an obstacle.</p>
+            <p id="retry-message">Please try again! You can do it!</p>
+            <button id="restart-btn" class="game-btn" onclick="restartGame()">Try Again</button>
+        </div>
+        
+        <div id="victory">
+            <h2>Victory!</h2>
+            <p>You reached the Diamond Tower!</p>
+            <button id="next-level-btn" class="game-btn" onclick="goToNextLevel()">Next</button>
+        </div>
+    </div>
+    
+    <div id="controls">
+        <button id="start-btn" class="game-btn" onclick="startGame()">Start Game</button>
+        <button id="jump-btn" class="game-btn" onclick="jump()">Jump</button>
+        <button id="next-btn" class="game-btn" onclick="goToNextLevel()">Next</button>
+    </div>
+
+    <script>
+        // Game variables
+        let isGameRunning = false;
+        let obstacles = [];
+        let obstacleCount = 0;
+        let roadSpeed = 5;
+        let jumpHeight = 100;
+        let isJumping = false;
+        let gravity = 5;
+        let carPosition = 50;
+        let gameInterval;
+        let createObstaclesInterval;
+        let hurdlesPassed = 0;
+        let reachedDestination = false;
+        let carMoving = true;
+        let isActivityCompleted = false;
+        
+        // DOM elements
+        const car = document.getElementById('car');
+        const road = document.getElementById('road');
+        const gameContainer = document.getElementById('game-container');
+        const jail = document.getElementById('jail');
+        const diamondTower = document.getElementById('diamond-tower');
+        const scoreDisplay = document.getElementById('score');
+        const gameOverScreen = document.getElementById('game-over');
+        const victoryScreen = document.getElementById('victory');
+        const jumpBtn = document.getElementById('jump-btn');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const closeBtn = document.getElementById('close-btn');
+        
+        // Set initial positions
+        jail.style.left = '-150px';
+        diamondTower.style.right = '-200px';
+        jumpBtn.disabled = true;
+        jumpBtn.style.display = 'none';
+        
+        // Check if the completion message should be displayed
+        const completionMessage = document.getElementById('completionMessage');
+        completionMessage.style.display = 'none';
+        
+        // Event listeners
+        closeBtn.addEventListener('click', closeGame);
+        
+        // Close game function
+        function closeGame() {
+            isGameRunning = false;
+            clearInterval(gameInterval);
+            clearInterval(createObstaclesInterval);
+            resetGameState();
+            // Set return flag and target panel for returning to panel 3
+            localStorage.setItem('returnToCurrentPanel', 'true');
+            localStorage.setItem('targetPanel', '3');
+            // Navigate back to episode4.html
+            window.location.href = 'episode4.html';
+        }
+        
+        // Reset game state
+        function resetGameState() {
+            // Reset all elements to initial state
+            obstacles.forEach(obstacle => obstacle.remove());
+            obstacles = [];
+            
+            // Hide screens
+            gameOverScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            
+            // Reset buttons
+            startBtn.style.display = 'block';
+            startBtn.textContent = 'Start Game';
+            jumpBtn.style.display = 'none';
+            jumpBtn.disabled = true;
+            nextBtn.style.display = 'none';
+            
+            // Reset positions
+            car.style.bottom = '50px';
+            car.style.left = '50px';
+            jail.style.left = '-150px';
+            diamondTower.style.right = '-200px';
+            
+            // Reset variables
+            hurdlesPassed = 0;
+            obstacleCount = 0;
+            reachedDestination = false;
+            carMoving = true;
+            isJumping = false;
+            updateScore();
+        }
+        
+        // Game initialization
+        function startGame() {
+            if (isGameRunning) return;
+            
+            // Reset game state
+            isGameRunning = true;
+            obstacles = [];
+            obstacleCount = 0;
+            hurdlesPassed = 0;
+            reachedDestination = false;
+            carMoving = true;
+            isJumping = false;
+            updateScore();
+            
+            // Clear existing obstacles
+            document.querySelectorAll('.obstacle').forEach(element => {
+                element.remove();
+            });
+            
+            // Reset positions
+            car.style.bottom = '50px';
+            car.style.left = '50px';
+            gameOverScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            diamondTower.style.right = '-200px'; // Reset diamond tower position
+            
+            // Show jail and start animation
+            jail.style.left = '50px';
+            
+            // Start game loop after a delay to show jail
+            setTimeout(() => {
+                jail.style.left = '-150px';
+                gameInterval = setInterval(updateGame, 20);
+                
+                // Create obstacles at random intervals
+                createObstaclesInterval = setInterval(createObstacle, 2500); // Slightly slower obstacles for easier gameplay
+            }, 1000);
+            
+            // Update button states
+            startBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            jumpBtn.style.display = 'block';
+            jumpBtn.disabled = false;
+        }
+        
+        // Create an obstacle
+        function createObstacle() {
+            if (!isGameRunning || obstacleCount >= 5) return;
+            
+            const obstacle = document.createElement('div');
+            obstacle.className = 'obstacle';
+            obstacle.style.left = gameContainer.offsetWidth + 'px';
+            
+            // Make obstacles narrower and shorter for easier gameplay
+            obstacle.style.width = '15px';
+            obstacle.style.height = '35px';
+            
+            gameContainer.appendChild(obstacle);
+            obstacles.push(obstacle);
+            
+            obstacleCount++;
+        }
+        
+        // Handle jumping
+        function jump() {
+            if (!isGameRunning || isJumping) return;
+            
+            isJumping = true;
+            let jumpCount = 0;
+            
+            // Jump animation - making jump higher and longer for easier gameplay
+            const jumpInterval = setInterval(() => {
+                if (!isGameRunning) {
+                    clearInterval(jumpInterval);
+                    return;
+                }
+                
+                const currentBottom = parseInt(car.style.bottom || '50');
+                
+                if (jumpCount < 18) {
+                    // Going up - higher jump
+                    car.style.bottom = (currentBottom + 7) + 'px';
+                } else if (jumpCount >= 18 && jumpCount < 36) {
+                    // Going down
+                    car.style.bottom = (currentBottom - 7) + 'px';
+                } else {
+                    // End jump
+                    clearInterval(jumpInterval);
+                    isJumping = false;
+                    car.style.bottom = '50px';
+                }
+                
+                jumpCount++;
+            }, 20);
+        }
+        
+        // Update game state
+        function updateGame() {
+            if (!isGameRunning) return;
+            
+            // Move obstacles
+            obstacles.forEach((obstacle, index) => {
+                const obstacleLeft = parseInt(obstacle.style.left);
+                obstacle.style.left = (obstacleLeft - roadSpeed) + 'px';
+                
+                // Check for collisions - make collision detection a bit more forgiving for grade 7
+                if (checkCollision(car, obstacle, 5)) { // Added 5px buffer
+                    endGame(false);
+                }
+                
+                // Check if obstacle has been passed
+                if (obstacleLeft < carPosition && !obstacle.passed) {
+                    obstacle.passed = true;
+                    hurdlesPassed++;
+                    updateScore();
+                    
+                    // Check for victory
+                    if (hurdlesPassed >= 5) {
+                        showDiamondTower();
+                    }
+                }
+                
+                // Remove obstacle if it's off screen
+                if (obstacleLeft < -50) {
+                    obstacle.remove();
+                    obstacles.splice(index, 1);
+                }
+            });
+            
+            // Animate road line (moving effect)
+            const roadLine = document.getElementById('road-line');
+            roadLine.style.backgroundPosition = (parseInt(roadLine.style.backgroundPosition || '0') - roadSpeed) + 'px';
+            
+            // Check if Diamond Tower is in reach and player has passed all hurdles
+            if (hurdlesPassed >= 5 && reachedDestination && !victoryScreen.style.display === 'block') {
+                // Get current positions
+                const carRect = car.getBoundingClientRect();
+                const towerRect = diamondTower.getBoundingClientRect();
+                
+                // If car is close to the tower, end the game with victory
+                if (carRect.right > towerRect.left - 20) {
+                    endGame(true);
+                }
+            }
+        }
+        
+        // Check for collision between two elements with buffer for easier gameplay
+        function checkCollision(element1, element2, buffer = 0) {
+            const rect1 = element1.getBoundingClientRect();
+            const rect2 = element2.getBoundingClientRect();
+            
+            // Make collision detection more forgiving
+            return !(rect1.right - buffer < rect2.left + buffer || 
+                   rect1.left + buffer > rect2.right - buffer || 
+                   rect1.bottom - buffer < rect2.top + buffer || 
+                   rect1.top + buffer > rect2.bottom - buffer);
+        }
+        
+        // Show diamond tower when all hurdles are passed
+        function showDiamondTower() {
+            if (reachedDestination) return;
+            reachedDestination = true;
+            
+            // Stop creating new obstacles
+            clearInterval(createObstaclesInterval);
+            
+            // Position diamond tower right next to the car
+            const carRight = car.getBoundingClientRect().right;
+            const containerRight = gameContainer.getBoundingClientRect().right;
+            
+            // Set the Diamond Tower to appear very close to the car
+            diamondTower.style.right = (containerRight - carRight - 70) + 'px';
+            
+            // Immediately end the game with victory after a short delay
+            setTimeout(() => {
+                endGame(true);
+            }, 500);
+        }
+        
+        // Update score display
+        function updateScore() {
+            scoreDisplay.textContent = `Hurdles: ${hurdlesPassed}/5`;
+        }
+        
+        // End the game
+        function endGame(isVictory) {
+            isGameRunning = false;
+            clearInterval(gameInterval);
+            clearInterval(createObstaclesInterval);
+            
+            // Hide jump button
+            jumpBtn.disabled = true;
+            jumpBtn.style.display = 'none';
+            
+            if (isVictory) {
+                victoryScreen.style.display = 'block';
+                startBtn.style.display = 'none';
+                nextBtn.style.display = 'block';
+                markActivityCompleted(); // Mark as completed when victory is achieved
+            } else {
+                gameOverScreen.style.display = 'block';
+                startBtn.style.display = 'block';
+                startBtn.textContent = 'Try Again';
+                nextBtn.style.display = 'none';
+            }
+        }
+        
+        // Restart the game - FIXED FUNCTION
+        function restartGame() {
+            // Reset game state
+            resetGameState();
+            
+            // Hide screens
+            gameOverScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            
+            // Reset buttons properly - FIX: Don't show startBtn
+            startBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            
+            // Reset diamond tower position
+            diamondTower.style.right = '-200px';
+            
+            // Start the game directly
+            startGame();
+        }
+        
+        // Go to next level function
+        function goToNextLevel() {
+            // Hide victory screen
+            victoryScreen.style.display = 'none';
+            
+            // Mark activity as completed
+            localStorage.setItem('dodgeActivityCompleted', 'true');
+            
+            // Set target panel to 4 for next navigation
+            localStorage.setItem('targetPanel', '4');
+            window.location.href = 'episode4.html';
+        }
+        
+        // Function to mark activity as completed
+        function markActivityCompleted() {
+            localStorage.setItem('dodgeActivityCompleted', 'true');
+            document.getElementById('completionMessage').style.display = 'block';
+            isActivityCompleted = true;
+        }
+        
+        // Function to check completion status on load
+        function checkCompletionStatus() {
+            // Only show completion if coming back from next panel
+            const currentPanel = localStorage.getItem('targetPanel');
+            if (localStorage.getItem('dodgeActivityCompleted') === 'true' && currentPanel !== '4') {
+                document.getElementById('completionMessage').style.display = 'block';
+                isActivityCompleted = true;
+                disableInteraction();
+            }
+        }
+        
+        // Function to disable interaction - added to prevent errors
+        function disableInteraction() {
+            // Implement if needed to disable game controls when already completed
+            startBtn.disabled = true;
+            jumpBtn.disabled = true;
+        }
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            checkCompletionStatus();
+        });
+        
+        // Keyboard support for jumping and controls
+        document.addEventListener('keydown', function(event) {
+            if ((event.code === 'Space' || event.key === 'ArrowUp') && isGameRunning) {
+                jump();
+                event.preventDefault(); // Prevent page scrolling on space
+            } else if (event.key === 'Escape') {
+                closeGame();
+            }
+        });
+        
+        // Prevent default touch behavior to avoid scrolling issues on mobile
+        document.addEventListener('touchmove', function(event) {
+            if (isGameRunning) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Touch support for mobile jumping
+        jumpBtn.addEventListener('touchstart', function(event) {
+            if (isGameRunning) {
+                jump();
+                event.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html>

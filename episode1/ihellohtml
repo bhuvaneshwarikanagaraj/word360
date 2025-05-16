@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow Chronicles - Detective Story App</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #8B4513;
+            --secondary-color: #D2B48C;
+            --accent-color: #DEB887;
+            --dark-color: #4A3524;
+            --light-color: #F5DEB3;
+            --shadow-color: rgba(139, 69, 19, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--light-color);
+            background-image: url('images/wood-pattern.png');
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            color: var(--dark-color);
+            min-height: 100vh;
+            position: relative;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-color) 100%);
+            color: var(--light-color);
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            border-bottom: 3px solid var(--accent-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .app-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm32-63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            position: relative;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            animation: bounce 1s ease infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .tag-line {
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .auth-container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 35px;
+            margin-top: 25px;
+            box-shadow: 0 15px 35px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .auth-container:hover {
+            transform: translateY(-5px);
+        }
+        
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            margin-top: 15px;
+            background: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 16px 10px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+            font-family: 'Poppins', sans-serif;
+            font-size: 15px;
+            color: var(--dark-color);
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-color) 100%);
+            color: var(--light-color);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--dark-color);
+            letter-spacing: 0.5px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background-color: #f9f9f9;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+        
+        input:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(210, 180, 140, 0.2);
+            background-color: white;
+            transform: scale(1.02);
+        }
+        
+        input::placeholder {
+            color: #aaa;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-color) 100%);
+            color: var(--light-color);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        button:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px var(--shadow-color);
+        }
+        
+        button:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .dashboard {
+            display: none;
+            padding: 10px 0 30px;
+        }
+        
+        .welcome-banner {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-color) 100%);
+            color: var(--light-color);
+            padding: 35px 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px var(--shadow-color);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .welcome-banner h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            margin-bottom: 8px;
+            position: relative;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .welcome-banner p {
+            font-weight: 300;
+            font-size: 16px;
+            opacity: 0.9;
+            letter-spacing: 0.5px;
+        }
+        
+        .episode-card {
+            background-color: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px var(--shadow-color);
+            margin-bottom: 30px;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .episode-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .episode-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 24px;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Playfair Display', serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .episode-details {
+            padding: 25px;
+        }
+        
+        .episode-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--dark-color);
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .episode-description {
+            font-size: 15px;
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.7;
+        }
+        
+        .read-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--secondary-color) 100%);
+            color: var(--dark-color);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        
+        .read-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow-color);
+        }
+        
+        .episode-content {
+            display: none;
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            line-height: 1.8;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        
+        .episode-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        
+        .episode-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .episode-content h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: var(--accent-color);
+        }
+        
+        .episode-content p {
+            margin-bottom: 18px;
+            font-size: 16px;
+        }
+        
+        .episode-content p:last-of-type {
+            margin-bottom: 25px;
+        }
+        
+        .episode-content em {
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--secondary-color) 100%);
+            padding: 12px 20px;
+            color: var(--dark-color);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-block;
+            width: auto;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow-color);
+        }
+        
+        .error-message {
+            color: #d9534f;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+            background-color: rgba(217, 83, 79, 0.1);
+            padding: 8px 12px;
+            border-radius: 5px;
+            border-left: 3px solid #d9534f;
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, #8B4513 0%, #4A3524 100%);
+            padding: 16px;
+            color: var(--light-color);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow-color);
+        }
+        
+        /* Decorative elements */
+        .detective-icon {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            margin-right: 5px;
+            vertical-align: middle;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F5DEB3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='M12 16h.01'%3E%3C/path%3E%3Cpath d='M12 8v4'%3E%3C/path%3E%3C/svg%3E");
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .auth-container, .dashboard, .episode-content {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Add decorative elements */
+        .auth-container::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(212, 167, 106, 0.1) 0%, rgba(212, 167, 106, 0) 70%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+        
+        .welcome-banner::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+            font-family: 'Special Elite', cursive;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            font-family: 'Special Elite', cursive;
+            font-style: italic;
+        }
+
+        .header .episode-title {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            font-family: 'Special Elite', cursive;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="logo">
+            <span class="detective-icon"></span>Kids Can't Read?
+        </div>
+        <div class="tag-line">Not with us. Not anymore.</div>
+    </header>
+    
+    <div class="container">
+        <div class="content">
+            <!-- Auth Container -->
+            <div class="auth-container" id="authContainer">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" id="loginTab">Login</button>
+                    <button class="tab-btn" id="signupTab">Sign Up</button>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                        <div class="error-message" id="loginError"></div>
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
+                
+                <!-- Sign Up Form -->
+                <form id="signupForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="signupName">Full Name</label>
+                        <input type="text" id="signupName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" placeholder="Create a password" required>
+                        <div class="error-message" id="signupError"></div>
+                    </div>
+                    <button type="submit">Sign Up</button>
+                </form>
+            </div>
+            
+            <!-- Dashboard -->
+            <div class="dashboard" id="dashboardContainer">
+                <div class="welcome-banner">
+                    <h2>Welcome, <span id="userName">Detective</span>!</h2>
+                    <p>Ready to solve the next mystery?</p>
+                </div>
+                
+                <div class="episode-card">
+                    <div class="episode-image">Episode 1</div>
+                    <div class="episode-details">
+                        <div class="episode-title">The Unexpected Call</div>
+                        <div class="episode-description">
+                           Mr.Finn Ferret recieves an unexpected call from a stranger.
+                        </div>
+                        <button class="read-btn" id="readEpisode1">Play</button>
+                    </div>
+                </div>
+                
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <!-- LogRocket Script -->
+    <script src="https://cdn.logrocket.io/LogRocket.min.js"></script>
+    
+    <script>
+        // LogRocket configuration
+        LogRocket.init('biy3cl/spelling', {
+            dom: {
+                inputSanitizer: true,
+                textSanitizer: true
+            },
+            network: {
+                requestSanitizer: (request) => {
+                    if (request.url.includes('firebase')) {
+                        request.body = '[REDACTED]';
+                    }
+                    return request;
+                },
+                responseSanitizer: (response) => {
+                    if (response.url.includes('firebase')) {
+                        response.body = '[REDACTED]';
+                    }
+                    return response;
+                }
+            },
+            recording: {
+                enabled: true,
+                recordAll: true,
+                recordCanvas: true,
+                recordIframes: true,
+                recordVideo: true,
+                recordAudio: true,
+                recordConsole: true,
+                recordNetwork: true,
+                recordPerformance: true,
+                recordUserActions: true,
+                recordErrors: true,
+                recordCrashes: true
+            }
+        });
+
+        // Track session start
+        LogRocket.track('Session Start', {
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            screenResolution: `${window.screen.width}x${window.screen.height}`,
+            language: navigator.language,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        });
+
+        // Track page views
+        LogRocket.track('Page View', {
+            page: 'index',
+            timestamp: new Date().toISOString()
+        });
+
+        // Track user interactions
+        document.addEventListener('click', (e) => {
+            LogRocket.track('User Click', {
+                element: e.target.tagName,
+                id: e.target.id,
+                class: e.target.className,
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // Track form interactions
+        document.addEventListener('input', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                LogRocket.track('Form Input', {
+                    element: e.target.tagName,
+                    id: e.target.id,
+                    value: e.target.value,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+
+        // Track navigation
+        window.addEventListener('popstate', () => {
+            LogRocket.track('Navigation', {
+                url: window.location.href,
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // Track errors
+        window.addEventListener('error', (e) => {
+            LogRocket.track('Error', {
+                message: e.message,
+                filename: e.filename,
+                lineno: e.lineno,
+                colno: e.colno,
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // Track performance
+        window.addEventListener('load', () => {
+            const timing = performance.timing;
+            LogRocket.track('Performance', {
+                loadTime: timing.loadEventEnd - timing.navigationStart,
+                domReadyTime: timing.domComplete - timing.domLoading,
+                networkLatency: timing.responseEnd - timing.fetchStart,
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // Track session end
+        window.addEventListener('beforeunload', () => {
+            LogRocket.track('Session End', {
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // Firebase configuration
+        const firebaseConfig = {
+  apiKey: "AIzaSyDO7cACg6BNA8KiYvMhoxonDxCSKBTgwiE",
+  authDomain: "yevvolearn.firebaseapp.com",
+  projectId: "yevvolearn",
+  storageBucket: "yevvolearn.firebasestorage.app",
+  messagingSenderId: "114822749369",
+  appId: "1:114822749369:web:599d567dd36e3ce7870f68",
+  measurementId: "G-9V2E5C1M9V"
+};
+        
+        // Initialize Firebase
+        try {
+        firebase.initializeApp(firebaseConfig);
+            console.log("Firebase initialized successfully");
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
+        
+        // DOM Elements
+        const loginTab = document.getElementById('loginTab');
+        const signupTab = document.getElementById('signupTab');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const loginError = document.getElementById('loginError');
+        const signupError = document.getElementById('signupError');
+        const authContainer = document.getElementById('authContainer');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        const userNameSpan = document.getElementById('userName');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const readEpisode1 = document.getElementById('readEpisode1');
+        const episode1Content = document.getElementById('episode1Content');
+        const backToDashboard = document.getElementById('backToDashboard');
+
+        // Show auth container
+        function showAuth() {
+            authContainer.style.display = 'block';
+            dashboardContainer.style.display = 'none';
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            loginTab.classList.add('active');
+            signupTab.classList.remove('active');
+        }
+
+        // Show dashboard
+        function showDashboard() {
+            authContainer.style.display = 'none';
+            dashboardContainer.style.display = 'block';
+            const user = firebase.auth().currentUser;
+            if (user && user.displayName) {
+                userNameSpan.textContent = user.displayName;
+            }
+        }
+        
+        // Tab functionality
+        loginTab.addEventListener('click', () => {
+            loginTab.classList.add('active');
+            signupTab.classList.remove('active');
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            loginError.style.display = 'none';
+            signupError.style.display = 'none';
+        });
+        
+        signupTab.addEventListener('click', () => {
+            signupTab.classList.add('active');
+            loginTab.classList.remove('active');
+            signupForm.style.display = 'block';
+            loginForm.style.display = 'none';
+            loginError.style.display = 'none';
+            signupError.style.display = 'none';
+        });
+        
+        // Login form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                // Show loading state
+                loginError.textContent = 'Signing in...';
+                loginError.style.display = 'block';
+                loginError.style.color = '#666';
+                
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                console.log("Login successful:", userCredential.user);
+                
+                // Clear error message
+                    loginError.style.display = 'none';
+                    showDashboard();
+                    
+                    // Track login event
+                    LogRocket.track('User Login', {
+                        success: true,
+                        timestamp: new Date().toISOString()
+                    });
+            } catch (error) {
+                console.error("Login error:", error);
+                loginError.textContent = getErrorMessage(error.code);
+                    loginError.style.display = 'block';
+                loginError.style.color = '#ff4444';
+                    
+                    // Track failed login
+                    LogRocket.track('Login Failed', {
+                        error: error.message,
+                    code: error.code,
+                        timestamp: new Date().toISOString()
+                    });
+            }
+        });
+        
+        // Sign up form submission
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            try {
+                // Show loading state
+                signupError.textContent = 'Creating account...';
+                signupError.style.display = 'block';
+                signupError.style.color = '#666';
+                
+                // Create user with email and password
+                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                console.log("User created:", userCredential.user);
+                
+                    // Update user profile with name
+                await userCredential.user.updateProfile({
+                        displayName: name
+                });
+                console.log("Profile updated with name:", name);
+                
+                // Clear error message
+                        signupError.style.display = 'none';
+                
+                // Show success message
+                signupError.textContent = 'Account created successfully!';
+                signupError.style.display = 'block';
+                signupError.style.color = '#28a745';
+                
+                // Wait a moment before showing dashboard
+                setTimeout(() => {
+                        showDashboard();
+                }, 1500);
+                        
+                        // Track successful signup
+                        LogRocket.track('User Signup Success', {
+                            email: email,
+                            name: name,
+                            timestamp: new Date().toISOString()
+                        });
+            } catch (error) {
+                console.error("Signup error:", error);
+                signupError.textContent = getErrorMessage(error.code);
+                    signupError.style.display = 'block';
+                signupError.style.color = '#ff4444';
+                    
+                    // Track failed signup
+                    LogRocket.track('Signup Failed', {
+                        error: error.message,
+                    code: error.code,
+                        timestamp: new Date().toISOString()
+                    });
+            }
+        });
+
+        // Helper function to get user-friendly error messages
+        function getErrorMessage(errorCode) {
+            switch (errorCode) {
+                case 'auth/invalid-email':
+                    return 'Please enter a valid email address.';
+                case 'auth/user-disabled':
+                    return 'This account has been disabled.';
+                case 'auth/user-not-found':
+                    return 'No account found with this email.';
+                case 'auth/wrong-password':
+                    return 'Incorrect password.';
+                case 'auth/email-already-in-use':
+                    return 'This email is already registered.';
+                case 'auth/weak-password':
+                    return 'Password should be at least 6 characters.';
+                case 'auth/operation-not-allowed':
+                    return 'Email/password accounts are not enabled.';
+                case 'auth/network-request-failed':
+                    return 'Network error. Please check your connection.';
+                case 'auth/too-many-requests':
+                    return 'Too many attempts. Please try again later.';
+                case 'auth/invalid-credential':
+                    return 'Invalid credentials. Please check your email and password.';
+                default:
+                    return 'An error occurred. Please try again.';
+            }
+        }
+        
+        // Check auth state
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                console.log("User is signed in:", user);
+                showDashboard();
+            } else {
+                console.log("No user signed in");
+                showAuth();
+            }
+        });
+        
+        // Logout functionality
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await firebase.auth().signOut();
+                console.log("User signed out");
+                    showAuth();
+            } catch (error) {
+                console.error("Logout error:", error);
+                alert("Error signing out. Please try again.");
+            }
+        });
+        
+        // Episode reading
+        readEpisode1.addEventListener('click', () => {
+            // Track episode start
+            LogRocket.track('Episode Start', {
+                episode: 'Episode 1',
+                timestamp: new Date().toISOString()
+            });
+            
+            window.location.href = 'monologue.html';
+        });
+        
+        // Back to dashboard
+        backToDashboard.addEventListener('click', () => {
+            // Track episode exit
+            LogRocket.track('Episode Exit', {
+                episode: 'Episode 1',
+                timestamp: new Date().toISOString()
+            });
+            
+            episode1Content.style.display = 'none';
+            showDashboard();
+        });
+
+        // Image preloading
+        const preloadImages = () => {
+            const images = [
+                'images/panel1.jpg',
+                'images/panel1_1.jpg',
+                'images/panel1_2.jpg',
+                'images/panel2_1.jpg',
+                'images/panel2_2.jpg',
+                'images/panel2_3.jpg',
+                'images/panel3_1.jpg',
+                'images/panel3_2.jpg',
+                'images/panel3_3.jpg',
+                'images/panel3_4.jpg',
+                'images/panel3_ginger1.jpg',
+                'images/panel3_ginger2.jpg',
+                'images/panel3_ginger3.jpg',
+                'images/panel4_1.jpg'
+            ];
+            
+            return Promise.all(images.map(src => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = resolve;
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            }));
+        };
+
+        // Loading state management
+        let isLoading = true;
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'loading-overlay';
+        loadingOverlay.innerHTML = `
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>Loading Detective Ferret's Adventure...</p>
+            </div>
+        `;
+        document.body.appendChild(loadingOverlay);
+
+        // Add loading styles
+        const style = document.createElement('style');
+        style.textContent = `
+            #loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            }
+            .loading-content {
+                text-align: center;
+                color: white;
+            }
+            .spinner {
+                width: 50px;
+                height: 50px;
+                border: 5px solid #f3f3f3;
+                border-top: 5px solid #3498db;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize the app after images are loaded
+        preloadImages().then(() => {
+            isLoading = false;
+            loadingOverlay.style.display = 'none';
+            initializeApp();
+        }).catch(error => {
+            console.error('Error loading images:', error);
+            loadingOverlay.innerHTML = '<p>Error loading images. Please refresh the page.</p>';
+        });
+
+        function initializeApp() {
+            // Your existing app initialization code here
+            const episodeData = {
+                // ... existing episode data ...
+            };
+
+            // ... rest of your existing code ...
+        }
+    </script>
+</body>
+</html>

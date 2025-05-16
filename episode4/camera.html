@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSLR Camera with Instax Output</title>
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track activity page view
+        LogRocket.track('Camera Activity View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode4_camera'
+        });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFF5E6; /* Cream color background */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        .activity-heading {
+            color: #8B4513;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: -20px auto 0;
+            aspect-ratio: 1.5;
+            max-height: 100vh;
+        }
+        
+        .camera {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            border-radius: 20px;
+            padding: 60px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .viewfinder-container {
+            position: relative;
+            width: 100%;
+            flex: 1;
+            overflow: hidden;
+            border-radius: 5px;
+            border: 2px solid #444;
+        }
+        
+        .viewfinder {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-color: #333;
+            overflow: hidden;
+            cursor: move;
+        }
+        
+        .viewfinder-img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-size: cover;
+            background-position: center;
+            transform-origin: center;
+            transition: transform 0.1s ease-out;
+        }
+        
+        .focus-point {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            transform: translate(-50%, -50%);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .exposure-guide {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 120px;
+            height: 30px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .exposure-meter {
+            width: 100px;
+            height: 10px;
+            background-color: #333;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .exposure-level {
+            height: 100%;
+            width: 50%;
+            background-color: #fff;
+            transition: width 0.3s ease;
+        }
+        
+        .viewfinder-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .viewfinder-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        .grid-cell {
+            border: 1px solid white;
+        }
+        
+        .camera-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            color: white;
+            text-shadow: 1px 1px 1px black;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+        
+        .camera-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            gap: 5px;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .control {
+            margin: 0 5px;
+        }
+        
+        label {
+            display: block;
+            font-size: 10px;
+            margin-bottom: 2px;
+            color: #aaa;
+        }
+        
+        input[type="range"] {
+            width: 60px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        
+        input[type="range"]::-ms-thumb {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        
+        input[type="range"]::-webkit-slider-runnable-track {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+        }
+        
+        input[type="range"]::-moz-range-track {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+        }
+        
+        input[type="range"]::-ms-track {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+        }
+        
+        /* IMPROVED SHUTTER BUTTON */
+        .shutter-btn-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .shutter-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #cc0000;
+            border: 3px solid #222;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shutter-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 60%;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        .shutter-btn:hover {
+            background-color: #ff0000;
+        }
+        
+        .shutter-btn:active {
+            transform: scale(0.9);
+            background-color: #990000;
+        }
+        
+        .take-photo-text {
+            font-size: 10px;
+            font-weight: bold;
+            margin-top: 4px;
+            color: #fff;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        /* Instax Photo Output */
+        .instax-container {
+            position: relative;
+            width: 50%;
+            max-width: 200px;
+            margin: 15px auto 0;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.5s ease;
+        }
+        
+        .instax-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .instax-frame {
+            position: relative;
+            width: 100%;
+            padding-bottom: 125%; /* Aspect ratio for Instax */
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instax-photo {
+            position: absolute;
+            top: 7%;
+            left: 7%;
+            width: 86%;
+            height: 70%;
+            background-color: #ddd;
+            background-size: cover;
+            background-position: center;
+            border-radius: 5px;
+        }
+        
+        .instax-bottom {
+            position: absolute;
+            bottom: 7%;
+            left: 0;
+            width: 100%;
+            height: 16%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .instax-date {
+            font-family: monospace;
+            font-size: 12px;
+            color: #777;
+        }
+        
+        .instax-logo {
+            display: none; /* Only hiding the Instax logo */
+        }
+        
+        .shutterAnim {
+            animation: shutterAnimation 0.5s;
+        }
+        
+        @keyframes shutterAnimation {
+            0%, 100% { opacity: 0; }
+            10% { opacity: 1; }
+        }
+
+        /* Instructions overlay */
+        .instructions {
+            display: none;
+        }
+
+        .instructions-toggle {
+            display: none;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 5px;
+            }
+            
+            .camera {
+                padding: 8px;
+            }
+            
+            .camera-controls {
+                padding: 5px 0;
+            }
+            
+            .control {
+                margin: 0 3px;
+            }
+            
+            input[type="range"] {
+                width: 50px;
+            }
+            
+            .shutter-btn {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .instax-container {
+                width: 40%;
+                margin: 10px auto 0;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .container {
+                max-height: 95vh;
+            }
+            
+            .camera {
+                padding: 5px;
+            }
+            
+            .camera-controls {
+                padding: 3px 0;
+            }
+            
+            .shutter-btn {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .take-photo-text {
+                font-size: 9px;
+            }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: #8B4513;
+            border: 2px solid #6B3410;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #95562B;
+            transform: scale(1.1);
+        }
+
+        .next-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 30px;
+            background: #4CAF50;
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .next-btn:hover {
+            background: #45a049;
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .completion-message {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            width: auto;
+            max-width: 85%;
+            white-space: nowrap;
+            display: none;
+            z-index: 1001;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="activity-heading">Take a Picture of Kai</h1>
+        <button class="close-btn" id="closeBtn">&times;</button>
+        <div class="camera">
+            <div class="viewfinder-container">
+                <div class="viewfinder" id="viewfinder">
+                    <div class="viewfinder-img" id="viewfinderImg">
+                        <!-- Change from img tag to background-image style -->
+                    </div>
+                    <div class="focus-point" id="focusPoint"></div>
+                    <div class="viewfinder-overlay">
+                        <div class="camera-info" id="cameraInfo">
+                            ISO 400 | f/2.8 | 1/60s | 50mm
+                        </div>
+                        <div class="exposure-guide">
+                            <div class="exposure-meter">
+                                <div class="exposure-level" id="exposureLevel"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="viewfinder-grid">
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                    </div>
+                </div>
+                <div class="flash" id="flash"></div>
+            </div>
+            
+            <div class="camera-controls">
+                <div class="control-group">
+                    <div class="control">
+                        <label for="zoomLevel">Zoom</label>
+                        <input type="range" id="zoomLevel" min="1" max="3" step="0.1" value="1">
+                    </div>
+                    <div class="control">
+                        <label for="aperture">Aperture</label>
+                        <input type="range" id="aperture" min="1.8" max="16" step="0.1" value="2.8">
+                    </div>
+                </div>
+                
+                <div class="shutter-btn-container">
+                    <div class="shutter-btn" id="shutterBtn"></div>
+                    <div class="take-photo-text">Click the red button</div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control">
+                        <label for="shutterSpeed">Shutter</label>
+                        <input type="range" id="shutterSpeed" min="1" max="1000" step="1" value="60">
+                    </div>
+                    <div class="control">
+                        <label for="iso">ISO</label>
+                        <input type="range" id="iso" min="100" max="6400" step="100" value="400">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instax-container" id="instaxContainer">
+            <div class="instax-frame">
+                <div class="instax-photo" id="instaxPhoto"></div>
+                <div class="instax-bottom">
+                    <div class="instax-date" id="instaxDate"></div>
+                </div>
+                <div class="instax-logo">PHOTO</div>
+            </div>
+        </div>
+        <button class="next-btn" id="nextBtn">NEXT</button>
+        <div class="completion-message" id="completionMessage">Task Completed</div>
+    </div>
+
+    <audio id="cameraSound" src="./camera.mp3" preload="auto"></audio>
+    <script>
+        // DOM Elements
+        const viewfinder = document.getElementById('viewfinder');
+        const viewfinderImg = document.getElementById('viewfinderImg');
+        const focusPoint = document.getElementById('focusPoint');
+        const cameraInfo = document.getElementById('cameraInfo');
+        const exposureLevel = document.getElementById('exposureLevel');
+        const zoomLevelInput = document.getElementById('zoomLevel');
+        const apertureInput = document.getElementById('aperture');
+        const shutterSpeedInput = document.getElementById('shutterSpeed');
+        const isoInput = document.getElementById('iso');
+        const shutterBtn = document.getElementById('shutterBtn');
+        const flash = document.getElementById('flash');
+        const instaxContainer = document.getElementById('instaxContainer');
+        const instaxPhoto = document.getElementById('instaxPhoto');
+        const instaxDate = document.getElementById('instaxDate');
+        const instructionsToggle = document.getElementById('instructionsToggle');
+        const instructions = document.getElementById('instructions');
+        const cameraSound = document.getElementById('cameraSound');
+        const closeBtn = document.getElementById('closeBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        // State variables
+        let isDragging = false;
+        let startPosition = { x: 0, y: 0 };
+        let currentPosition = { x: 0, y: 0 };
+        let focusPosition = { x: 50, y: 50 };
+        let zoomLevel = 1;
+        let takingPhoto = false;
+        
+        // Initialize
+        updateCameraInfo();
+        randomizeExposure();
+
+        // Set the background image initially
+        viewfinderImg.style.backgroundImage = 'url("cam.jpg")';
+        viewfinderImg.style.backgroundSize = 'cover';
+
+        // Set default camera settings for clearer image
+        zoomLevelInput.value = 1;
+        apertureInput.value = 4;
+        shutterSpeedInput.value = 125;
+        isoInput.value = 400;
+        updateCameraInfo();
+
+        // Ensure next button is hidden initially
+        nextBtn.style.display = 'none';
+
+        // Check if activity was already completed and update UI accordingly
+        if (localStorage.getItem('cameraActivityCompleted') === 'true') {
+            document.getElementById('completionMessage').style.display = 'block';
+            nextBtn.style.display = 'block';
+            // Disable shutter button
+            shutterBtn.style.opacity = '0.5';
+            shutterBtn.style.pointerEvents = 'none';
+            document.querySelector('.take-photo-text').textContent = 'PHOTO TAKEN';
+            // Show the Instax photo
+            createInstaxPhoto();
+            instaxContainer.classList.add('visible');
+        }
+        
+        // Event Listeners
+        viewfinder.addEventListener('mousedown', startDrag);
+        viewfinder.addEventListener('mousemove', handleDrag);
+        document.addEventListener('mouseup', stopDrag);
+        viewfinder.addEventListener('click', setFocusPoint);
+        
+        zoomLevelInput.addEventListener('input', handleZoom);
+        apertureInput.addEventListener('input', updateCameraInfo);
+        shutterSpeedInput.addEventListener('input', updateCameraInfo);
+        isoInput.addEventListener('input', updateCameraInfo);
+        
+        shutterBtn.addEventListener('click', takePhoto);
+        
+        closeBtn.addEventListener('click', closeCamera);
+        nextBtn.addEventListener('click', handleCompletion);
+        
+        // Functions
+        function startDrag(e) {
+            if (takingPhoto) return;
+            
+            isDragging = true;
+            startPosition = {
+                x: e.clientX - currentPosition.x,
+                y: e.clientY - currentPosition.y
+            };
+            
+            viewfinder.style.cursor = 'grabbing';
+        }
+        
+        function handleDrag(e) {
+            if (!isDragging) return;
+            
+            const maxOffset = 40 * zoomLevel;
+            
+            // Calculate new position with constraints
+            let newX = e.clientX - startPosition.x;
+            let newY = e.clientY - startPosition.y;
+            
+            // Limit movement based on zoom level
+            newX = Math.max(-maxOffset, Math.min(maxOffset, newX));
+            newY = Math.max(-maxOffset, Math.min(maxOffset, newY));
+            
+            currentPosition = { x: newX, y: newY };
+            
+            // Update viewfinder image position
+            updateViewfinderPosition();
+        }
+        
+        function stopDrag() {
+            isDragging = false;
+            viewfinder.style.cursor = 'move';
+        }
+        
+        function setFocusPoint(e) {
+            if (takingPhoto) return;
+            
+            const rect = viewfinder.getBoundingClientRect();
+            focusPosition = {
+                x: ((e.clientX - rect.left) / rect.width) * 100,
+                y: ((e.clientY - rect.top) / rect.height) * 100
+            };
+            
+            // Update focus point position
+            focusPoint.style.left = `${focusPosition.x}%`;
+            focusPoint.style.top = `${focusPosition.y}%`;
+            focusPoint.style.display = 'block';
+            
+            // Animate focus point
+            focusPoint.style.animation = 'none';
+            void focusPoint.offsetWidth; // Trigger reflow
+            focusPoint.style.animation = 'pulse 1s';
+            
+            randomizeExposure();
+            updateCameraInfo();
+        }
+        
+        function handleZoom(e) {
+            zoomLevel = parseFloat(e.target.value);
+            updateViewfinderPosition();
+            updateCameraInfo();
+        }
+        
+        function updateViewfinderPosition() {
+            const translateX = -currentPosition.x / (5 * zoomLevel);
+            const translateY = -currentPosition.y / (5 * zoomLevel);
+            const scale = 1 + (zoomLevel - 1) * 0.5;
+            
+            // Ensure background image is always set
+            viewfinderImg.style.backgroundImage = 'url("cam.jpg")';
+            viewfinderImg.style.backgroundSize = 'cover';
+            viewfinderImg.style.transform = `translate(${translateX}%, ${translateY}%) scale(${scale})`;
+        }
+        
+        function updateCameraInfo() {
+            const aperture = parseFloat(apertureInput.value).toFixed(1);
+            const shutterSpeed = parseInt(shutterSpeedInput.value);
+            const iso = parseInt(isoInput.value);
+            const focalLength = 35 + Math.round((zoomLevel - 1) * 65);
+            
+            cameraInfo.textContent = `ISO ${iso} | f/${aperture} | 1/${shutterSpeed}s | ${focalLength}mm`;
+        }
+        
+        function randomizeExposure() {
+            const randomExposure = Math.random() * 100;
+            exposureLevel.style.width = `${randomExposure}%`;
+            
+            // Change color based on exposure
+            if (randomExposure < 30) {
+                exposureLevel.style.backgroundColor = '#3366ff';
+            } else if (randomExposure > 70) {
+                exposureLevel.style.backgroundColor = '#ff3366';
+            } else {
+                exposureLevel.style.backgroundColor = '#33ff66';
+            }
+        }
+        
+        function takePhoto() {
+            if (takingPhoto) return;
+            takingPhoto = true;
+            
+            // Track photo taken in LogRocket
+            if (window.LogRocket) {
+                LogRocket.track('Photo Taken', {
+                    zoomLevel: zoomLevel,
+                    aperture: parseFloat(apertureInput.value),
+                    shutterSpeed: parseInt(shutterSpeedInput.value),
+                    iso: parseInt(isoInput.value)
+                });
+            }
+
+            // Play camera sound
+            if (cameraSound) {
+                cameraSound.currentTime = 0;
+                cameraSound.play().catch(console.error);
+            }
+
+            // Flash effect
+            flash.style.opacity = '1';
+            flash.classList.add('shutterAnim');
+
+            setTimeout(() => {
+                flash.style.opacity = '0';
+                flash.classList.remove('shutterAnim');
+
+                // Show Instax photo with delay to simulate development
+                setTimeout(() => {
+                    createInstaxPhoto();
+                    instaxContainer.classList.add('visible');
+                    takingPhoto = false;
+
+                    // Track activity completion in LogRocket
+                    if (window.LogRocket) {
+                        LogRocket.track('Camera Activity Completed', {
+                            success: true
+                        });
+                    }
+
+                    // Disable shutter button
+                    shutterBtn.style.opacity = '0.5';
+                    shutterBtn.style.pointerEvents = 'none';
+
+                    // Update text and show next button ONLY after photo is taken
+                    document.querySelector('.take-photo-text').textContent = 'PHOTO TAKEN';
+                    nextBtn.style.display = 'block';
+                    document.getElementById('completionMessage').style.display = 'block';
+                    
+                    // Store completion in localStorage to align with episode4.html
+                    localStorage.setItem('cameraActivityCompleted', 'true');
+                }, 1000);
+            }, 500);
+        }
+        
+        function createInstaxPhoto() {
+            // Get current settings for the "photo"
+            const aperture = parseFloat(apertureInput.value);
+            const shutterSpeed = parseInt(shutterSpeedInput.value);
+            const iso = parseInt(isoInput.value);
+            
+            // Use cam.jpg as the image source
+            instaxPhoto.style.backgroundImage = 'url("cam.jpg")';
+            
+            // Apply minimal filters for clearer image
+            let filters = '';
+            
+            // Only apply slight blur for very low apertures
+            const blurAmount = Math.max(0, (2.8 - aperture) * 0.5);
+            if (blurAmount > 0) {
+                filters += `blur(${blurAmount}px) `;
+            }
+            
+            // Reduced grain effect
+            const grainOpacity = Math.min(0.3, (iso - 400) / 6000);
+            
+            // Minimal motion blur
+            const motionBlur = Math.max(0, (125 - shutterSpeed) / 100);
+            if (motionBlur > 0) {
+                filters += `brightness(${1 + motionBlur * 0.05}) contrast(${1 - motionBlur * 0.05}) `;
+            }
+            
+            // Subtle Instax look
+            filters += 'saturate(1.1) contrast(1.05) brightness(1.02)';
+            instaxPhoto.style.filter = filters;
+            
+            // Position to match the lens position
+            const translateX = -currentPosition.x / (10 * zoomLevel);
+            const translateY = -currentPosition.y / (10 * zoomLevel);
+            const scale = 1 + (zoomLevel - 1) * 0.3;
+            
+            instaxPhoto.style.backgroundPosition = `${50 + translateX}% ${50 + translateY}%`;
+            instaxPhoto.style.backgroundSize = `${scale * 100}%`;
+            
+            // Add date to the Instax
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric'
+            });
+            instaxDate.textContent = dateStr;
+            
+            // Add grain effect with pseudo-element for high ISO
+            if (grainOpacity > 0) {
+                instaxPhoto.style.position = 'relative';
+                
+                // Remove any existing grain overlay
+                const existingOverlay = instaxPhoto.querySelector('.grain-overlay');
+                if (existingOverlay) {
+                    instaxPhoto.removeChild(existingOverlay);
+                }
+                
+                // Create grain overlay
+                const grainOverlay = document.createElement('div');
+                grainOverlay.className = 'grain-overlay';
+                grainOverlay.style.position = 'absolute';
+                grainOverlay.style.top = '0';
+                grainOverlay.style.left = '0';
+                grainOverlay.style.width = '100%';
+                grainOverlay.style.height = '100%';
+                grainOverlay.style.opacity = grainOpacity;
+                grainOverlay.style.backgroundImage = 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")';
+                grainOverlay.style.mixBlendMode = 'overlay';
+                
+                instaxPhoto.appendChild(grainOverlay);
+            }
+        }
+        
+        // Set initial focus point and position
+        focusPoint.style.left = `${focusPosition.x}%`;
+        focusPoint.style.top = `${focusPosition.y}%`;
+        
+        // Random initial lens position
+        currentPosition = { 
+            x: (Math.random() - 0.5) * 20, 
+            y: (Math.random() - 0.5) * 20 
+        };
+        updateViewfinderPosition();
+
+        // Add close and next button functionality
+        function closeCamera() {
+            localStorage.setItem('returnToCurrentPanel', 'true');
+            localStorage.setItem('targetPanel', '16');
+            window.location.href = 'episode4.html';
+        }
+
+        function handleCompletion() {
+            localStorage.setItem('cameraActivityCompleted', 'true');
+            localStorage.setItem('targetPanel', '17');
+            window.location.href = 'episode4.html';
+        }
+
+        // Add tracking for camera settings changes
+        zoomLevelInput.addEventListener('change', () => {
+            if (window.LogRocket) {
+                LogRocket.track('Camera Setting Changed', {
+                    setting: 'zoom',
+                    value: zoomLevelInput.value
+                });
+            }
+        });
+
+        apertureInput.addEventListener('change', () => {
+            if (window.LogRocket) {
+                LogRocket.track('Camera Setting Changed', {
+                    setting: 'aperture',
+                    value: apertureInput.value
+                });
+            }
+        });
+
+        shutterSpeedInput.addEventListener('change', () => {
+            if (window.LogRocket) {
+                LogRocket.track('Camera Setting Changed', {
+                    setting: 'shutterSpeed',
+                    value: shutterSpeedInput.value
+                });
+            }
+        });
+
+        isoInput.addEventListener('change', () => {
+            if (window.LogRocket) {
+                LogRocket.track('Camera Setting Changed', {
+                    setting: 'iso',
+                    value: isoInput.value
+                });
+            }
+        });
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html>

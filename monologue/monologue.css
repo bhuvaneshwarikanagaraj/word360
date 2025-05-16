@@ -1,0 +1,393 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Special Elite', cursive;
+    background-color: #f0eada;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.container {
+    position: relative;
+    width: 90%;
+    max-width: 400px;
+    height: 90vh;
+    max-height: 800px;
+    margin: 0 auto;
+    border-radius: 25px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    background-color: #111;
+    border: 2px solid #8a6d3b;
+}
+
+.image-container {
+    width: 100%;
+    height: calc(100% - 100px);
+    position: relative;
+    overflow: hidden;
+    border-radius: 23px 23px 0 0;
+}
+
+#sceneVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.card {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    background-color: rgba(254, 251, 243, 0.95);
+    border-radius: 15px;
+    z-index: 10;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid #8a6d3b;
+    overflow: hidden;
+}
+
+.card-content {
+    position: relative;
+    padding: 20px 30px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+#monologueText {
+    font-size: 18px;
+    color: #4e3521;
+    line-height: 1.4;
+    width: 100%;
+    text-align: center;
+}
+
+.next-button {
+    position: absolute;
+    right: 15px;
+    bottom: 50%;
+    transform: translateY(50%);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: transparent;
+    border: none;
+    color: #8a6d3b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.next-button.visible {
+    opacity: 1 !important;
+    animation: none !important;
+    transition: none !important;
+    transform: translateY(50%) !important;
+    visibility: visible !important;
+}
+
+.next-button i {
+    font-size: 24px;
+    color: #8a6d3b;
+}
+
+.video-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    background-color: #000;
+}
+
+.video-container.visible {
+    opacity: 1;
+}
+
+.video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Video specific animations */
+.video-zoom {
+    animation: videoZoom 15s ease-in-out forwards;
+}
+
+@keyframes videoZoom {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.15);
+    }
+}
+
+.video-zoom-intense {
+    animation: videoZoomIntense 20s ease-in-out forwards;
+}
+
+@keyframes videoZoomIntense {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.25);
+    }
+}
+
+/* Remove old background-image styles since we're using video */
+.background-image {
+    display: none;
+}
+
+/* Update overlay for better video contrast */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.2) 0%,
+        rgba(0,0,0,0.3) 50%,
+        rgba(0,0,0,0.5) 100%
+    );
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Mobile optimization for videos */
+@media (max-width: 480px) {
+    .video-container {
+        height: 100%;
+        width: 100%;
+    }
+
+    .video-container video {
+        object-fit: contain;
+        background-color: #000;
+    }
+}
+
+/* Ensure smooth video transitions */
+.fade-transition {
+    transition: opacity 0.8s ease-in-out;
+}
+
+/* Loading state for videos */
+.video-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    z-index: 3;
+}
+
+/* Optimize video performance on mobile */
+@media (max-width: 768px) {
+    .video-container video {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+}
+
+/* Loading indicator */
+.loading-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+.loading-text {
+    margin-top: 20px;
+    color: #fff;
+    font-family: 'Special Elite', cursive;
+    font-size: 18px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Enhanced zoom effects */
+.zoom-effect {
+    animation: zoomEffect 15s ease-in-out forwards;
+}
+
+@keyframes zoomEffect {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.15);
+    }
+}
+
+.zoom-intense {
+    animation: zoomIntense 20s ease-in-out forwards;
+}
+
+@keyframes zoomIntense {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.25);
+    }
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 480px) {
+    .image-container {
+        width: 90%;
+        height: 80vh;
+        max-height: none;
+    }
+
+    .card {
+        bottom: 100px;
+        width: 92%;
+        max-width: 340px;
+    }
+
+    .card-content {
+        padding: 12px;
+        padding-bottom: 35px;
+    }
+
+    .typewriter-text {
+        font-size: 1.1em;
+        min-height: 45px;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 320px) {
+    .image-container {
+        width: 95%;
+        height: 75vh;
+    }
+
+    .card {
+        bottom: 90px;
+        width: 90%;
+        max-width: 290px;
+    }
+
+    .card-content {
+        padding: 10px;
+        padding-bottom: 32px;
+    }
+
+    .typewriter-text {
+        font-size: 1.1em;
+        min-height: 40px;
+    }
+}
+
+/* Update transition screen to match theme */
+.transition-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f0eada; /* Match body background */
+    display: none;
+    opacity: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 1s ease;
+}
+
+.transition-screen.visible {
+    display: flex;
+    opacity: 1;
+}
+
+.journey-button {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.5em;
+    padding: 15px 40px;
+    background-color: transparent;
+    color: #8a6d3b; /* Match gold accent color */
+    border: 2px solid #8a6d3b;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: scale(0.8);
+    box-shadow: 0 0 15px rgba(138, 109, 59, 0.3);
+    position: relative;
+    overflow: hidden;
+    border-radius: 5px;
+}
+
+.journey-button:hover {
+    background-color: rgba(138, 109, 59, 0.1);
+    box-shadow: 0 0 25px rgba(138, 109, 59, 0.5);
+    transform: scale(1.05);
+}
+
+.transition-screen .journey-button {
+    animation: buttonFadeIn 1s forwards 0.5s;
+}
+
+@keyframes buttonFadeIn {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+} 

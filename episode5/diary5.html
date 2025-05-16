@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Detective's Diary</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track diary page view
+        LogRocket.track('Diary Page View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode5_diary'
+        });
+    </script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+
+    <!-- Initialize Firebase -->
+    <script>
+        // Initialize Firebase and Firestore
+        let db;
+        let auth;
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDO7cACg6BNA8KiYvMhoxonDxCSKBTgwiE",
+                authDomain: "yevvolearn.firebaseapp.com",
+                projectId: "yevvolearn",
+                storageBucket: "yevvolearn.firebasestorage.app",
+                messagingSenderId: "114822749369",
+                appId: "1:114822749369:web:599d567dd36e3ce7870f68",
+                measurementId: "G-9V2E5C1M9V"
+            };
+
+            // Initialize Firebase if not already initialized
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+            auth = firebase.auth();
+            console.log('Firebase initialized successfully');
+
+            // Function to check authentication
+            async function checkAuthentication() {
+                console.log('Starting authentication check...');
+                
+                // First check localStorage for custom auth data
+                const authName = localStorage.getItem('auth_name');
+                const authPhone = localStorage.getItem('auth_phone');
+                const isLoggedIn = localStorage.getItem('auth_isLoggedIn');
+                const authUserId = localStorage.getItem('auth_userId');
+                
+                console.log('localStorage auth check:', { 
+                    authName, 
+                    authPhone, 
+                    isLoggedIn,
+                    authUserId 
+                });
+                
+                if (authName && authPhone && isLoggedIn === 'true') {
+                    console.log('Authentication successful via localStorage');
+                    
+                    // If we have a userId, verify in Firestore
+                    if (authUserId) {
+                        try {
+                            // Try to find the user in the userProgress collection
+                            const userDoc = await db.collection('userProgress').doc(authUserId).get();
+                            if (userDoc.exists) {
+                                console.log('User verified in Firestore userProgress collection');
+                                return true;
+                            }
+                            
+                            // Fallback to query by phone number
+                            const userQuery = await db.collection('userProgress')
+                                .where('phone', '==', authPhone)
+                                .limit(1)
+                                .get();
+                                
+                            if (!userQuery.empty) {
+                                console.log('User verified in Firestore by phone number');
+                                return true;
+                            }
+                        } catch (error) {
+                            console.error('Error verifying user in Firestore:', error);
+                        }
+                    }
+                    
+                    // Even without Firestore verification, still consider authenticated if we have name and phone
+                    console.log('User authenticated via localStorage without Firestore verification');
+                    return true;
+                }
+                
+                // Then check session storage
+                const userDataStr = sessionStorage.getItem('userData');
+                console.log('Session storage data:', userDataStr);
+                
+                if (userDataStr) {
+                    try {
+                        const userData = JSON.parse(userDataStr);
+                        console.log('Parsed user data:', { ...userData, password: '[REDACTED]' });
+                        
+                        // Verify user exists in Firestore
+                        const userDoc = await db.collection('users').doc(userData.uid).get();
+                        console.log('Firestore user check:', userDoc.exists ? 'User found' : 'User not found');
+                        
+                        if (userDoc.exists) {
+                            console.log('Authentication successful via session storage');
+                            return true;
+                        }
+                    } catch (error) {
+                        console.error('Error checking session storage:', error);
+                    }
+                }
+
+                // If session storage check fails, try Firebase auth
+                return new Promise((resolve) => {
+                    const unsubscribe = auth.onAuthStateChanged((user) => {
+                        console.log('Firebase auth state:', user ? 'User logged in' : 'No user');
+                        unsubscribe();
+                        resolve(!!user);
+                    });
+                });
+            }
+
+            // Check authentication and handle redirect
+            async function handleAuth() {
+                console.log('Handling authentication...');
+                const isAuthenticated = await checkAuthentication();
+                console.log('Authentication result:', isAuthenticated);
+                
+                if (!isAuthenticated) {
+                    console.log('User not authenticated, redirecting to login...');
+                    window.location.href = '../index.html';
+                } else {
+                    console.log('User authenticated, proceeding to page...');
+                }
+            }
+
+            // Run authentication check when page loads
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('Page loaded, checking authentication...');
+                handleAuth();
+            });
+
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+        }
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            background: #F5E6D3;
+            font-family: 'Special Elite', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .diary-container {
+            width: 100%;
+            max-width: 600px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            position: relative;
+            margin: 10px;
+            border: 1px solid #8B4513;
+        }
+
+        .diary-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #8B4513;
+            border-bottom: 2px solid #8B4513;
+            padding-bottom: 10px;
+        }
+
+        .diary-header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .question-section {
+            background: rgba(139, 69, 19, 0.1);
+            padding: 15px;
+            margin: 10px 0 20px 0;
+            border-left: 3px solid #8B4513;
+            color: #4A2511;
+            font-size: 1.1em;
+        }
+
+        .question-section h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+            color: #8B4513;
+        }
+
+        .diary-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        textarea {
+            padding: 15px;
+            border: none;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.1em;
+            line-height: 2em;
+            min-height: 200px;
+            background-image: linear-gradient(#F5E6D3 1px, transparent 1px);
+            background-size: 100% 2em;
+            background-color: transparent;
+            color: #4A2511;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        textarea:focus {
+            outline: none;
+        }
+
+        .submit-btn {
+            background: #8B4513;
+            color: #F5E6D3;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #6B3410;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            color: #8B4513;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-family: 'Special Elite', cursive;
+            padding: 10px;
+        }
+
+        .back-btn:hover {
+            color: #6B3410;
+        }
+
+        .success-message {
+            display: none;
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid #4CAF50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .success-message h2 {
+            color: #4CAF50;
+            margin: 0 0 10px 0;
+            font-size: 1.5em;
+        }
+
+        .success-message p {
+            color: #2E7D32;
+            margin: 5px 0;
+            font-size: 1.1em;
+        }
+
+        .next-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.1em;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .next-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0;
+            }
+            
+            .diary-container {
+                padding: 15px;
+                margin: 0;
+                min-height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+
+            .diary-header {
+                margin-top: 40px;
+            }
+
+            .back-btn {
+                top: 10px;
+                left: 10px;
+            }
+        }
+
+        .completion-status {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkmark {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="diary-container">
+        <button class="back-btn" onclick="goBack()">← Back</button>
+        <div class="diary-header">
+            <h1>Detective's Diary</h1>
+        </div>
+        <div class="question-section">
+            <h2>Today's Question:</h2>
+            <p>Ferret discovered that lightning was involved in every disappearance — but no storms were recorded. If you were in his shoes, what would you be thinking right now? Would you believe in science, or something beyond it?</p>
+        </div>
+        <form class="diary-form" id="diaryForm">
+            <textarea id="reasons" placeholder="Share your thoughts on the supernatural vs scientific aspects of the case..." style="min-height: 200px;"></textarea>
+            <button type="submit" class="submit-btn">Save Entry</button>
+        </form>
+        <div class="success-message" id="successMessage">
+            <h2>🎉 Task Completed! 🎉</h2>
+            <p>Your thoughts have been recorded in the case files.</p>
+            <p>You've successfully completed this task.</p>
+            <div class="completion-status">
+                <span class="checkmark">✓</span> Task Marked as Complete
+            </div>
+            <button class="next-button" onclick="handleNextEpisode()">Continue to Next Episode →</button>
+        </div>
+    </div>
+
+    <script>
+        // Add this function at the start of your script section
+        function markTaskAsCompleted() {
+            localStorage.setItem('diary5_task_completed', 'true');
+            if (window.LogRocket) {
+                LogRocket.track('Task Completed', {
+                    taskName: 'diary5_entry',
+                    completionTime: new Date().toISOString()
+                });
+            }
+        }
+
+        // Add these functions at the start
+        function saveToLocalStorage(text) {
+            localStorage.setItem('diary5_temp_entry', text);
+        }
+
+        function loadFromLocalStorage() {
+            const savedText = localStorage.getItem('diary5_temp_entry');
+            if (savedText) {
+                document.getElementById('reasons').value = savedText;
+            }
+        }
+
+        // Load saved text when page loads
+        window.addEventListener('DOMContentLoaded', loadFromLocalStorage);
+
+        // Add autosave functionality to the textarea
+        document.getElementById('reasons').addEventListener('input', function() {
+            saveToLocalStorage(this.value);
+        });
+
+        // Clear temporary storage after successful submission
+        function clearTempStorage() {
+            localStorage.removeItem('diary5_temp_entry');
+        }
+
+        // Update your form submission handler
+        document.getElementById('diaryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const reasonsText = document.getElementById('reasons').value.trim();
+            const submitButton = document.querySelector('.submit-btn');
+            const successMessage = document.getElementById('successMessage');
+            
+            if (!reasonsText) {
+                alert('Please share your thoughts before saving.');
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Saving...';
+            
+            try {
+                // Verify Firebase is initialized
+                if (!db || !auth) {
+                    throw new Error('Firebase not properly initialized');
+                }
+
+                // Get user info from localStorage first (faster)
+                let userName = localStorage.getItem('auth_name');
+                let userPhone = localStorage.getItem('auth_phone');
+                let userId = localStorage.getItem('auth_userId');
+                
+                // Fall back to Firebase auth if localStorage not available
+                if (!userName || !userPhone) {
+                const user = auth.currentUser;
+                if (!user) {
+                    throw new Error('User not authenticated');
+                    }
+                    userId = user.uid;
+                }
+
+                // Create the entry data
+                const entryData = {
+                    text: reasonsText,
+                    episode: 5,
+                    question: "Ferret discovered that lightning was involved in every disappearance — but no storms were recorded. If you were in his shoes, what would you be thinking right now? Would you believe in science, or something beyond it?",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    userAgent: navigator.userAgent,
+                };
+                
+                // Add user data
+                if (userId) entryData.userId = userId;
+                if (userName) entryData.userName = userName;
+                if (userPhone) entryData.userPhone = userPhone;
+
+                // Save to Firebase with optimized approach
+                try {
+                    console.time('saveOperation');
+                    
+                    // Show success message early to improve perceived performance
+                    setTimeout(() => {
+                        // Clear temporary storage
+                        clearTempStorage();
+                        
+                        // Update UI while Firebase operations continue in background
+                        submitButton.style.display = 'none';
+                        document.getElementById('reasons').disabled = true;
+                        successMessage.style.display = 'block';
+                        successMessage.querySelector('.next-button').style.display = 'inline-block';
+                        
+                        // Set local completion flags immediately
+                        localStorage.setItem('diary5_completed', 'true');
+                        localStorage.setItem('auth_isLoggedIn', 'true');
+                        markTaskAsCompleted();
+                    }, 300); // Show success quickly
+                    
+                    // Batch operations for better performance
+                    const batch = db.batch();
+                    
+                    // Create diary entry document
+                    const entryRef = db.collection('episode5').doc();
+                    batch.set(entryRef, entryData);
+                    
+                    // Update user progress
+                    if (userId) {
+                        // Direct document reference is faster
+                        const userProgressRef = db.collection('userProgress').doc(userId);
+                        batch.update(userProgressRef, {
+                            completedEpisodes: firebase.firestore.FieldValue.arrayUnion(5),
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    } else if (userPhone) {
+                        // Create new user progress directly
+                        const newUserRef = db.collection('userProgress').doc();
+                        batch.set(newUserRef, {
+                            phone: userPhone,
+                            name: userName || 'User',
+                            completedEpisodes: [5],
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                            registrationComplete: true
+                        });
+                        
+                        // Store new userId in localStorage
+                        userId = newUserRef.id;
+                        localStorage.setItem('auth_userId', userId);
+                    }
+                    
+                    // Commit all changes in a single batch operation
+                    await batch.commit();
+                    console.timeEnd('saveOperation');
+                    
+                    // Non-blocking tracking
+                    if (window.LogRocket) {
+                        setTimeout(() => {
+                            LogRocket.track('Diary Entry Submitted', {
+                                entryLength: reasonsText.length,
+                                hasContent: true
+                            });
+                            
+                            LogRocket.track('Episode Completed', {
+                                episodeNumber: 5,
+                                completionType: 'diary_submission'
+                            });
+                        }, 0);
+                    }
+                    
+                } catch (error) {
+                    console.error('Save operation failed:', error);
+                    
+                    // Fallback save attempt with minimal operations
+                    try {
+                        // Just save the entry without progress updates
+                        await db.collection('episode5').add(entryData);
+                        console.log('Fallback save successful (entry only)');
+                    } catch (fallbackError) {
+                        throw new Error(`Save failed: ${error.message}. Fallback also failed: ${fallbackError.message}`);
+                    }
+                }
+                
+            } catch (error) {
+                console.error("Error saving diary entry:", error);
+                
+                const errorMessage = error.code ? 
+                    `Firebase Error (${error.code}): ${error.message}` :
+                    `Error: ${error.message}`;
+                console.error(errorMessage);
+                
+                if (window.LogRocket) {
+                    LogRocket.error("Diary Entry Save Error", { 
+                        error: errorMessage,
+                        entryLength: reasonsText.length
+                    });
+                }
+                
+                alert('There was an error saving your entry. Please try again. If the problem persists, please try refreshing the page.');
+                
+                submitButton.disabled = false;
+                submitButton.textContent = 'Save Entry';
+            }
+        });
+
+        // Back button functionality
+        function goBack() {
+            // Set the target panel to panel 18
+            localStorage.setItem('targetPanel', '18');
+            window.location.href = 'episode5.html';
+        }
+
+        // Optimize typing tracking
+        let typingTimer;
+        const TYPING_DEBOUNCE = 2000;
+        
+        ['reasons'].forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            field.addEventListener('input', function() {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    if (this.value.length > 0 && window.LogRocket) {
+                        LogRocket.track('Diary Entry Typing', {
+                            field: fieldId,
+                            currentLength: this.value.length
+                        });
+                    }
+                }, TYPING_DEBOUNCE);
+            });
+        });
+
+        // Add this new function
+        async function handleNextEpisode() {
+            try {
+                // Get user data from localStorage
+                const name = localStorage.getItem('auth_name');
+                const phone = localStorage.getItem('auth_phone');
+                const userId = localStorage.getItem('auth_userId');
+                
+                console.log('Handling next episode with user data:', {
+                    name,
+                    phone,
+                    userId: userId || 'None'
+                });
+                
+                // Make sure auth_isLoggedIn is set
+                localStorage.setItem('auth_isLoggedIn', 'true');
+                
+                // Store user data in sessionStorage for compatibility with other pages
+                if (name && phone) {
+                    const userData = {
+                        name: name,
+                        phone: phone
+                    };
+                    
+                    if (userId) {
+                        userData.uid = userId;
+                    }
+                    
+                    sessionStorage.setItem('userData', JSON.stringify(userData));
+                    console.log('Stored user data in sessionStorage');
+                } else {
+                    // If localStorage auth not available, try using Firebase user
+                    const user = auth.currentUser;
+                    if (user) {
+                    const userData = {
+                        uid: user.uid,
+                        email: user.email
+                    };
+                    sessionStorage.setItem('userData', JSON.stringify(userData));
+                        console.log('Stored Firebase user data in sessionStorage');
+                    }
+                }
+                
+                // Mark episode as completed in localStorage
+                localStorage.setItem('diary5_completed', 'true');
+                localStorage.setItem('episode5_completed', 'true');
+                
+                // Set a flag to ensure the episodes page shows immediately on index.html
+                localStorage.setItem('show_episodes_page', 'true');
+                    
+                    // Track in LogRocket
+                    if (window.LogRocket) {
+                        LogRocket.track('Moving to Next Episode', {
+                            from: 'diary5',
+                        to: 'index',
+                        userPhone: phone
+                        });
+                    }
+                    
+                console.log('Redirecting to index.html with episodes page flag set');
+                    // Redirect to index.html
+                window.location.href = '../index.html#episodes';
+            } catch (error) {
+                console.error('Error handling next episode:', error);
+                // If there's an error, still try to redirect
+                window.location.href = '../index.html#episodes';
+            }
+        }
+    </script>
+    <!-- Disable search functionality -->
+    <script src="../disable-search.js"></script>
+</body>
+</html>

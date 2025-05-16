@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightning Investigation</title>
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track lightning activity page view
+        LogRocket.track('Lightning Activity View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode5_lightning'
+        });
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('lightning.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Special Elite', cursive;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(139, 69, 19, 0.9);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 20px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: #8B4513;
+            transform: scale(1.1);
+        }
+
+        h2 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-size: 1.4em;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .flashcard-container {
+            position: relative;
+            height: 600px;
+            margin: 120px auto 0;
+            perspective: 1000px;
+        }
+
+        .flashcard {
+            position: absolute;
+            width: 80%;
+            max-width: 400px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            left: 50%;
+            transform-origin: center;
+            backface-visibility: hidden;
+            z-index: 1;
+        }
+
+        .flashcard:nth-child(1) { transform: translate(-50%, 0%) rotate(-5deg); top: 0; }
+        .flashcard:nth-child(2) { transform: translate(-50%, 0%) rotate(3deg); top: 80px; }
+        .flashcard:nth-child(3) { transform: translate(-50%, 0%) rotate(-4deg); top: 160px; }
+        .flashcard:nth-child(4) { transform: translate(-50%, 0%) rotate(5deg); top: 240px; }
+        .flashcard:nth-child(5) { transform: translate(-50%, 0%) rotate(-3deg); top: 320px; }
+        .flashcard:nth-child(6) { transform: translate(-50%, 0%) rotate(4deg); top: 400px; }
+
+        .flashcard:hover {
+            transform: translate(-50%, 0) rotate(0deg) scale(1.05);
+            z-index: 10;
+        }
+
+        .flashcard.selected {
+            background: #4CAF50;
+            color: white;
+            transform: translate(-50%, 0) rotate(0deg) scale(1.1);
+            z-index: 5;
+        }
+
+        .flashcard.incorrect {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .flashcard.correct {
+            background: #4CAF50;
+            color: white;
+        }
+
+        @media (max-height: 800px) {
+            .flashcard-container {
+                height: 500px;
+                margin: 100px auto 0;
+            }
+            
+            .flashcard:nth-child(1) { top: 0; }
+            .flashcard:nth-child(2) { top: 60px; }
+            .flashcard:nth-child(3) { top: 120px; }
+            .flashcard:nth-child(4) { top: 180px; }
+            .flashcard:nth-child(5) { top: 240px; }
+            .flashcard:nth-child(6) { top: 300px; }
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            transition: all 0.3s ease;
+        }
+
+        .button-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .check-button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .check-button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .check-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .result-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            width: auto;
+            max-width: 300px;
+            box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #message-text {
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+
+        .next-button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Special Elite', cursive;
+            font-size: 0.9em;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .next-button.visible {
+            display: inline-block;
+        }
+
+        /* Add completion message styles */
+        .completion-message {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            width: auto;
+            max-width: 85%;
+            white-space: nowrap;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="completion-message" id="completionMessage">Task Completed</div>
+        <button class="close-button" onclick="closeActivity()">×</button>
+        <h2>What three clues can detective Ferret conclude regarding the witnesses?</h2>
+        <div class="flashcard-container">
+            <div class="flashcard" data-value="lightning1">A nearby tree had a fresh lightning scar, still warm.</div>
+            <div class="flashcard" data-value="unrelated1">A stray dog was seen running through the alley at midnight.</div>
+            <div class="flashcard" data-value="lightning2">The ground was turned to glass — a clear lightning sign.</div>
+            <div class="flashcard" data-value="unrelated2">The security camera footage was missing for that hour.</div>
+            <div class="flashcard" data-value="lightning3">A metal fence was charred and bent from a high-voltage hit.</div>
+            <div class="flashcard" data-value="unrelated3">Nearby streetlights flickered due to a power surge last week.</div>
+        </div>
+        <div class="button-container">
+            <button class="check-button" onclick="checkAnswer()">Check Answer</button>
+        </div>
+        <div class="result-message">
+            <div id="message-text"></div>
+            <button class="next-button" onclick="proceedToNext()">Continue</button>
+        </div>
+    </div>
+
+    <audio id="buttonClickSound" src="button_click.mp3"></audio>
+    <audio id="victorySound" src="victory_sound.mp3"></audio>
+
+    <script>
+        const correctAnswers = ['lightning1', 'lightning2', 'lightning3'];
+        let selectedCards = [];
+        const maxSelections = 3;
+        let answerChecked = false;
+
+        function playButtonClick() {
+            const buttonClickSound = document.getElementById('buttonClickSound');
+            if (buttonClickSound) {
+                buttonClickSound.currentTime = 0;
+                buttonClickSound.play().catch(console.error);
+            }
+        }
+
+        function playVictorySound() {
+            const victorySound = document.getElementById('victorySound');
+            if (victorySound) {
+                victorySound.currentTime = 0;
+                victorySound.play().catch(console.error);
+            }
+        }
+
+        document.querySelectorAll('.flashcard').forEach(card => {
+            card.addEventListener('click', () => {
+                if (answerChecked) return;
+                
+                playButtonClick();
+                const value = card.dataset.value;
+                
+                if (card.classList.contains('selected')) {
+                    card.classList.remove('selected');
+                    selectedCards = selectedCards.filter(v => v !== value);
+                } else {
+                    if (selectedCards.length >= maxSelections) {
+                        const firstSelectedCard = document.querySelector(`.flashcard[data-value="${selectedCards[0]}"]`);
+                        if (firstSelectedCard) {
+                            firstSelectedCard.classList.remove('selected');
+                        }
+                        selectedCards.shift();
+                    }
+                    
+                    card.classList.add('selected');
+                    selectedCards.push(value);
+                }
+
+                document.querySelector('.check-button').classList.toggle('active', selectedCards.length === maxSelections);
+            });
+        });
+
+        function checkAnswer() {
+            if (!document.querySelector('.check-button').classList.contains('active')) return;
+            
+            playButtonClick();
+            answerChecked = true;
+            
+            const sortedSelected = [...selectedCards].sort();
+            const sortedCorrect = [...correctAnswers].sort();
+            const resultMessage = document.querySelector('.result-message');
+            const messageText = document.getElementById('message-text');
+            const nextButton = document.querySelector('.next-button');
+            const buttonContainer = document.querySelector('.button-container');
+            
+            buttonContainer.classList.add('hidden');
+            
+            document.querySelectorAll('.flashcard').forEach(card => {
+                if (correctAnswers.includes(card.dataset.value)) {
+                    card.classList.add('correct');
+                } else if (selectedCards.includes(card.dataset.value)) {
+                    card.classList.add('incorrect');
+                }
+            });
+            
+            if (JSON.stringify(sortedSelected) === JSON.stringify(sortedCorrect)) {
+                playVictorySound();
+                messageText.textContent = "Great work! All lightning evidence identified!";
+                localStorage.setItem('lightningActivityCompleted', 'true');
+                // Track activity completion
+                LogRocket.track('Lightning Activity Completed', {
+                    timeToComplete: Date.now() - window.activityStartTime
+                });
+            } else {
+                messageText.textContent = "Correct answers are highlighted green.";
+                // Track incorrect attempt
+                LogRocket.track('Lightning Activity Incorrect Attempt', {
+                    selectedCards: selectedCards
+                });
+            }
+            
+            resultMessage.style.display = 'block';
+            nextButton.classList.add('visible');
+        }
+
+        function proceedToNext() {
+            playButtonClick();
+            localStorage.setItem('returnToCurrentPanel', 'true');
+            localStorage.setItem('targetPanel', '4');
+            window.location.href = 'episode5.html';
+        }
+
+        function closeActivity() {
+            localStorage.setItem('targetPanel', '3');
+            window.location.replace('episode5.html');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Set activity start time for tracking completion duration
+            window.activityStartTime = Date.now();
+            
+            if (!localStorage.getItem('sourcePanel')) {
+                localStorage.setItem('sourcePanel', '3');
+            }
+
+            // Show completion message if activity is completed
+            if (localStorage.getItem('lightningActivityCompleted') === 'true') {
+                document.getElementById('completionMessage').style.display = 'block';
+                document.querySelector('.next-button').classList.add('visible');
+                disableInteraction();
+            }
+
+            try {
+                window.parent.postMessage("lightning_ready", "*");
+            } catch (e) {
+                console.error("Error posting ready message:", e);
+            }
+        });
+
+        // Add function to disable interaction
+        function disableInteraction() {
+            document.querySelectorAll('.flashcard').forEach(card => {
+                card.style.pointerEvents = 'none';
+                card.style.opacity = '0.7';
+            });
+            document.querySelector('.check-button').style.display = 'none';
+        }
+    </script>
+    <!-- Disable search functionality -->
+    <script src="../disable-search.js"></script>
+</body>
+</html>

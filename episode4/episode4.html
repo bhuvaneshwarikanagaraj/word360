@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Image Panel Navigator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track episode page view
+        LogRocket.track('Episode 4 View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode4'
+        });
+    </script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <!-- Initialize Firebase -->
+    <script>
+        // Initialize Firebase and Firestore
+        let db;
+        let auth;
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDO7cACg6BNA8KiYvMhoxonDxCSKBTgwiE",
+                authDomain: "yevvolearn.firebaseapp.com",
+                projectId: "yevvolearn",
+                storageBucket: "yevvolearn.firebasestorage.app",
+                messagingSenderId: "114822749369",
+                appId: "1:114822749369:web:599d567dd36e3ce7870f68",
+                measurementId: "G-9V2E5C1M9V"
+            };
+
+            // Initialize Firebase if not already initialized
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+            auth = firebase.auth();
+            console.log('Firebase initialized successfully');
+
+            // Function to check authentication
+            async function checkAuthentication() {
+                console.log('Starting authentication check...');
+                
+                // First check localStorage for custom auth data
+                const authName = localStorage.getItem('auth_name');
+                const authPhone = localStorage.getItem('auth_phone');
+                const isLoggedIn = localStorage.getItem('auth_isLoggedIn');
+                const authUserId = localStorage.getItem('auth_userId');
+                
+                console.log('localStorage auth check:', { 
+                    authName, 
+                    authPhone, 
+                    isLoggedIn,
+                    authUserId 
+                });
+                
+                if (authName && authPhone && isLoggedIn === 'true') {
+                    console.log('Authentication successful via localStorage');
+                    
+                    // If we have a userId, verify in Firestore
+                    if (authUserId) {
+                        try {
+                            // Try to find the user in the userProgress collection
+                            const userDoc = await db.collection('userProgress').doc(authUserId).get();
+                            if (userDoc.exists) {
+                                console.log('User verified in Firestore userProgress collection');
+                                return true;
+                            }
+                            
+                            // Fallback to query by phone number
+                            const userQuery = await db.collection('userProgress')
+                                .where('phone', '==', authPhone)
+                                .limit(1)
+                                .get();
+                                
+                            if (!userQuery.empty) {
+                                console.log('User verified in Firestore by phone number');
+                                return true;
+                            }
+                        } catch (error) {
+                            console.error('Error verifying user in Firestore:', error);
+                        }
+                    }
+                    
+                    // Even without Firestore verification, still consider authenticated if we have name and phone
+                    console.log('User authenticated via localStorage without Firestore verification');
+                    return true;
+                }
+                
+                // Then check session storage
+                const userDataStr = sessionStorage.getItem('userData');
+                console.log('Session storage data:', userDataStr);
+                
+                if (userDataStr) {
+                    try {
+                        const userData = JSON.parse(userDataStr);
+                        console.log('Parsed user data:', { ...userData, password: '[REDACTED]' });
+                        
+                        // Store in localStorage for future use if we have basic user data
+                        if (userData.name && userData.phone) {
+                            localStorage.setItem('auth_name', userData.name);
+                            localStorage.setItem('auth_phone', userData.phone);
+                            localStorage.setItem('auth_isLoggedIn', 'true');
+                            
+                            if (userData.uid) {
+                                localStorage.setItem('auth_userId', userData.uid);
+                            }
+                            
+                            console.log('Copied session auth data to localStorage');
+                            return true;
+                        }
+                        
+                        // Verify user exists in Firestore
+                        if (userData.uid) {
+                        const userDoc = await db.collection('users').doc(userData.uid).get();
+                        console.log('Firestore user check:', userDoc.exists ? 'User found' : 'User not found');
+                        
+                        if (userDoc.exists) {
+                            console.log('Authentication successful via session storage');
+                            return true;
+                            }
+                            
+                            // Try userProgress collection as well
+                            const progressDoc = await db.collection('userProgress').doc(userData.uid).get();
+                            if (progressDoc.exists) {
+                                console.log('User found in userProgress collection');
+                                return true;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error checking session storage:', error);
+                    }
+                }
+
+                // If all else fails, try Firebase auth
+                return new Promise((resolve) => {
+                    const unsubscribe = auth.onAuthStateChanged((user) => {
+                        console.log('Firebase auth state:', user ? 'User logged in' : 'No user');
+                        unsubscribe();
+                        
+                        if (user) {
+                            // Store Firebase user in localStorage for future use
+                            localStorage.setItem('auth_userId', user.uid);
+                            localStorage.setItem('auth_isLoggedIn', 'true');
+                            if (user.email) {
+                                localStorage.setItem('auth_email', user.email);
+                            }
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    });
+                });
+            }
+
+            // Check authentication and handle redirect
+            async function handleAuth() {
+                console.log('Handling authentication...');
+                const isAuthenticated = await checkAuthentication();
+                console.log('Authentication result:', isAuthenticated);
+                
+                if (!isAuthenticated) {
+                    console.log('User not authenticated, redirecting to login...');
+                    window.location.href = '../index.html';
+                } else {
+                    console.log('User authenticated, proceeding to page...');
+                }
+            }
+
+            // Run authentication check when page loads
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('Page loaded, checking authentication...');
+                handleAuth();
+            });
+
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+        }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .spelling-error {
+            color: red;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #F5E6D3;
+            font-family: 'Special Elite', cursive;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            height: calc(100vh - 30px);
+            background-color: #F5E6D3;
+            border-radius: 28px;
+            overflow: hidden;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .panels-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out;
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .panel.active {
+            transform: translateX(0);
+            opacity: 1;
+            z-index: 5;
+        }
+
+        .panel.prev {
+            transform: translateX(-100%);
+            opacity: 0;
+            z-index: 0;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 85%;
+            position: relative;
+            background-color: #fff;
+            overflow: hidden;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            aspect-ratio: 9/16;
+            max-height: calc(100% - 120px);
+        }
+
+        .panel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+            transition: opacity 0.5s ease;
+        }
+
+        .text-box {
+            width: 100%;
+            background: #F5E6D3;
+            border: 2px solid #8B4513;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            margin-top: auto;
+            position: relative;
+            z-index: 2;
+            min-height: 60px;
+            transition: height 0.3s ease;
+        }
+
+        .text-content {
+            position: relative;
+            color: #333;
+            font-size: 1.1em;
+            line-height: 1.4;
+        }
+
+        .text-content.typing {
+            display: inline-block;
+            white-space: normal;
+            word-wrap: break-word;
+            width: 100%;
+        }
+
+        .nav-buttons {
+            position: absolute;
+            z-index: 100;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0 15px;
+            pointer-events: none;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .nav-buttons.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .nav-btn {
+            background: rgba(245, 230, 211, 0.8);
+            border: 2px solid #8B4513;
+            color: #8B4513;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            font-size: 18px;
+        }
+
+        .nav-btn:hover {
+            background: #F5E6D3;
+            transform: scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .lazy {
+            opacity: 0;
+            transition: opacity 0.3s ease-in;
+        }
+
+        .lazy.loaded {
+            opacity: 1;
+        }
+
+        @media (max-height: 700px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .image-container {
+                height: 80%;
+            }
+        }
+
+        @media (max-height: 500px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .image-container {
+                height: 75%;
+            }
+            
+            .text-content {
+                font-size: 0.9em;
+            }
+        }
+
+        .pointer-icon {
+            display: none;
+            position: absolute;
+            top: 60%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            font-size: 45px;
+            z-index: 5;
+            cursor: pointer;
+            animation: pointer-ripple 2s infinite;
+            text-shadow: 0 0 15px rgba(139, 69, 19, 0.7);
+            filter: drop-shadow(0 0 8px rgba(139, 69, 19, 0.6));
+        }
+
+        .pointer-icon::before {
+            content: '👆';
+        }
+
+        @keyframes pointer-ripple {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                filter: drop-shadow(0 0 8px rgba(139, 69, 19, 0.8));
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.3);
+                opacity: 0.9;
+                filter: drop-shadow(0 0 20px rgba(139, 69, 19, 0.8));
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                filter: drop-shadow(0 0 8px rgba(139, 69, 19, 0.8));
+            }
+        }
+
+        .ripple-circle {
+            display: none;
+            position: absolute;
+            top: 60%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: transparent;
+            border: 3px solid rgba(139, 69, 19, 0.8);
+            opacity: 0;
+            z-index: 4;
+            animation: ripple-wave 2s infinite;
+        }
+
+        @keyframes ripple-wave {
+            0% {
+                width: 60px;
+                height: 60px;
+                opacity: 0.9;
+                border-width: 3px;
+                box-shadow: 0 0 20px rgba(139, 69, 19, 0.4);
+            }
+            50% {
+                opacity: 0.5;
+                box-shadow: 0 0 30px rgba(139, 69, 19, 0.3);
+            }
+            100% {
+                width: 180px;
+                height: 180px;
+                opacity: 0;
+                border-width: 1px;
+                box-shadow: 0 0 40px rgba(139, 69, 19, 0.2);
+            }
+        }
+
+        .pointer-icon.completed {
+            filter: none;
+        }
+
+        .completed-badge {
+            position: absolute;
+            top: 55%;
+            left: 70%;
+            background: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+                font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 6;
+        }
+
+        .activity-completed-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(52, 211, 153, 0.1);
+            border-radius: 20px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .activity-completed-text {
+            font-family: 'Special Elite', cursive;
+            font-size: 24px;
+            font-weight: bold;
+            color: #34D399;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            transform: rotate(-15deg);
+        }
+
+        .image-container:hover .activity-completed-overlay {
+            opacity: 1;
+        }
+
+        .medal-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            z-index: 11;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .text-content.typing {
+            border-right: 2px solid #8B4513;
+            animation: blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #8B4513 }
+        }
+
+        .transition-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 10;
+        }
+
+        .transition-text {
+            color: #F5E6D3;
+            font-size: 24px;
+            font-family: 'Special Elite', cursive;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .panel-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+            transition: opacity 0.5s ease;
+        }
+
+        .video-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panels-container" id="panels-container">
+            <!-- Panels will be generated by JavaScript -->
+        </div>
+        
+        <div class="nav-buttons" id="nav-buttons">
+            <button class="nav-btn" id="prev-btn" title="Previous Panel">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="nav-btn" id="next-btn" title="Next Panel">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Add this function at the top level, outside DOMContentLoaded
+        function goToStateOfArt() {
+            localStorage.setItem('targetPanel', '14');
+            window.location.href = 'stateoftheart.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Global audio configuration
+            const globalAudioConfig = {
+                backgrounds: [
+                    {
+                        id: 'bg-bigbuilding',
+                        src: './audio/Bigbuilding.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-lift',
+                        src: './audio/2.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-walking',
+                        src: './audio/walking.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-ending',
+                        src: './audio/ending.mp3',
+                        loop: true,
+                        volume: 0.3
+                    },
+                    {
+                        id: 'bg-happy',
+                        src: './audio/happy2.mp3',
+                        loop: true,
+                        volume: 0.3
+                    }
+                ]
+            };
+
+              // Create panels data
+              const panelsData = [
+                {
+                    id: 1,
+                    type: 'image',
+                    image: './images/1.webp',
+                    text: 'Kai: Hop in, Sir! Your luxury transport awaits!',
+                    audio: {
+                        backgrounds: ['bg-rain'],
+                        main: { src: './audio/closing.mp3', volume: 1.0 }
+                    }
+
+                        //problem in the text 
+                },
+                {
+                    id: 2,
+                    type: 'image',
+                    image: './images/2.webp',
+                    text: 'Ferret: That car looks like it survived a war.',
+                    audio: {
+                        backgrounds: ['bg-rain'],
+                        main: { src: './audio/3.2.mp3', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 3,
+                    type: 'image',
+                    image: './images/3.webp',
+                    text: '[ Click on the hand icon to drive the car. ]',
+                    audio: {
+                        backgrounds: ['bg-rain'],
+                        main: { src: './audio/driving.mp3', volume: 1.0 }
+                    }
+                },
+              
+                {
+                    id: 4,
+                    type: 'image',
+                    image: './images/5.webp',
+                    text: 'Ferret: They put us in the Diamond Tower? Did the department win the lottery?',
+                    audio: {
+                        backgrounds: ['bg-bigbuilding'],
+                        main: { src: './audio/cardoorclosing.mp3', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 5,
+                    type: 'video',
+                    video: './images/6.mp4',
+                    text: 'Kai: Mmm, sort of? Just... follow me!',
+                    audio: {
+                        backgrounds: ['bg-bigbuilding'],
+                        main: { src: './audio/gummysrc.mp3', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 6,
+                    type: 'image',
+                    image: './images/7.webp',
+                    text: '[ Click on the hand icon to operate the lift. ]',
+                    audio: {
+                        backgrounds: [''],
+                        main: { src: './audio/openlift.mp3', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 7,
+                    type: 'image',
+                    image: './images/8.webp',
+                    text: 'Ferret: Top floor. The perks of being a legend.',
+                    audio: {
+                        backgrounds: ['bg-lift'],
+                        main: { src: './audio/', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 8,
+                    type: 'video',
+                    video: './images/9.mp4',
+                    text: "Kai: Yep. Legendary. That's us! ",
+                    audio: {
+                        backgrounds: ['bg-lift'],
+                        main: { src: './audio/3.9.mp3', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 9,
+                    type: 'image',
+                    image: './images/10.webp',
+                    text: '[ Click on the hand icon to open the door. ]',
+                    audio: {
+                        backgrounds: ['[Click Here!]'],
+                        main: { src: './audio/opendoor.mp3', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 10,
+                    type: 'image',
+                    image: './images/11.webp',
+                    text: 'Ferret: Oh no. I actually thought the department had improved. Just for a moment, I really believed it.',
+                    audio: {
+                        backgrounds: ['bg-walking'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                    //problem in the text 
+                },
+                {
+                    id: 11,
+                    type: 'image',
+                    image: './images/12.webp',
+                    text: 'Kai: You were hopeful! That is... kind of sweet.\n [Kai opens the door.]',
+                    audio: {
+                        backgrounds: ['bg-walking'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 12,
+                    type: 'image',
+                    image: './images/13.webp',
+                    text: "Ferret: Great. Another <span class='spelling-error' style='color: red; text-decoration: underline; cursor: pointer;' onclick='window.location.href=\'stateoftheart.html\''>state of the art</span> office. They really know how to treat their detectives.",
+                    audio: {
+                        backgrounds: ['bg-walking'],
+                        main: { src: './audio/3.13.mp3', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 13,
+                    type: 'image',
+                    image: './images/14.webp',
+                    text: '[Ferret to himself: This place looks like a junk yard. ]',
+                    audio: {
+                        backgrounds: ['bg-walking'],
+                        main: { src: './audio/3.14.mp3', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 14,
+                    type: 'image',
+                    image: './images/15.webp',
+                    text: "[ Kai grabs Detective Ferret's suitcase, the one that holds all of his tools. It's been essential to Ferret's success, playing a crucial role in every case he's solved. ]",
+                    audio: {
+                        backgrounds: ['bg-ending'],
+                        main: { src: './audio/3.13.mp3', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 15,
+                    type: 'image',
+                    image: './images/16.webp',
+                    text: 'Kai: Here we go, sir. Everything you need. ',
+                    audio: {
+                        backgrounds: ['bg-ending'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 16,
+                    type: 'image',
+                    image: './images/17.webp',
+                    text: "[ Ferret grabs his camera to check if it's working. ]",
+                    audio: {
+                        backgrounds: ['bg-ending'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 17,
+                    type: 'image',
+                    image: './images/18.webp',
+                    text: '[ Ferret to himself : I can feel it… my old strength returning ]',
+                    audio: {
+                        backgrounds: ['bg-ending'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+                {
+                    id: 18,
+                    type: 'image',
+                    image: './images/19.webp',
+                    text: "[Ferret to himself : This badge—it's more than a symbol. It's power. And with it, I'll stand tall again. ]",
+                    audio: {
+                        backgrounds: ['bg-ending'],
+                        main: { src: '', volume: 1.0 }
+                    }
+                },
+   
+            ];
+            
+            // Elements
+            const panelsContainer = document.getElementById('panels-container');
+            const navButtons = document.getElementById('nav-buttons');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            // Current panel index
+            let currentPanelIndex = 0;
+
+            // Add dodge activity completion tracking
+            let dodgeActivityCompleted = false;
+            const DODGE_ACTIVITY_KEY = 'dodgeActivityCompleted';
+
+            // Add floor32 activity completion tracking
+            let floor32ActivityCompleted = false;
+            const FLOOR32_ACTIVITY_KEY = 'floor32ActivityCompleted';
+
+            // Add maintenance activity completion tracking
+            let maintenanceActivityCompleted = false;
+            const MAINTENANCE_ACTIVITY_KEY = 'maintenanceActivityCompleted';
+
+            // Add transition overlay styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .transition-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    opacity: 0;
+                    transition: opacity 0.5s ease;
+                    z-index: 10;
+                }
+                .transition-text {
+                    color: #F5E6D3;
+                    font-size: 24px;
+                    font-family: 'Special Elite', cursive;
+                    text-align: center;
+                    padding: 20px;
+                }
+            `;
+            document.head.appendChild(style);
+
+            function createPanels() {
+                panelsData.forEach((panel, index) => {
+                    const panelElement = document.createElement('div');
+                    panelElement.className = `panel ${index === 0 ? 'active' : ''}`;
+                    panelElement.id = `panel-${panel.id}`;
+                    
+                    let panelContent = '';
+                    if (panel.type === 'video') {
+                        panelContent = `
+                            <div class="image-container">
+                                <div class="video-container">
+                                    <video class="panel-video" id="video-${panel.id}" autoplay loop muted playsinline>
+                                        <source src="${panel.video}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                ${panel.id === 3 ? `
+                                    <div class="pointer-icon"></div>
+                                    <div class="ripple-circle"></div>
+                                    <div class="ripple-circle" style="animation-delay: 0.5s"></div>
+                                    <div class="ripple-circle" style="animation-delay: 1s"></div>
+                                ` : ''}
+                                ${panel.id === 6 ? `
+                                    <div class="pointer-icon"></div>
+                                    <div class="ripple-circle"></div>
+                                    <div class="ripple-circle" style="animation-delay: 0.5s"></div>
+                                    <div class="ripple-circle" style="animation-delay: 1s"></div>
+                                ` : ''}
+                                ${panel.id === 9 ? `
+                                    <div class="pointer-icon"></div>
+                                    <div class="ripple-circle"></div>
+                                    <div class="ripple-circle" style="animation-delay: 0.5s"></div>
+                                    <div class="ripple-circle" style="animation-delay: 1s"></div>
+                                ` : ''}
+                                ${panel.id === 16 ? `
+                                    <div class="pointer-icon"></div>
+                                    <div class="ripple-circle"></div>
+                                    <div class="ripple-circle" style="animation-delay: 0.5s"></div>
+                                    <div class="ripple-circle" style="animation-delay: 1s"></div>
+                                ` : ''}
+                            </div>
+                            <div class="text-box">
+                                <div class="text-content" id="text-content-${panel.id}"></div>
+                            </div>
+                        `;
+                    } else {
+                        panelContent = `
+                            <div class="image-container">
+                                <img class="panel-image lazy" 
+                                     src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                                     data-src="${panel.image}" 
+                                     alt="Panel ${panel.id}" 
+                                     loading="lazy">
+                                ${panel.id === 3 ? `
+                                    <div class="pointer-icon"></div>
+                                    <div class="ripple-circle"></div>
+                                    <div class="ripple-circle" style="animation-delay: 0.5s"></div>
+                                    <div class="ripple-circle" style="animation-delay: 1s"></div>
+                                ` : ''}
+                                ${panel.id === 6 ? `
+                                    <div class="pointer-icon"></div>
+                                    <div class="ripple-circle"></div>
+                                    <div class="ripple-circle" style="animation-delay: 0.5s"></div>
+                                    <div class="ripple-circle" style="animation-delay: 1s"></div>
+                                ` : ''}
+                                ${panel.id === 9 ? `
+                                    <div class="pointer-icon"></div>
+                                    <div class="ripple-circle"></div>
+                                    <div class="ripple-circle" style="animation-delay: 0.5s"></div>
+                                    <div class="ripple-circle" style="animation-delay: 1s"></div>
+                                ` : ''}
+                                ${panel.id === 16 ? `
+                                    <div class="pointer-icon"></div>
+                                    <div class="ripple-circle"></div>
+                                    <div class="ripple-circle" style="animation-delay: 0.5s"></div>
+                                    <div class="ripple-circle" style="animation-delay: 1s"></div>
+                                ` : ''}
+                            </div>
+                            <div class="text-box">
+                                <div class="text-content" id="text-content-${panel.id}"></div>
+                            </div>
+                        `;
+                    }
+                    
+                    panelElement.innerHTML = panelContent;
+                    panelsContainer.appendChild(panelElement);
+
+                    // Add video-specific handling
+                    if (panel.type === 'video') {
+                        const video = panelElement.querySelector(`#video-${panel.id}`);
+                        if (video) {
+                            // Ensure video plays when panel becomes active
+                            video.addEventListener('loadedmetadata', () => {
+                                if (panelElement.classList.contains('active')) {
+                                    video.play().catch(console.error);
+                                }
+                            });
+
+                            // Handle video errors
+                            video.addEventListener('error', (e) => {
+                                console.error('Video error:', e);
+                            });
+                        }
+                    }
+
+                    const textContent = panelElement.querySelector(`#text-content-${panel.id}`);
+                    textContent.innerHTML = panel.text;
+
+                    // Add direct click handler for panel 14's state of art link
+                    if (panel.id === 14) {
+                        const stateOfArtLink = textContent.querySelector('.spelling-error');
+                        if (stateOfArtLink) {
+                            stateOfArtLink.addEventListener('click', () => {
+                                window.location.href = 'stateoftheart.html';
+                            });
+                        }
+                    }
+
+                    // Add click handlers for interactive panels
+                    if (panel.id === 3 || panel.id === 6 || panel.id === 9 || panel.id === 16) {
+                        const pointerIcon = panelElement.querySelector('.pointer-icon');
+                        const rippleCircles = panelElement.querySelectorAll('.ripple-circle');
+                        
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.target.classList.contains('active')) {
+                                    pointerIcon.style.display = 'block';
+                                    rippleCircles.forEach(circle => circle.style.display = 'block');
+                                } else {
+                                    pointerIcon.style.display = 'none';
+                                    rippleCircles.forEach(circle => circle.style.display = 'none');
+                                }
+                            });
+                        });
+                        
+                        observer.observe(panelElement, { attributes: true });
+
+                        pointerIcon.addEventListener('click', () => {
+                            if (panel.id === 3) {
+                                localStorage.setItem('returnToPanel', '3');
+                                window.location.href = 'dodge.html';
+                            } else if (panel.id === 6) {
+                                localStorage.setItem('returnToPanel', '6');
+                                window.location.href = '32.html';
+                            } else if (panel.id === 9) {
+                                localStorage.setItem('returnToPanel', '9');
+                                window.location.href = 'maintenance.html';
+                            } else if (panel.id === 16) {
+                                localStorage.setItem('returnToPanel', '16');
+                                window.location.href = 'camera.html';
+                            }
+                        });
+                    }
+                });
+
+                lazyLoadImages();
+            }
+            
+            // Initialize panels
+            createPanels();
+            
+            // Audio functions
+            function createAudioElements() {
+                globalAudioConfig.backgrounds.forEach(bgConfig => {
+                    const backgroundAudio = document.createElement('audio');
+                    backgroundAudio.id = bgConfig.id;
+                    backgroundAudio.src = bgConfig.src;
+                    backgroundAudio.loop = bgConfig.loop;
+                    backgroundAudio.preload = 'auto';
+                    document.body.appendChild(backgroundAudio);
+                });
+
+                const audioSources = new Set();
+                panelsData.forEach(panel => {
+                    if (panel.audio?.main?.src) {
+                        audioSources.add(panel.audio.main.src);
+                    }
+                });
+
+                audioSources.forEach(src => {
+                    if (!src) return;
+                    const audioId = src.split('/').pop().replace('.mp3', '');
+                    const audioElement = document.createElement('audio');
+                    audioElement.id = audioId;
+                    audioElement.src = src;
+                    audioElement.preload = 'auto';
+                    document.body.appendChild(audioElement);
+                });
+            }
+
+            function playAudio(audioConfig) {
+                const audioId = audioConfig.src.split('/').pop().replace('.mp3', '');
+                const audioElement = document.getElementById(audioId);
+                if (audioElement) {
+                    audioElement.currentTime = 0;
+                    audioElement.volume = audioConfig.volume;
+                    audioElement.play().catch(console.error);
+                }
+            }
+
+            function handleBackgroundAudio(selectedBackgrounds) {
+                globalAudioConfig.backgrounds.forEach(bgConfig => {
+                    const bgAudio = document.getElementById(bgConfig.id);
+                    if (bgAudio) {
+                        if (selectedBackgrounds.includes(bgConfig.id)) {
+                            if (bgAudio.paused) {
+                                bgAudio.volume = bgConfig.volume;
+                                bgAudio.play().catch(console.error);
+                            }
+                        } else {
+                            bgAudio.pause();
+                            bgAudio.currentTime = 0;
+                        }
+                    }
+                });
+            }
+
+            function stopAllAudio(stopBackground = false) {
+                document.querySelectorAll('audio').forEach(audio => {
+                    const isBackground = globalAudioConfig.backgrounds.some(bg => bg.id === audio.id);
+                    if (!isBackground || stopBackground) {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }
+                });
+            }
+
+            function handleAudio(index) {
+                const currentPanel = panelsData[index];
+                stopAllAudio(false);
+                
+                if (!currentPanel.audio) return;
+
+                const selectedBackgrounds = currentPanel.audio.backgrounds || [];
+                handleBackgroundAudio(selectedBackgrounds);
+
+                if (currentPanel.audio.main) {
+                    playAudio(currentPanel.audio.main);
+                }
+            }
+            
+            // Update loadCompletionStates function
+            function loadCompletionStates() {
+                // Load existing completion states
+                dodgeActivityCompleted = localStorage.getItem(DODGE_ACTIVITY_KEY) === 'true';
+                floor32ActivityCompleted = localStorage.getItem(FLOOR32_ACTIVITY_KEY) === 'true';
+                maintenanceActivityCompleted = localStorage.getItem(MAINTENANCE_ACTIVITY_KEY) === 'true';
+                console.log('Loading completion states:', {
+                    dodge: dodgeActivityCompleted,
+                    floor32: floor32ActivityCompleted,
+                    maintenance: maintenanceActivityCompleted
+                });
+            }
+
+            // Remove old typeText function and replace with new one
+            function typeText(element, text, duration = 2000) {
+                element.innerHTML = '';
+                element.classList.add('typing');
+                
+                // Clear any existing intervals
+                if (window.typewriterInterval) {
+                    clearInterval(window.typewriterInterval);
+                }
+                
+                // Create a temporary div to parse the HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = text;
+                const textContent = tempDiv.textContent;
+                
+                let i = 0;
+                const delayPerCharacter = duration / textContent.length;
+                
+                window.typewriterInterval = setInterval(function() {
+                    if (i < textContent.length) {
+                        // For panels with HTML content (like clickable words), preserve the structure
+                        if (text.includes('class="spelling-error"')) {
+                            element.innerHTML = text;
+                            i = textContent.length; // Complete immediately for HTML content
+                        } else {
+                            element.textContent += textContent.charAt(i);
+                            i++;
+                        }
+                    } else {
+                        clearInterval(window.typewriterInterval);
+                        window.typewriterInterval = null;
+                        element.classList.remove('typing');
+                    }
+                }, delayPerCharacter);
+            }
+            
+            function stopTypewriter() {
+                if (window.typewriterInterval) {
+                    clearInterval(window.typewriterInterval);
+                    window.typewriterInterval = null;
+                }
+            }
+
+            // Update showPanel function to use the new typeText function
+            function showPanel(index) {
+                // Track panel navigation in LogRocket
+                if (window.LogRocket) {
+                    LogRocket.track('Panel Navigation', {
+                        fromPanel: currentPanelIndex,
+                        toPanel: index,
+                        episode: 4
+                    });
+                }
+
+
+                // Logic to be used for diary navigation
+                if (index < 0) index = 0;
+                if (index >= panelsData.length) {
+                    // If we've reached the end, navigate to diary4.html
+                    window.location.href = 'diary4.html';
+                    return;
+                }
+
+                // Reload completion states
+                loadCompletionStates();
+                
+                // Check if trying to navigate to panel 4 without completing dodge activity
+                if (index === 3 && !localStorage.getItem(DODGE_ACTIVITY_KEY)) {
+                    console.log('Cannot proceed: Dodge activity not completed');
+                    index = 2;
+                }
+
+                // Check if trying to navigate to panel 7 without completing floor32 activity
+                if (index === 6 && !localStorage.getItem(FLOOR32_ACTIVITY_KEY)) {
+                    console.log('Cannot proceed: Floor 32 activity not completed');
+                    index = 5;
+                }
+
+                // Check if trying to navigate to panel 10 without completing maintenance activity
+                if (index === 9 && !localStorage.getItem(MAINTENANCE_ACTIVITY_KEY)) {
+                    console.log('Cannot proceed: Maintenance activity not completed');
+                    index = 8;
+                }
+
+                // Check if trying to navigate to panel 13 without completing stateoftheart activity
+                if (index === 12 && !localStorage.getItem('stateofthartActivityCompleted')) {
+                    console.log('Cannot proceed: State of the art activity not completed');
+                    index = 11;
+                }
+
+                // Check if trying to navigate to panel 17 without completing camera activity
+                if (index === 16 && !localStorage.getItem('cameraActivityCompleted')) {
+                    console.log('Cannot proceed: Camera activity not completed');
+                    index = 15;
+                }
+
+                const panels = document.querySelectorAll('.panel');
+                panels.forEach((panel, i) => {
+                    panel.classList.remove('active', 'prev');
+                    
+                    // Pause videos in inactive panels
+                    const video = panel.querySelector('video');
+                    if (video) {
+                        if (i === index) {
+                            video.play().catch(console.error);
+                        } else {
+                            video.pause();
+                        }
+                    }
+
+                    if (i < index) {
+                        panel.classList.add('prev');
+                    } else if (i === index) {
+                        panel.classList.add('active');
+                        const textContent = document.getElementById(`text-content-${panelsData[i].id}`);
+                        if (textContent) {
+                            // Preserve HTML content when setting text
+                            textContent.innerHTML = panelsData[i].text;
+                            if (!panelsData[i].text.includes('spelling-error')) {
+                                const typingDuration = 2000 + (panelsData[i].text.length * 50);
+                                typeText(textContent, panelsData[i].text, typingDuration);
+                            }
+                        }
+                    }
+                });
+
+                currentPanelIndex = index;
+                handleAudio(index);
+                
+                navButtons.classList.add('visible');
+                prevBtn.disabled = currentPanelIndex === 0;
+
+                // Check if we should enable the next button
+                let shouldEnableNext = true;
+                
+                // Check completion status for activities
+                if (currentPanelIndex === 2) {
+                    shouldEnableNext = localStorage.getItem(DODGE_ACTIVITY_KEY) === 'true';
+                } else if (currentPanelIndex === 5) {
+                    shouldEnableNext = localStorage.getItem(FLOOR32_ACTIVITY_KEY) === 'true';
+                } else if (currentPanelIndex === 8) {
+                    shouldEnableNext = localStorage.getItem(MAINTENANCE_ACTIVITY_KEY) === 'true';
+                } else if (currentPanelIndex === 11) {
+                    shouldEnableNext = localStorage.getItem('stateofthartActivityCompleted') === 'true';
+                } else if (currentPanelIndex === 15) {
+                    shouldEnableNext = localStorage.getItem('cameraActivityCompleted') === 'true';
+                }
+
+                // Enable next button on the last panel (18) to navigate to diary
+                if (currentPanelIndex === panelsData.length - 1) {
+                    shouldEnableNext = true;
+                }
+
+                nextBtn.disabled = !shouldEnableNext;
+                nextBtn.style.opacity = !shouldEnableNext ? '0.3' : '1';
+                nextBtn.style.cursor = !shouldEnableNext ? 'not-allowed' : 'pointer';
+            }
+
+            // Remove completion indicators function
+            function updateCompletionIndicators() {
+                // This function is now empty as we don't need completion indicators
+            }
+
+            // Navigation event listeners
+            nextBtn.addEventListener('click', () => {
+                if (currentPanelIndex === panelsData.length - 1) {
+                    // If on last panel, show transition overlay and navigate to diary
+                    const currentPanel = document.querySelector('.panel.active');
+                    const imageContainer = currentPanel.querySelector('.image-container');
+                    
+                    // Create transition overlay
+                    const overlay = document.createElement('div');
+                    overlay.className = 'transition-overlay';
+                    overlay.innerHTML = '<div class="transition-text">To be continued</div>';
+                    imageContainer.appendChild(overlay);
+                    
+                    // Show overlay
+                    setTimeout(() => {
+                        overlay.style.opacity = '1';
+                    }, 100);
+                    
+                    // Navigate after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = './diary4.html';
+                    }, 2000);
+                } else if (currentPanelIndex < panelsData.length - 1) {
+                    showPanel(currentPanelIndex + 1);
+                }
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                if (currentPanelIndex > 0) {
+                    showPanel(currentPanelIndex - 1);
+                }
+            });
+            
+            // Touch navigation
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+            
+            document.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                if (touchEndX + swipeThreshold < touchStartX && currentPanelIndex < panelsData.length - 1) {
+                    showPanel(currentPanelIndex + 1);
+                } else if (touchEndX > touchStartX + swipeThreshold && currentPanelIndex > 0) {
+                    showPanel(currentPanelIndex - 1);
+                }
+            }
+
+            function lazyLoadImages() {
+                const images = document.querySelectorAll('.panel-image');
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src;
+                            img.classList.remove('lazy');
+                            observer.unobserve(img);
+                        }
+                    });
+                });
+
+                images.forEach(img => {
+                    imageObserver.observe(img);
+                });
+            }
+
+            // Initialize audio
+            createAudioElements();
+            handleBackgroundAudio([]);
+            showPanel(0);
+
+            // Check for return flags and target panel
+            window.addEventListener('DOMContentLoaded', () => {
+                // Check URL parameters first
+                const urlParams = new URLSearchParams(window.location.search);
+                const panel = parseInt(urlParams.get('panel'));
+                const targetIndex = !isNaN(panel) ? panel - 1 : null;
+
+                if (targetIndex !== null && targetIndex >= 0 && targetIndex < panelsData.length) {
+                    showPanel(targetIndex);
+                    return;
+                }
+
+                // Then check localStorage flags
+                if (localStorage.getItem('targetPanel')) {
+                    const panel = parseInt(localStorage.getItem('targetPanel')) - 1;
+                    localStorage.removeItem('targetPanel');
+                    if (panel >= 0 && panel < panelsData.length) {
+                        showPanel(panel);
+                        return;
+                    }
+                }
+
+                // Check return flags
+                if (localStorage.getItem('returnToCurrentPanel') === 'true') {
+                    localStorage.removeItem('returnToCurrentPanel');
+                    showPanel(9); // Return to panel 10 (index 9)
+                    return;
+                }
+
+                // Check if returning from activities
+                if (localStorage.getItem(DODGE_ACTIVITY_KEY) === 'true') {
+                    showPanel(4); // Go to panel 5 (after dodge activity)
+                    return;
+                }
+
+                if (localStorage.getItem(MAINTENANCE_ACTIVITY_KEY) === 'true') {
+                    showPanel(11); // Go to panel 12 (after maintenance activity)
+                    return;
+                }
+
+                showPanel(0);
+            });
+
+            // Track episode start time
+            const startTime = Date.now();
+
+            // Track button clicks
+            document.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', () => {
+                    if (window.LogRocket) {
+                        LogRocket.track('Button Click', {
+                            buttonText: button.textContent,
+                            currentPanel: currentPanelIndex,
+                            episode: 4
+                        });
+                    }
+                });
+            });
+
+            // Add a global click handler for spelling-error links
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('spelling-error')) {
+                    window.location.href = 'stateoftheart.html';
+                }
+            });
+        });
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html> 

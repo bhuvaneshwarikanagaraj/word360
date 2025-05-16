@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Daily Weather Chronicle</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAjwEqyV_Ml3UJZOVYJhOFHbA9B5MCjDvw",
+            authDomain: "detective-ferret.firebaseapp.com",
+            projectId: "detective-ferret",
+            storageBucket: "detective-ferret.appspot.com",
+            messagingSenderId: "908301000347",
+            appId: "1:908301000347:web:f4e2e3c85604b2bb6c0fb6",
+            databaseURL: "https://detective-ferret-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+    </script>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .newspaper {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            position: relative;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .newspaper-name {
+            font-family: 'Old English Text MT', 'Times New Roman', serif;
+            font-size: 42px;
+            margin: 0;
+        }
+        .newspaper-date {
+            font-style: italic;
+            margin: 5px 0 10px;
+        }
+        .headline {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .byline {
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .article {
+            column-count: 2;
+            column-gap: 20px;
+            text-align: justify;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .weather-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: center;
+            background-color: #f9f9f9;
+        }
+        .weather-location {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .weather-date {
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        .weather-icon {
+            font-size: 48px;
+            margin: 10px 0;
+        }
+        .weather-temp {
+            font-size: 22px;
+            margin: 10px 0;
+        }
+        .weather-desc {
+            font-size: 14px;
+        }
+        .footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            text-align: center;
+            font-style: italic;
+        }
+        .question-container {
+            background-color: #f0f7ff;
+            padding: 20px;
+            border: 1px solid #cce5ff;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        .question {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .option {
+            padding: 12px 20px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .option:hover {
+            background-color: #dee2e6;
+            transform: translateY(-2px);
+        }
+        .option.selected {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .option.correct {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .option.incorrect {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-size: 16px;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .next-btn, .proceed-btn {
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+            margin: 15px auto;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 200px;
+        }
+        .next-btn:hover, .proceed-btn:hover {
+            background-color: #0069d9;
+            transform: translateY(-2px);
+        }
+        .completion-message {
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+            margin: 20px 0;
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background-color: #d4edda;
+            border-radius: 8px;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: #8B4513;
+            border: 2px solid #6B3410;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        .close-button:hover {
+            background: #95562B;
+            transform: scale(1.1);
+        }
+        .completion-buttons {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .completion-buttons button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+        .next-episode-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .next-episode-btn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+            .newspaper {
+                margin: 0;
+                padding: 15px;
+                box-shadow: none;
+            }
+            .newspaper-name {
+                font-size: 32px;
+            }
+            .headline {
+                font-size: 22px;
+            }
+            .article {
+                column-count: 1;
+            }
+            .weather-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .weather-card {
+                margin: 0 auto;
+                max-width: 300px;
+            }
+            .question {
+                font-size: 16px;
+            }
+            .option {
+                padding: 15px;
+            }
+            .feedback {
+                font-size: 14px;
+            }
+        }
+
+        .task-completed {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            width: auto;
+            max-width: 85%;
+            white-space: nowrap;
+            display: none;
+            z-index: 1000;
+        }
+
+        .disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #8B4513;
+            animation: bounce 1s infinite;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+            text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.3);
+        }
+
+        .scroll-indicator::after {
+            content: '⬇';
+            color: #8B4513;
+            font-size: 32px;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="task-completed" id="taskCompletedBanner">Task Completed</div>
+    <div class="scroll-indicator" id="scrollIndicator"></div>
+    <div class="newspaper">
+        <button class="close-button" onclick="closeReport()">&times;</button>
+        <div class="header">
+            <h1 class="newspaper-name">The Daily Weather Chronicle</h1>
+            <p class="newspaper-date">Wednesday, July 30, 2024</p>
+        </div>
+        
+        <h2 class="headline">SUNNY DAYS AHEAD!</h2>
+        <p class="byline">By Weather Team</p>
+        
+        <div class="article">
+            <p>Good news for everyone! The weather is going to be really nice in our area. All three towns will have sunny days with no clouds in sight.</p>
+            
+            <p>The sun will be shining bright, making it perfect for outdoor activities. No need to worry about bad weather for the next couple of weeks.</p>
+            
+            <p>The weatherman says this is because of a big high-pressure system that's staying over our region. This means the air is calm and stable.</p>
+            
+            <p>Remember to wear sunscreen if you're playing outside for a long time. Even though it's fall, the sun can still be strong!</p>
+        </div>
+        
+        <div class="weather-grid">
+            <div class="weather-card">
+                <div class="weather-location">Willow Creek</div>
+                <div class="weather-date">October 2nd</div>
+                <div class="weather-icon">☀️</div>
+                <div class="weather-temp">72°F / 22°C</div>
+                <div class="weather-desc">Clear skies all day. Light winds. No chance of rain.</div>
+            </div>
+            
+            <div class="weather-card">
+                <div class="weather-location">Oakwood Park</div>
+                <div class="weather-date">October 9th</div>
+                <div class="weather-icon">☀️</div>
+                <div class="weather-temp">68°F / 20°C</div>
+                <div class="weather-desc">Sunny with no clouds. Morning fog possible. No chance of rain.</div>
+            </div>
+            
+            <div class="weather-card">
+                <div class="weather-location">Maple Street</div>
+                <div class="weather-date">October 16th</div>
+                <div class="weather-icon">☀️</div>
+                <div class="weather-temp">65°F / 18°C</div>
+                <div class="weather-desc">Full sunshine all day. Cooler than before. No chance of rain.</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            The Daily Weather Chronicle - Your friendly neighborhood weather source since 1925.
+        </div>
+        
+        <div class="completion-message">
+            Great job! You've correctly understood the weather report. 
+            <div class="completion-buttons">
+                <button class="next-episode-btn" onclick="proceedToNext()">Continue to Next Panel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="question-container" id="question1">
+        <div class="question">Do you see any signs of rain in the weather?</div>
+        <div class="options">
+            <div class="option" onclick="selectOption(this, false)">Yes</div>
+            <div class="option" onclick="selectOption(this, true)">No</div>
+        </div>
+        <div class="feedback correct">Correct! The weather report shows sunny days with no chance of rain for all three locations.</div>
+        <div class="feedback incorrect">That's not right. Look at the weather cards again - they all say "No chance of rain" or similar.</div>
+        <button class="next-btn" onclick="showNextQuestion()">Next Question</button>
+    </div>
+    
+    <div class="question-container" id="question2" style="display: none;">
+        <div class="question">Is there any sign of thunderstorm or anything similar?</div>
+        <div class="options">
+            <div class="option" onclick="selectOption(this, false)">Yes</div>
+            <div class="option" onclick="selectOption(this, true)">No</div>
+        </div>
+        <div class="feedback correct">Correct! The weather report only mentions sunny days with clear skies. There are no thunderstorms or bad weather predicted.</div>
+        <div class="feedback incorrect">That's not correct. The weather report only shows sunny icons (☀️) and mentions clear skies with no storms.</div>
+        <button class="proceed-btn" onclick="showCompletion()">Proceed</button>
+    </div>
+    
+    <script>
+        function selectOption(element, isCorrect) {
+            // Prevent interaction if activity is completed
+            if (localStorage.getItem('reportActivityCompleted') === 'true') return;
+
+            // Clear any previous selections
+            const options = element.parentElement.getElementsByClassName('option');
+            for (let i = 0; i < options.length; i++) {
+                options[i].classList.remove('selected', 'correct', 'incorrect');
+            }
+            
+            // Select and mark the current option
+            element.classList.add('selected');
+            if (isCorrect) {
+                element.classList.add('correct');
+                element.parentElement.parentElement.getElementsByClassName('feedback correct')[0].style.display = 'block';
+                element.parentElement.parentElement.getElementsByClassName('feedback incorrect')[0].style.display = 'none';
+            } else {
+                element.classList.add('incorrect');
+                element.parentElement.parentElement.getElementsByClassName('feedback incorrect')[0].style.display = 'block';
+                element.parentElement.parentElement.getElementsByClassName('feedback correct')[0].style.display = 'none';
+            }
+            
+            // Show the next button if this is the first question, or proceed button if it's the last
+            if (element.parentElement.parentElement.id === 'question1') {
+                element.parentElement.parentElement.getElementsByClassName('next-btn')[0].style.display = 'block';
+            } else {
+                element.parentElement.parentElement.getElementsByClassName('proceed-btn')[0].style.display = 'block';
+            }
+        }
+        
+        function showNextQuestion() {
+            document.getElementById('question1').style.display = 'none';
+            document.getElementById('question2').style.display = 'block';
+        }
+        
+        function showCompletion() {
+            document.getElementById('question2').style.display = 'none';
+            document.querySelector('.completion-message').style.display = 'block';
+            document.querySelector('.completion-buttons').style.display = 'flex';
+            document.getElementById('taskCompletedBanner').style.display = 'block';
+            
+            // Mark activity as completed
+            localStorage.setItem('reportActivityCompleted', 'true');
+            database.ref('activities/report').set({
+                completed: true,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            disableInteraction();
+        }
+
+        function closeReport() {
+            localStorage.setItem('targetPanel', '14');
+            window.location.replace('episode5.html');
+        }
+
+        function proceedToNext() {
+            localStorage.setItem('targetPanel', '14.5');
+            window.location.href = 'episode5.html';
+        }
+
+        function disableInteraction() {
+            const options = document.querySelectorAll('.options');
+            options.forEach(optionContainer => {
+                optionContainer.classList.add('disabled');
+            });
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Show scroll indicator only if task is not completed
+            const scrollIndicator = document.getElementById('scrollIndicator');
+            const taskCompletedBanner = document.getElementById('taskCompletedBanner');
+            
+            // Check completion status from Firebase
+            database.ref('activities/report').once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data && data.completed) {
+                        localStorage.setItem('reportActivityCompleted', 'true');
+                        taskCompletedBanner.style.display = 'block';
+                        document.getElementById('question1').style.display = 'none';
+                        document.getElementById('question2').style.display = 'none';
+                        document.querySelector('.completion-message').style.display = 'block';
+                        document.querySelector('.completion-buttons').style.display = 'flex';
+                        disableInteraction();
+                        scrollIndicator.style.opacity = '0';
+                    } else if (localStorage.getItem('reportActivityCompleted') === 'true') {
+                        taskCompletedBanner.style.display = 'block';
+                        document.getElementById('question1').style.display = 'none';
+                        document.getElementById('question2').style.display = 'none';
+                        document.querySelector('.completion-message').style.display = 'block';
+                        document.querySelector('.completion-buttons').style.display = 'flex';
+                        disableInteraction();
+                        scrollIndicator.style.opacity = '0';
+                    } else {
+                        // Only show scroll indicator if task is not completed
+                        scrollIndicator.style.opacity = '1';
+                        handleScrollIndicator();
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error checking completion status:", error);
+                });
+        });
+
+        function handleScrollIndicator() {
+            window.addEventListener('scroll', () => {
+                const windowHeight = window.innerHeight;
+                const documentHeight = document.documentElement.scrollHeight;
+                const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                
+                // Check if user is near bottom (within 50px of bottom)
+                if ((windowHeight + scrollTop) >= documentHeight - 50) {
+                    document.getElementById('scrollIndicator').style.opacity = '0';
+                } else {
+                    document.getElementById('scrollIndicator').style.opacity = '1';
+                }
+            });
+        }
+    </script>
+    <!-- Disable search functionality -->
+    <script src="../disable-search.js"></script>
+</body>
+</html>

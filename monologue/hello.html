@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Detective's Monologue</title>
+    <link rel="stylesheet" href="monologue.css">
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling', {
+            dom: {
+                inputSanitizer: true,
+            },
+            shouldCaptureIP: false,
+            rootHostname: 'detective-ferret',
+            release: '1.0.0',
+            console: {
+                isEnabled: true,
+                shouldAggregateConsoleErrors: true
+            },
+            network: {
+                isEnabled: true,
+                requestSanitizer: request => {
+                    // Sanitize any sensitive data from requests
+                    return request;
+                }
+            }
+        });
+
+        // Track page view
+        LogRocket.track('Monologue Page View');
+
+        // Record user session with additional context
+        LogRocket.identify('monologue-user', {
+            name: 'Monologue User',
+            page: 'Detective Monologue',
+            timestamp: new Date().toISOString(),
+            isMonologueStarted: false
+        });
+    </script>
+    <style>
+        .title-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0eada; /* Match beige background */
+            opacity: 0;
+            visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease, visibility 1s ease;
+            z-index: 100;
+        }
+
+        .title-screen.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .game-title {
+            font-family: 'Special Elite', cursive;
+            font-size: 4em;
+            color: #8a6d3b; /* Gold color for title */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            transform: scale(0.5);
+            opacity: 0;
+            transition: transform 1s ease, opacity 1s ease;
+            margin-bottom: 1em;
+        }
+
+        .title-screen.visible .game-title {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .start-button {
+            font-family: 'Special Elite', cursive;
+            font-size: 1.5em;
+            padding: 15px 40px;
+            background-color: #fff;
+            color: #8a6d3b;
+            border: 3px solid #8a6d3b;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: scale(0.8);
+            box-shadow: 0 0 10px rgba(138, 109, 59, 0.3);
+            outline: none;
+            border-radius: 5px;
+        }
+
+        .title-screen.visible .start-button {
+            opacity: 1;
+            transform: scale(1);
+            transition-delay: 0.5s;
+        }
+
+        .start-button:hover {
+            background-color: #8a6d3b;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(138, 109, 59, 0.6);
+            transform: scale(1.05);
+        }
+
+        .start-button:active {
+            transform: scale(0.95);
+        }
+
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: opacity 1s ease, transform 15s ease;
+            object-fit: cover; /* Ensures image covers the container */
+        }
+
+        .background-image.slide-out {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .background-image.slide-in {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .background-image.zoom-in {
+            transform: scale(1.1);
+        }
+
+        .background-image.zoom-out {
+            transform: scale(1);
+        }
+
+        .background-image.zoom-effect {
+            transform: scale(1.2);
+        }
+
+        .background-image.slide-from-left {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .background-image.slide-in {
+            transform: translateX(0);
+            opacity: 1;
+            transition: transform 1s ease, opacity 1s ease;
+        }
+
+        .zoom-intense {
+            animation: zoomIntense 10s ease forwards;
+        }
+
+        @keyframes zoomIntense {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.3);
+            }
+        }
+
+        .image-container {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 80px); /* Reduced from 100px to give more space for card */
+            position: relative;
+            overflow: hidden;
+            border-radius: 23px 23px 0 0;
+            background-color: #000;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.2) 0%,
+                rgba(0,0,0,0.3) 50%,
+                rgba(0,0,0,0.5) 100%
+            );
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .transition-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #8B4513;
+            display: none;
+            opacity: 0;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease;
+        }
+
+        .journey-button {
+            font-family: 'Special Elite', cursive;
+            font-size: 1.5em;
+            padding: 15px 40px;
+            background-color: transparent;
+            color: #FFFFFF;
+            border: 2px solid #FFFFFF;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: scale(0.8);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .journey-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .journey-button:active {
+            transform: scale(0.95);
+        }
+
+        .journey-button::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 2px solid #FFFFFF;
+            animation: borderGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        .transition-screen.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .transition-screen .journey-button {
+            animation: buttonFadeIn 1s forwards 0.5s;
+        }
+
+        @keyframes buttonFadeIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            background-color: #000;
+            z-index: 1;
+        }
+
+        .video-container.visible {
+            opacity: 1;
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+        }
+
+        .card {
+            position: absolute;
+            bottom: 20px; /* Adjusted from 40px to move it down */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85%;
+            background-color: rgba(254, 251, 243, 0.9);
+            border-radius: 15px;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #8a6d3b;
+            overflow: hidden;
+        }
+
+        .card-content {
+            position: relative;
+            padding: 15px 25px; /* Slightly reduced padding */
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #monologueText {
+            font-size: 18px;
+            color: #4e3521;
+            line-height: 1.4;
+            width: 100%;
+            text-align: center;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Add styles for different aspect ratios */
+        @media (max-aspect-ratio: 1/1) {
+            .background-image {
+                background-size: contain;
+                background-position: center;
+            }
+        }
+
+        @media (min-aspect-ratio: 1/1) {
+            .background-image {
+                background-size: cover;
+                background-position: center;
+            }
+        }
+
+        /* Enhanced mobile styles */
+        @media (max-width: 480px) {
+            .image-container {
+                height: calc(100% - 100px);
+            }
+
+            .card {
+                bottom: 15px; /* Adjusted for mobile */
+                width: 92%;
+            }
+
+            .card-content {
+                padding: 12px 20px;
+            }
+            
+            .background-image {
+                background-size: contain;
+                background-position: center;
+            }
+        }
+
+        .play-button {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Special Elite', cursive;
+            font-size: 1.5em;
+            padding: 15px 40px;
+            background-color: rgba(138, 109, 59, 0.8);
+            color: #fff;
+            border: 2px solid #fff;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .play-button:hover {
+            background-color: rgba(138, 109, 59, 1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        .play-button:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        .video-zoom {
+            animation: videoZoom 15s ease-in-out forwards;
+        }
+        .video-zoom-intense {
+            animation: videoZoomIntense 20s ease-in-out forwards;
+        }
+
+        .video-loading {
+            position: absolute;
+            /* ... loading spinner styles ... */
+        }
+
+        @media (max-width: 768px) {
+            .video-container video {
+                will-change: transform;
+                transform: translateZ(0);
+                backface-visibility: hidden;
+                perspective: 1000px;
+            }
+        }
+
+        /* Update container styles */
+        .media-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .media-container video,
+        .media-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .media-container .zoom-effect {
+            animation: zoomEffect 15s ease-in-out forwards;
+        }
+
+        .media-container .zoom-intense {
+            animation: zoomIntense 20s ease-in-out forwards;
+        }
+
+        @keyframes zoomEffect {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+
+        @keyframes zoomIntense {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.25); }
+        }
+
+        /* Remove old container styles */
+        .video-container, .background-image {
+            display: none;
+        }
+
+        .loading-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: white;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #8a6d3b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-progress {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .media-container img.loading {
+            filter: blur(10px);
+            transform: scale(1.1);
+            transition: filter 0.5s ease, transform 0.5s ease;
+        }
+
+        .media-container img.loaded {
+            filter: blur(0);
+            transform: scale(1);
+            transition: filter 0.5s ease, transform 0.5s ease;
+        }
+
+        /* Add specific handling for GIFs */
+        .media-container img[src$=".gif"] {
+            filter: blur(0) !important;
+            transform: scale(1) !important;
+            transition: opacity 0.5s ease;
+        }
+
+        .media-container img[src$=".gif"].loading {
+            opacity: 0;
+        }
+
+        .media-container img[src$=".gif"].loaded {
+            opacity: 1;
+        }
+
+        .low-res-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(10px);
+            transform: scale(1.1);
+            transition: opacity 0.3s ease;
+        }
+
+        /* Optimize GIF performance on mobile */
+        @media (max-width: 768px) {
+            .media-container img[src$=".gif"] {
+                will-change: opacity;
+                backface-visibility: hidden;
+                transform: translateZ(0);
+                -webkit-transform: translateZ(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="play-button" onclick="startStory()">Play Story</button>
+    <div class="container">
+        <div class="image-container">
+            <div class="media-container">
+                <!-- This will hold both videos and images -->
+            </div>
+            <div class="overlay"></div>
+        </div>
+        <div class="card">
+            <div class="card-content">
+                <div id="monologueText"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-indicator">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading story...</div>
+        <div class="loading-progress">0%</div>
+    </div>
+
+    <div class="transition-screen">
+        <button class="journey-button" onclick="startJourney()">Begin Episode 1</button>
+    </div>
+
+    <script>
+        const scenes = [
+            {
+                type: 'image',
+                src: 'image1.jpg',
+                text: "Funny thing about mistakes...",
+                audio: './narration1.mp3',
+                duration: 1000
+            },
+            {
+                type: 'image',
+                src: './optimized_video2.gif',
+                text: "They don't just haunt you.",
+                audio: './narration2.mp3',
+                duration: 800
+            },
+            {
+                type: 'image',
+                src: './optimized_video3.gif',
+                text: "They become you.",
+                audio: './narration3.mp3',
+                duration: 1200,
+            },
+            {
+                type: 'image',
+                src: './video4.gif',
+                text: "Once, I had a family. A wife who saw something good in me",
+                audio: './narration4.mp3',
+                duration: 1500,
+            },
+            {
+                type: 'image',
+                src: './optimized_video6.gif',
+                text: "A son who thought I was someone worth looking up to.",
+                audio: './narration5.mp3',
+                duration: 1000,
+            },
+            {
+                type: 'image',
+                src: './image7.jpg',
+                text: "They're gone  now.",
+                audio: './narration6.mp3',
+                duration: 1000,
+            },
+            {
+                type: 'image',  
+                src: './image8.jpg',
+                text: " Because of me. ",
+                audio: './narration7.mp3',
+                duration: 600,
+            },
+            {
+                type: 'image',
+                src: './image9.jpg',
+                text: "The job I loved",
+                audio: './narration8.mp3',
+                duration: 1000,
+            },
+            {
+                type: 'image',
+                src: './optimized_video10.gif',
+                text: "the job that gave me everything",
+                audio: './narration9.mp3',
+                duration: 1000,
+            },
+            {
+                type: 'image',
+                src: './optimized_video11.gif',
+                text: "took everything away.",
+                audio: './narration10.mp3',
+                duration: 1000,
+            },
+            {
+                type: 'image',
+                src: './image12.jpg',
+                text: "My mind keeps asking",
+                audio: './narration11.mp3',
+                duration: 1000,
+            },
+            {
+                type: 'image',
+                src: './optimized_video12i.gif',
+                text: " what else could I have done?",
+                audio: './narration12.mp3',
+                duration: 1000,
+            },
+            {
+                type: 'image',
+                src: './image13.jpg',
+                text: "What did i miss?",
+                audio: './narration13.mp3',
+                duration: 700,
+            },
+            {
+                type: 'image',
+                src: './image14.jpg',
+                text: "Now I just wake up",
+                audio: './narration14.mp3',
+                duration: 2000,
+            },
+            {
+                type: 'image',  
+                src: './optimized_video15.gif',
+                text: "Breathe, and exist.",
+                audio: './narration15.mp3',
+                duration: 1000,
+            },
+            {
+                type: 'image',
+                src: './image16.jpg',
+                text: "Welcome to the world of regret.",
+                audio: './narration16.mp3',
+                duration: 2000,
+            }
+        ];
+
+        let currentScene = 0;
+        let currentAudio = null;
+        let backgroundMusic = null;
+        const mediaContainer = document.querySelector('.media-container');
+        const monologueText = document.getElementById('monologueText');
+        let currentMedia = null;
+        const loadingIndicator = document.querySelector('.loading-indicator');
+        const transitionScreen = document.querySelector('.transition-screen');
+
+        // Initialize core variables
+        const preloadedAssets = {
+            images: new Map(),
+            audio: new Map(),
+            activeElements: new Map()
+        };
+
+        // Add these variables at the start of your script
+        const CONCURRENT_LOADS = 3;
+        const PRELOAD_AHEAD = 5;
+        let loadedAssets = new Set();
+        let loadingPromises = new Map();
+        let progressCallback = null;
+        let isPlaying = false;
+
+        // Modified startStory function
+        async function startStory() {
+            if (isPlaying) return; // Prevent multiple starts
+            
+            const playButton = document.querySelector('.play-button');
+            if (playButton.disabled) {
+                console.log('Button is disabled, assets still loading');
+                return;
+            }
+
+            isPlaying = true;
+            console.log('Starting story...');
+
+            try {
+                // Initialize audio context
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const audioContext = new AudioContext();
+                
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+
+                // Hide play button with fade
+                playButton.style.transition = 'opacity 0.5s ease';
+                playButton.style.opacity = '0';
+                setTimeout(() => {
+                    playButton.style.display = 'none';
+                }, 500);
+
+                // Reset and start
+                currentScene = 0;
+                window.storyStartTime = Date.now();
+
+                // Start background music
+                console.log('Starting background music...');
+                await playBackgroundMusic();
+
+                // Start playing scenes
+                console.log('Playing first scene...');
+                playScene(0);
+
+                // Log start event
+                if (window.LogRocket) {
+                    LogRocket.track('Story Started', {
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            } catch (error) {
+                console.error('Error starting story:', error);
+                isPlaying = false;
+                // Show error to user
+                alert('There was an error starting the story. Please try again.');
+            }
+        }
+
+        // Modified playBackgroundMusic function
+        async function playBackgroundMusic() {
+            return new Promise((resolve, reject) => {
+            if (backgroundMusic) {
+                backgroundMusic.pause();
+                backgroundMusic = null;
+            }
+
+            backgroundMusic = new Audio('./backgroundmus.mp3');
+                backgroundMusic.volume = 0.15;
+            backgroundMusic.loop = true;
+            
+                backgroundMusic.oncanplaythrough = () => {
+                    backgroundMusic.play()
+                        .then(() => {
+                            console.log('Background music started successfully');
+                            resolve();
+                        })
+                        .catch(error => {
+                            console.warn('Background music autoplay failed, will retry on user interaction');
+                            resolve(); // Resolve anyway to not block the story
+                        });
+            };
+            
+            backgroundMusic.onerror = (error) => {
+                console.error('Background music error:', error);
+                    resolve(); // Resolve anyway to not block the story
+                };
+
+                // Load the audio
+            backgroundMusic.load();
+            });
+        }
+
+        // Add click handler to retry audio
+        document.addEventListener('click', function tryPlayAudio() {
+            if (backgroundMusic && backgroundMusic.paused) {
+                backgroundMusic.play().catch(console.error);
+            }
+        }, { once: true });
+
+        // Initialize on page load
+        window.addEventListener('load', async () => {
+            console.log('Page loaded, initializing...');
+            
+            // Show loading indicator
+            const loadingIndicator = document.querySelector('.loading-indicator');
+            loadingIndicator.style.display = 'flex';
+
+            try {
+                // Preload assets
+                await preloadInitialAssets();
+                console.log('Assets preloaded successfully');
+
+                // Enable play button
+                const playButton = document.querySelector('.play-button');
+                playButton.disabled = false;
+                playButton.style.opacity = '1';
+                
+                // Hide loading indicator
+                loadingIndicator.style.opacity = '0';
+                setTimeout(() => {
+                    loadingIndicator.style.display = 'none';
+                }, 500);
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                alert('Failed to load story assets. Please refresh the page.');
+            }
+        });
+
+        // Add error handling for scene transitions
+        function playScene(index) {
+            try {
+            if (index >= scenes.length) {
+                    console.log('Story complete, showing transition screen');
+                if (currentAudio) {
+                    currentAudio.pause();
+                }
+                stopBackgroundMusic();
+                transitionScreen.classList.add('visible');
+                return;
+            }
+
+            const scene = scenes[index];
+            console.log('Playing scene:', index, scene);
+
+                // Create or get media element
+            let mediaElement = preloadedAssets.activeElements.get(scene.src);
+            
+            if (!mediaElement) {
+                mediaElement = document.createElement('img');
+                    mediaElement.className = 'loading';
+                mediaElement.style.opacity = '0';
+                
+                    // If we have a placeholder, show it first
+                    const placeholder = preloadedAssets.images.get(scene.src + '_placeholder');
+                    if (placeholder) {
+                        const placeholderElement = placeholder.cloneNode();
+                        placeholderElement.className = 'low-res-placeholder';
+                        mediaContainer.appendChild(placeholderElement);
+                    }
+
+                    // Set up the main image
+                    const loadedImage = preloadedAssets.images.get(scene.src);
+                    if (loadedImage) {
+                        mediaElement.src = loadedImage.src;
+                    } else {
+                        mediaElement.src = scene.src;
+                    }
+
+                    mediaElement.onload = () => {
+                        mediaElement.classList.remove('loading');
+                        mediaElement.classList.add('loaded');
+                        mediaElement.style.opacity = '1';
+                        
+                        // Remove placeholder if it exists
+                        const placeholder = mediaContainer.querySelector('.low-res-placeholder');
+                        if (placeholder) {
+                            placeholder.style.opacity = '0';
+                            setTimeout(() => placeholder.remove(), 300);
+                        }
+                    };
+
+                preloadedAssets.activeElements.set(scene.src, mediaElement);
+            }
+
+                // Clear previous media
+                Array.from(mediaContainer.children).forEach(elem => {
+                    if (elem !== mediaElement && !elem.classList.contains('low-res-placeholder')) {
+                    elem.style.opacity = '0';
+                        setTimeout(() => elem.remove(), 500);
+                }
+            });
+
+                // Add new media if not already present
+            if (!mediaElement.parentNode) {
+                mediaContainer.appendChild(mediaElement);
+            requestAnimationFrame(() => {
+                mediaElement.style.opacity = '1';
+            });
+                }
+
+            // Handle text and audio
+            monologueText.textContent = '';
+            
+            const moveToNextScene = () => {
+                console.log('Moving to next scene after duration:', scene.duration);
+                preloadUpcomingScenes(index);
+                
+                setTimeout(() => {
+                    currentScene++;
+                    playScene(currentScene);
+                }, scene.duration || 3000);
+            };
+
+            if (scene.audio) {
+                setTimeout(() => {
+                    typeText(scene.text);
+                }, 500);
+                
+                if (preloadedAssets.audio.has(scene.audio)) {
+                    const audioElement = preloadedAssets.audio.get(scene.audio).cloneNode();
+                    playAudio(audioElement, moveToNextScene);
+                } else {
+                    playAudio(scene.audio, moveToNextScene);
+                }
+            } else {
+                typeText(scene.text);
+                moveToNextScene();
+                }
+            } catch (error) {
+                console.error('Error playing scene:', error);
+                // Try to recover by moving to next scene
+                setTimeout(() => {
+                    currentScene++;
+                    playScene(currentScene);
+                }, 1000);
+            }
+        }
+
+        function typeText(text) {
+            if (!text) return;
+
+            monologueText.textContent = '';
+            let index = 0;
+            const typingSpeed = 50; // Consistent typing speed
+            
+            function type() {
+                if (index < text.length) {
+                    monologueText.textContent += text[index];
+                    index++;
+                    setTimeout(type, typingSpeed);
+                }
+            }
+            
+            setTimeout(type, 300);
+        }
+
+        function playAudio(audioSrc, callback) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            if (audioSrc instanceof HTMLAudioElement) {
+                // If we're passed a preloaded audio element
+                currentAudio = audioSrc;
+                currentAudio.volume = 1.0;
+            } else if (audioSrc) {
+                // If we're passed an audio source URL
+                currentAudio = new Audio(audioSrc);
+                currentAudio.volume = 1.0;
+            }
+            
+            if (currentAudio) {
+                currentAudio.onerror = (error) => {
+                    console.error('Audio error:', error);
+                    if (callback) callback();
+                };
+                
+                currentAudio.onended = () => {
+                    console.log('Audio finished playing');
+                    if (callback) callback();
+                };
+                
+                currentAudio.play().catch(error => {
+                    console.error('Audio playback failed:', error);
+                    if (callback) callback();
+                });
+            } else if (callback) {
+                callback();
+            }
+        }
+
+        function stopBackgroundMusic() {
+            if (backgroundMusic) {
+                if (window.LogRocket) {
+                    LogRocket.track('Background Music Stopped');
+                }
+                // Fade out the music smoothly
+                const fadeOutDuration = 1000; // 1 second fade
+                const initialVolume = backgroundMusic.volume;
+                const fadeSteps = 20;
+                const volumeStep = initialVolume / fadeSteps;
+                const stepDuration = fadeOutDuration / fadeSteps;
+
+                const fadeInterval = setInterval(() => {
+                    if (backgroundMusic.volume > volumeStep) {
+                        backgroundMusic.volume -= volumeStep;
+                    } else {
+                        clearInterval(fadeInterval);
+                        backgroundMusic.pause();
+                        backgroundMusic.currentTime = 0;
+                        backgroundMusic = null;
+                    }
+                }, stepDuration);
+            }
+        }
+
+        // Fix the async function
+        async function preloadInitialAssets() {
+            const initialBatch = scenes.slice(0, PRELOAD_AHEAD);
+            let loaded = 0;
+            const total = initialBatch.length;
+
+            try {
+                // Load assets in parallel but limit concurrency
+                for (let i = 0; i < initialBatch.length; i += CONCURRENT_LOADS) {
+                    const batch = initialBatch.slice(i, i + CONCURRENT_LOADS);
+                    await Promise.all(batch.map(async (scene) => {
+                        await loadAsset(scene);
+                        loaded++;
+                        updateLoadingProgress(loaded, total);
+                    }));
+                }
+
+                document.querySelector('.play-button').disabled = false;
+                console.log('Initial assets preloaded');
+            } catch (error) {
+                console.error('Error preloading assets:', error);
+            }
+        }
+
+        function preloadUpcomingScenes(currentIndex) {
+            const nextScenes = scenes.slice(currentIndex + 1, currentIndex + PRELOAD_AHEAD);
+            
+            nextScenes.forEach(scene => {
+                if (!loadedAssets.has(scene.src)) {
+                    loadAsset(scene).catch(console.error);
+                }
+            });
+        }
+
+        function startJourney() {
+            stopBackgroundMusic();
+            if (currentAudio) {
+                currentAudio.pause();
+            }
+            
+            // Log journey start
+            LogRocket.track('Journey Started', {
+                fromScene: currentScene,
+                totalTimeSpent: (Date.now() - storyStartTime) / 1000,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Clear any existing panel navigation flags
+            localStorage.removeItem('targetPanel');
+            localStorage.removeItem('returnToStory');
+            localStorage.removeItem('returnToStoryFromDragdrop');
+            localStorage.removeItem('returnToPanelFive');
+            localStorage.removeItem('returnToStoryFromSpellings');
+            localStorage.removeItem('returnToCurrentPanel');
+            
+            // Navigate to episode2/index1.html
+            window.location.href = './episode1.html';
+        }
+
+        // Add this new function for asset loading progress
+        function updateLoadingProgress(loaded, total) {
+            const progress = Math.round((loaded / total) * 100);
+            const loadingText = document.querySelector('.loading-text');
+            const loadingProgress = document.querySelector('.loading-progress');
+            
+            if (loadingProgress) {
+                loadingProgress.textContent = `${progress}%`;
+            }
+            
+            if (loadingText) {
+                loadingText.textContent = progress === 100 ? 'Ready to Play' : 'Loading Story...';
+            }
+        }
+
+        // Enhanced asset loading function
+        async function loadAsset(scene) {
+            if (loadedAssets.has(scene.src)) {
+                return preloadedAssets.images.get(scene.src);
+            }
+
+            if (loadingPromises.has(scene.src)) {
+                return loadingPromises.get(scene.src);
+            }
+
+            const loadPromise = new Promise(async (resolve, reject) => {
+                try {
+                    // Create low-res placeholder for GIFs
+                    if (scene.src.endsWith('.gif')) {
+                        const placeholderUrl = scene.src.replace('.gif', '_thumb.jpg');
+                        try {
+                            const placeholder = new Image();
+                            placeholder.src = placeholderUrl;
+                            await placeholder.decode();
+                            preloadedAssets.images.set(scene.src + '_placeholder', placeholder);
+                        } catch (e) {
+                            console.warn('Placeholder not available for:', scene.src);
+                        }
+                    }
+
+                    // Load the main image/GIF
+                    const img = new Image();
+                    
+                    img.onload = async () => {
+                        try {
+                            await img.decode(); // Wait for the image to be fully decoded
+                            preloadedAssets.images.set(scene.src, img);
+                            loadedAssets.add(scene.src);
+                            resolve(img);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    
+                    img.onerror = () => reject(new Error(`Failed to load: ${scene.src}`));
+                    img.src = scene.src;
+
+                    // Load audio if present
+                    if (scene.audio && !preloadedAssets.audio.has(scene.audio)) {
+                        const audio = new Audio();
+                        audio.preload = 'auto';
+                        
+                        const audioPromise = new Promise((resolveAudio) => {
+                            audio.addEventListener('canplaythrough', () => {
+                                preloadedAssets.audio.set(scene.audio, audio);
+                                resolveAudio();
+                            }, { once: true });
+                        });
+
+                        audio.src = scene.audio;
+                        await audioPromise;
+                    }
+
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            loadingPromises.set(scene.src, loadPromise);
+            return loadPromise;
+        }
+
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        // Add this at the start of your script to ensure audio context is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create an AudioContext when the page loads
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioContext = new AudioContext();
+            
+            // Resume the audio context on user interaction
+            document.addEventListener('click', function resumeAudio() {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                document.removeEventListener('click', resumeAudio);
+            }, { once: true });
+        });
+
+        // Initialize loading state immediately
+        document.addEventListener('DOMContentLoaded', () => {
+            const playButton = document.querySelector('.play-button');
+            if (playButton) {
+                playButton.disabled = true;
+                playButton.style.opacity = '0.5';
+            }
+        });
+    </script>
+</body>
+</html> 

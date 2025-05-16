@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic Menu Card</title>
+
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track menu page view
+        LogRocket.track('Menu Page View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode2_menu'
+        });
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Old+Standard+TT:wght@400;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #F5E6D3;
+            font-family: 'Old Standard TT', serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            margin: 0;
+        }
+
+        .menu-container {
+            width: 100%;
+            max-width: 500px;
+            height: 90vh;
+            max-height: 700px;
+            position: relative;
+            perspective: 1000px;
+            display: flex;
+            flex-direction: column;
+            border: none;
+            background-color: #FDF8F3;
+            box-shadow: 0 8px 20px rgba(139, 69, 19, 0.25);
+            overflow: hidden;
+            border-radius: 15px;
+        }
+
+        .menu-page {
+            display: none;
+            background-color: #FDF8F3;
+            padding: 15px;
+            position: relative;
+            transform-origin: center;
+            backface-visibility: hidden;
+            flex: 1;
+            overflow-y: auto;
+            height: calc(100% - 66px); /* Height minus nav buttons */
+        }
+
+        .menu-page.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-header {
+            text-align: center;
+            margin-bottom: 5px;
+            position: relative;
+            padding-bottom: 50px;
+        }
+
+        .menu-image {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border: 3px solid #8B4513;
+            margin-bottom: 15px;
+            filter: sepia(20%);
+        }
+
+        .letter-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            margin: 8px 0;
+            flex-wrap: wrap;
+            padding: 0 5px;
+            position: relative;
+        }
+
+        .letter-box {
+            width: 25px;
+            height: 25px;
+            border: 2px solid #8B4513;
+            background-color: #FFF;
+            font-size: 16px;
+            text-align: center;
+            text-transform: uppercase;
+            font-family: 'Playfair Display', serif;
+            color: #5C3D2E;
+            border-radius: 0;
+            padding: 0;
+        }
+
+        /* Specific styles for complimentary page */
+        #complimentary-page .letter-box {
+            width: 25px;
+            height: 25px;
+            font-size: 16px;
+        }
+
+        .menu-items {
+            list-style: none;
+            padding: 0 5px;
+            border-top: 1px solid rgba(139, 69, 19, 0.3);
+            border-bottom: 1px solid rgba(139, 69, 19, 0.3);
+            margin: 5px 0;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px dotted #B85C38;
+            font-size: 14px;
+        }
+
+        .keyboard-container {
+            margin-top: auto;
+            padding: 5px;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 19px;
+            z-index: 10;
+            position: sticky;
+            bottom: 0;
+            visibility: visible !important;
+            opacity: 1 !important;
+            background: #F5E6D3;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .key-row {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            margin-bottom: 3px;
+        }
+
+        .key {
+            width: 25px;
+            height: 25px;
+            background: #8B4513;
+            color: #F5E6D3;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Playfair Display', serif;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s;
+        }
+
+        .key:active {
+            transform: scale(0.95);
+        }
+
+        .key.backspace {
+            width: 40px;
+        }
+
+        @keyframes blink-sound {
+            0% { transform: scale(1); color: #8B4513; }
+            50% { transform: scale(1.2); color: #FFD700; }
+            100% { transform: scale(1); color: #8B4513; }
+        }
+
+        .sound-icon {
+            font-size: 24px;
+            color: #8B4513;
+            cursor: pointer;
+            margin: 10px auto 5px;
+            display: block;
+            width: fit-content;
+            transition: transform 0.2s;
+            position: relative;
+            z-index: 3;
+            animation: blink-sound 2s infinite;
+            background: rgba(139, 69, 19, 0.1);
+            padding: 10px;
+            border-radius: 50%;
+        }
+
+        .sound-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .sound-icon:active {
+            transform: scale(0.9);
+        }
+
+        .sound-icon.clicked {
+            animation: none;
+            color: #8B4513;
+            transform: scale(1);
+        }
+
+        .error-message {
+            color: #8B4513;
+            text-align: center;
+            margin: 0;
+            display: none;
+            font-family: 'Old Standard TT', serif;
+            font-style: italic;
+            position: absolute;
+            top: calc(100% - 45px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 5px 10px;
+            border-radius: 4px;
+            z-index: 2;
+            width: max-content;
+            max-width: 90%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .correct-answer {
+            color: #006400;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+            font-family: 'Old Standard TT', serif;
+            font-weight: bold;
+            position: relative;
+            z-index: 0;
+        }
+
+        /* New style for congratulatory message */
+        .congratulations-message {
+            color: #006400;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+            font-family: 'Old Standard TT', serif;
+            font-weight: bold;
+            font-size: 16px;
+            padding: 8px;
+            background-color: rgba(0, 100, 0, 0.1);
+            border-radius: 8px;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-height: 600px) {
+            .menu-image {
+                height: 150px;
+            }
+            .letter-box {
+                width: 25px;
+                height: 25px;
+                font-size: 16px;
+            }
+            .menu-item {
+                padding: 6px 0;
+                font-size: 12px;
+            }
+            .key {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
+            }
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: #F5E6D3;
+            border-top: 3px double #8B4513;
+            width: 100%;
+            position: sticky;
+            bottom: 0;
+            z-index: 11;
+        }
+
+        .nav-btn {
+            background: #8B4513;
+            color: #F5E6D3;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Old Standard TT', serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 101;
+            padding: 10px;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            outline: 2px solid white;
+            outline-offset: 2px;
+        }
+
+        .close-button:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+
+        /* Add completion message styles */
+        .completion-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-family: 'Old Standard TT', serif;
+            font-size: 16px;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            gap: 10px;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="completion-message" id="completionMessage">Task Completed</div>
+    <div class="menu-container">
+        <button class="close-button" onclick="closeMenu()">
+            <i class="fas fa-times"></i>
+        </button>
+        <!-- Beverages Page -->
+        <div class="menu-page active" id="beverages-page">
+            <div class="content-area">
+                <div class="menu-header">
+                    <img src="https://images.unsplash.com/photo-1442512595331-e89e73853f31" alt="Vintage Coffee Shop" class="menu-image">
+                    <div class="letter-boxes" data-word="BEVERAGES">
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                    </div>
+                    <p class="error-message">Please try again. Attempts remaining: <span class="attempts">3</span></p>
+                    <p class="correct-answer-message" style="display: none; color: #8B4513; text-align: center; margin-top: 10px;">The correct answer is: <span class="correct-word"></span></p>
+                    <p class="congratulations-message" id="beverages-congrats">Excellent! You spelled BEVERAGES correctly!</p>
+                </div>
+                <i class="fas fa-volume-up sound-icon" id="beverages-sound"></i>
+                <ul class="menu-items">
+                    <li class="menu-item">
+                        <span class="item-name">House Blend Coffee</span>
+                        <span class="item-price">$3.50</span>
+                    </li>
+                    <li class="menu-item">
+                        <span class="item-name">Classic Cappuccino</span>
+                        <span class="item-price">$4.50</span>
+                    </li>
+                    <li class="menu-item">
+                        <span class="item-name">Traditional Latte</span>
+                        <span class="item-price">$4.00</span>
+                    </li>
+                 
+                </ul>
+                <div class="keyboard-container" id="keyboard-beverages"></div>
+            </div>
+        </div>
+
+        <!-- Desserts Page -->
+        <div class="menu-page" id="desserts-page">
+            <div class="content-area">
+                <div class="menu-header">
+                    <img src="https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81" alt="Vintage Desserts" class="menu-image">
+                    <div class="letter-boxes" data-word="DESSERTS">
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                        <input type="text" class="letter-box" maxlength="1" readonly>
+                    </div>
+                    <p class="error-message">Please try again. Attempts remaining: <span class="attempts">3</span></p>
+                    <p class="correct-answer-message" style="display: none; color: #8B4513; text-align: center; margin-top: 10px;">The correct answer is: <span class="correct-word"></span></p>
+                    <p class="congratulations-message" id="desserts-congrats">Well done! You spelled DESSERTS correctly!</p>
+                </div>
+                <i class="fas fa-volume-up sound-icon" id="desserts-sound"></i>
+                <ul class="menu-items">
+                    <li class="menu-item">
+                        <span class="item-name">Grandmother's Chocolate Cake</span>
+                        <span class="item-price">$6.50</span>
+                    </li>
+                    <li class="menu-item">
+                        <span class="item-name">Classic Tiramisu</span>
+                        <span class="item-price">$7.00</span>
+                    </li>
+                    <li class="menu-item">
+                        <span class="item-name">New York Cheesecake</span>
+                        <span class="item-price">$6.00</span>
+                    </li>
+                </ul>
+                <div class="keyboard-container" id="keyboard-desserts"></div>
+            </div>
+        </div>
+
+        <!-- Audio Elements -->
+        <audio id="beveragesAudio" src="audio/BEVERAGES.mp3"></audio>
+        <audio id="dessertsAudio" src="audio/DESSERTS.mp3"></audio>
+        <audio id="buttonClickSound" src="audio/button_click.mp3"></audio>
+        <audio id="victorySound" src="audio/victory_sound.mp3"></audio>
+
+        <div class="nav-buttons">
+            <button class="nav-btn" id="prev-btn" onclick="showPreviousPage()">Previous</button>
+            <button class="nav-btn" id="next-btn" onclick="showNextPage()">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const pages = ['beverages', 'desserts'];
+        let currentPageIndex = 0;
+
+        // Initialize all keyboards
+        pages.forEach(page => {
+            createKeyboard(`keyboard-${page}`);
+        });
+
+        // Audio elements
+        const audioElements = {
+            'beverages': document.getElementById('beveragesAudio'),
+            'desserts': document.getElementById('dessertsAudio'),
+            'buttonClick': document.getElementById('buttonClickSound'),
+            'victory': document.getElementById('victorySound')
+        };
+
+        // Sound button functionality for all pages
+        pages.forEach(page => {
+            const soundBtn = document.getElementById(`${page}-sound`);
+            
+            if (soundBtn) {
+                soundBtn.addEventListener('click', () => {
+                    playSound(page);
+                    // Stop blinking after click
+                    soundBtn.classList.add('clicked');
+                });
+            }
+        });
+
+        // Function to play sounds
+        function playSound(type) {
+            const audio = audioElements[type];
+            if (audio) {
+                audio.currentTime = 0; // Reset audio to start
+                audio.play().catch(error => {
+                    console.error(`Error playing ${type} sound:`, error);
+                });
+            }
+        }
+
+        // Play button click sound
+        function playButtonClickSound() {
+            playSound('buttonClick');
+        }
+
+        // Play victory sound
+        function playVictorySound() {
+            playSound('victory');
+        }
+
+        // Modified function to show page - without navigation buttons logic
+        function showPage(index) {
+            if (index < 0 || index >= pages.length) return;
+            
+            pages.forEach((page, i) => {
+                const pageElement = document.getElementById(`${page}-page`);
+                if (pageElement) {
+                    pageElement.classList.toggle('active', i === index);
+                    // Reset sound icon animation for new page
+                    const soundBtn = document.getElementById(`${page}-sound`);
+                    if (soundBtn) {
+                        soundBtn.classList.remove('clicked');
+                    }
+                }
+            });
+            currentPageIndex = index;
+            
+            // Update navigation buttons
+            updateNavigationButtons();
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            prevBtn.disabled = currentPageIndex === 0;
+            
+            // If activity is completed, enable navigation
+            if (localStorage.getItem('MENU_ACTIVITY_COMPLETED') === 'true') {
+                nextBtn.disabled = false;
+                if (currentPageIndex === pages.length - 1) {
+                    nextBtn.textContent = "Complete";
+                    nextBtn.onclick = completeActivity;
+                } else {
+                    nextBtn.textContent = "Next";
+                    nextBtn.onclick = showNextPage;
+                }
+                return;
+            }
+            
+            // Check if all words are completed on current page
+            const currentPage = pages[currentPageIndex];
+            const letterBoxes = document.querySelector(`#${currentPage}-page .letter-boxes`);
+            const targetWord = letterBoxes.dataset.word;
+            const currentWord = Array.from(letterBoxes.querySelectorAll('.letter-box'))
+                .map(box => box.value)
+                .join('');
+                
+            nextBtn.disabled = currentWord !== targetWord;
+            
+            // If on last page and completed, change next button to "Complete"
+            if (currentPageIndex === pages.length - 1 && currentWord === targetWord) {
+                nextBtn.textContent = "Complete";
+                nextBtn.onclick = completeActivity;
+            } else {
+                nextBtn.textContent = "Next";
+                nextBtn.onclick = showNextPage;
+            }
+        }
+
+        function showNextPage() {
+            if (currentPageIndex < pages.length - 1) {
+                showPage(currentPageIndex + 1);
+            }
+        }
+
+        function showPreviousPage() {
+            if (currentPageIndex > 0) {
+                showPage(currentPageIndex - 1);
+            }
+        }
+
+        function closeMenu() {
+            // Set target panel to 18 and navigate directly
+            localStorage.setItem('targetPanel', '18');
+            window.location.href = 'index1.html?panel=18';
+        }
+
+        function completeActivity() {
+            // Set completion flags
+            localStorage.setItem('MENU_ACTIVITY_COMPLETED', 'true');
+            localStorage.setItem('menuActivityCompleted', 'true');
+
+            // Track activity completion
+            if (window.LogRocket) {
+                LogRocket.track('Menu Activity Completed', {
+                    timestamp: new Date().toISOString()
+                });
+            }
+            document.getElementById('completionMessage').style.display = 'block';
+            // Navigate to panel 19 in index1.html
+            window.location.href = 'index1.html?panel=19';
+        }
+
+        // Check completion state on load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('MENU_ACTIVITY_COMPLETED') === 'true') {
+                document.getElementById('completionMessage').style.display = 'block';
+                // Enable navigation buttons if activity is completed
+                updateNavigationButtons();
+            }
+        });
+
+        // Modified handleKeyPress to use manual navigation and show congratulations
+        function handleKeyPress(key, containerId) {
+            const page = containerId.split('-')[1];
+            const letterBoxes = document.querySelector(`#${page}-page .letter-boxes`);
+            const boxes = letterBoxes.querySelectorAll('.letter-box');
+            const targetWord = letterBoxes.dataset.word;
+            const errorMessage = letterBoxes.parentElement.querySelector('.error-message');
+            const congratsMessage = document.getElementById(`${page}-congrats`);
+            const attemptsSpan = errorMessage.querySelector('.attempts');
+            let attempts = parseInt(attemptsSpan?.textContent || '3');
+            
+            // Track key press in LogRocket
+            if (window.LogRocket) {
+                LogRocket.track('Menu Key Press', {
+                    key: key,
+                    page: page,
+                    attempts: attempts
+                });
+            }
+            
+            let currentIndex = Array.from(boxes).findIndex(box => !box.value);
+            if (currentIndex === -1) return;
+
+            boxes[currentIndex].value = key;
+            
+            // Check if word is complete
+            if (currentIndex === boxes.length - 1) {
+                const enteredWord = Array.from(boxes).map(box => box.value).join('');
+                if (enteredWord === targetWord) {
+                    // Track successful word completion
+                    if (window.LogRocket) {
+                        LogRocket.track('Menu Word Complete', {
+                            word: targetWord,
+                            attempts: attempts,
+                            page: page
+                        });
+                    }
+                    // Word is correct - play victory sound
+                    playVictorySound();
+                    errorMessage.style.display = 'none';
+                    // Show congratulations message
+                    congratsMessage.style.display = 'block';
+                    // Enable next button
+                    updateNavigationButtons();
+                } else {
+                    // Track incorrect word attempt
+                    if (window.LogRocket) {
+                        LogRocket.track('Menu Word Incorrect', {
+                            word: enteredWord,
+                            targetWord: targetWord,
+                            attempts: attempts,
+                            page: page
+                        });
+                    }
+                    // Word is incorrect
+                    attempts--;
+                    if (attempts > 0) {
+                        attemptsSpan.textContent = attempts;
+                        errorMessage.style.display = 'block';
+                        // Hide congratulations message if shown
+                        congratsMessage.style.display = 'none';
+                        // Clear boxes after a delay
+                        setTimeout(() => {
+                            boxes.forEach(box => box.value = '');
+                            // Ensure keyboard is still visible
+                            const keyboard = document.getElementById(`keyboard-${page}`);
+                            if (keyboard) {
+                                keyboard.style.display = 'flex';
+                                keyboard.style.flexDirection = 'column';
+                            }
+                        }, 1000);
+                    } else {
+                        // Track out of attempts
+                        if (window.LogRocket) {
+                            LogRocket.track('Menu Out of Attempts', {
+                                word: enteredWord,
+                                targetWord: targetWord,
+                                page: page
+                            });
+                        }
+                        // No more attempts - show correct answer
+                        errorMessage.style.display = 'none';
+                        const correctAnswerMessage = letterBoxes.parentElement.querySelector('.correct-answer-message');
+                        const correctWordSpan = correctAnswerMessage.querySelector('.correct-word');
+                        correctWordSpan.textContent = targetWord;
+                        correctAnswerMessage.style.display = 'block';
+                        setTimeout(() => {
+                            Array.from(targetWord).forEach((letter, index) => {
+                                boxes[index].value = letter;
+                            });
+                            // Enable next button
+                            updateNavigationButtons();
+                        }, 500);
+                    }
+                }
+            }
+            
+            // Update navigation buttons after each key press
+            updateNavigationButtons();
+        }
+
+        function createKeyboard(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            // Clear any existing content to avoid duplicates
+            container.innerHTML = '';
+
+            // Create keyboard directly without nesting in another container
+            const keys = [
+                ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+                ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+                ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+            ];
+
+            // Create each row
+            keys.forEach(row => {
+                const keyRow = document.createElement('div');
+                keyRow.className = 'key-row';
+
+                row.forEach(key => {
+                    const button = document.createElement('button');
+                    button.className = 'key';
+                    button.textContent = key;
+                    button.addEventListener('click', () => {
+                        playButtonClickSound();
+                        handleKeyPress(key, containerId);
+                    });
+                    keyRow.appendChild(button);
+                });
+
+                container.appendChild(keyRow);
+            });
+
+            // Add backspace button
+            const backspaceRow = document.createElement('div');
+            backspaceRow.className = 'key-row';
+            const backspaceBtn = document.createElement('button');
+            backspaceBtn.className = 'key backspace';
+            backspaceBtn.textContent = '⌫';
+            backspaceBtn.addEventListener('click', () => {
+                playButtonClickSound();
+                handleBackspace(containerId);
+            });
+            backspaceRow.appendChild(backspaceBtn);
+            container.appendChild(backspaceRow);
+        }
+
+        function handleBackspace(containerId) {
+            const page = containerId.split('-')[1];
+            const letterBoxes = document.querySelector(`#${page}-page .letter-boxes`);
+            const boxes = Array.from(letterBoxes.querySelectorAll('.letter-box'));
+            
+            // Find the last filled box
+            for (let i = boxes.length - 1; i >= 0; i--) {
+                if (boxes[i].value) {
+                    boxes[i].value = '';
+                    break;
+                }
+            }
+            
+            // Hide error message if shown
+            letterBoxes.parentElement.querySelector('.error-message').style.display = 'none';
+            // Hide congratulations message if shown
+            const congratsMessage = document.getElementById(`${page}-congrats`);
+            if (congratsMessage) {
+                congratsMessage.style.display = 'none';
+            }
+        }
+
+        // Initialize page display and navigation
+        showPage(0);
+        updateNavigationButtons();
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html>

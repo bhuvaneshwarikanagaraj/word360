@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elevator Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling');
+        
+        // Track activity page view
+        LogRocket.track('Elevator Panel Activity View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode4_elevator'
+        });
+    </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: 'Special Elite', cursive;
+            background-color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background-color: #F5E6D3;
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-width: 280px;
+            width: 95%;
+            height: fit-content;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 25px;
+            height: 25px;
+            background: #8B4513;
+            border: 2px solid #6B3410;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #F5E6D3;
+            font-size: 1em;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #95562B;
+            transform: scale(1.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #8B4513;
+            margin: 0 0 8px 0;
+            font-size: 0.9em;
+            line-height: 1.2;
+        }
+
+        .elevator-panel {
+            background: #B8B8B8;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.3);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .utility-buttons-container {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .floor-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: none;
+            background: #E8E8E8;
+            color: #333;
+            font-size: 0.65em;
+            font-family: 'Special Elite', cursive;
+            cursor: pointer;
+            box-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.2),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            min-width: 0;
+            line-height: 1;
+        }
+
+        .floor-btn:hover {
+            background: #F0F0F0;
+            transform: scale(1.05);
+        }
+
+        .floor-btn:active {
+            transform: scale(0.95);
+            box-shadow: 
+                0 1px 1px rgba(0, 0, 0, 0.2),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .message {
+            text-align: center;
+            color: #8B4513;
+            font-size: 0.8em;
+            min-height: 16px;
+            margin-top: 6px;
+        }
+
+        .utility-btn {
+            background: #4a4a4a;
+            color: #fff;
+        }
+
+        .emergency-btn {
+            background: #8B4513;
+            color: #fff;
+        }
+
+        .display-panel {
+            grid-column: 1 / -1;
+            background: #000;
+            color: #32CD32;
+            padding: 4px;
+            text-align: center;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .next-button {
+            padding: 8px 20px;
+            font-size: 0.9em;
+            margin: 15px auto;
+            background: #8B4513;
+            color: #F5E6D3;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+
+        .next-button:hover {
+            background: #95562B;
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .next-button:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        .completion-message {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(139, 69, 19, 0.9);
+            color: #F5E6D3;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            width: auto;
+            max-width: 85%;
+            white-space: nowrap;
+            display: none;
+            z-index: 1001;
+        }
+
+        @media (max-width: 320px) {
+            .game-container {
+                padding: 10px;
+            }
+
+            .floor-btn {
+                font-size: 0.6em;
+            }
+
+            h2 {
+                font-size: 0.85em;
+                margin-bottom: 6px;
+            }
+
+            .elevator-panel {
+                padding: 6px;
+                gap: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <button class="close-btn">&times;</button>
+        <h2>Click the button for the 32nd floor</h2>
+        <div class="elevator-panel">
+            <!-- Display panel will be created by JavaScript -->
+        </div>
+        <div class="message"></div>
+    </div>
+    <button class="next-button">NEXT</button>
+    <div class="completion-message" id="completionMessage">Task Completed</div>
+
+    <audio id="buttonClickSound" src="./button_click.mp3"></audio>
+    <audio id="victorySound" src="./victory_sound.mp3"></audio>
+
+    <script>
+        const correctFloor = "32";
+        let taskCompleted = false;
+
+        // Function to handle activity completion
+        function markActivityCompleted() {
+            localStorage.setItem('floor32ActivityCompleted', 'true');
+            document.getElementById('completionMessage').style.display = 'block';
+            const nextButton = document.querySelector('.next-button');
+            nextButton.style.display = 'block';
+            nextButton.style.opacity = '1';
+            nextButton.style.cursor = 'pointer';
+            taskCompleted = true;
+            
+            // Disable all floor buttons
+            document.querySelectorAll('.floor-btn').forEach(btn => {
+                btn.disabled = true;
+            });
+        }
+
+        function createButtons() {
+            const panel = document.querySelector('.elevator-panel');
+            const regularFloors = [
+                "35", "34", "33", "32", "31",
+                "30", "29", "28", "27", "26",
+                "25", "24", "23", "22", "21",
+                "20", "19", "18", "17", "16",
+                "15", "14", "13", "12", "11",
+                "10", "9", "8", "7", "6",
+                "5", "4", "3", "2", "1"
+            ];
+            
+            const utilityFloors = ["G", "B1", "B2", "📞", "⚠️"];
+
+            // Create display panel first
+            const displayPanel = document.createElement('div');
+            displayPanel.className = 'display-panel';
+            displayPanel.textContent = 'Floor: --';
+            panel.appendChild(displayPanel);
+
+            // Create regular floor buttons
+            regularFloors.forEach(floor => {
+                const button = document.createElement('button');
+                button.className = 'floor-btn';
+                button.textContent = floor;
+                button.addEventListener('click', () => handleButtonClick(floor));
+                panel.appendChild(button);
+            });
+
+            // Create utility buttons container
+            const utilityContainer = document.createElement('div');
+            utilityContainer.className = 'utility-buttons-container';
+            
+            // Create utility floor buttons
+            utilityFloors.forEach(floor => {
+                const button = document.createElement('button');
+                button.className = floor === "📞" || floor === "⚠️" 
+                    ? 'floor-btn emergency-btn' 
+                    : 'floor-btn utility-btn';
+                button.textContent = floor;
+                button.addEventListener('click', () => handleButtonClick(floor));
+                utilityContainer.appendChild(button);
+            });
+
+            panel.appendChild(utilityContainer);
+        }
+
+        function handleButtonClick(floor) {
+            const buttonClickSound = document.getElementById('buttonClickSound');
+            const victorySound = document.getElementById('victorySound');
+            const messageDiv = document.querySelector('.message');
+            const displayPanel = document.querySelector('.display-panel');
+
+            // Track button click in LogRocket
+            if (window.LogRocket) {
+                LogRocket.track('Elevator Button Click', {
+                    floor: floor,
+                    isCorrect: floor === correctFloor
+                });
+            }
+
+            // Play click sound
+            buttonClickSound.currentTime = 0;
+            buttonClickSound.play().catch(console.error);
+
+            // Update display
+            displayPanel.textContent = `Floor: ${floor}`;
+
+            if (floor === correctFloor) {
+                messageDiv.textContent = "🎉 Correct! You found the right floor!";
+                messageDiv.style.color = "#4CAF50";
+                victorySound.play().catch(console.error);
+                
+                // Track success in LogRocket
+                if (window.LogRocket) {
+                    LogRocket.track('Elevator Activity Completed', {
+                        success: true
+                    });
+                }
+                
+                markActivityCompleted();
+            } else {
+                messageDiv.textContent = "Try again! That's not the 32nd floor.";
+                messageDiv.style.color = "#FF6B6B";
+                
+                // Track incorrect attempt in LogRocket
+                if (window.LogRocket) {
+                    LogRocket.track('Elevator Incorrect Attempt', {
+                        selectedFloor: floor
+                    });
+                }
+            }
+        }
+
+        // Initialize the game
+        window.addEventListener('DOMContentLoaded', () => {
+            createButtons();
+            
+            // Check if activity was already completed
+            if (localStorage.getItem('floor32ActivityCompleted') === 'true') {
+                markActivityCompleted();
+            }
+            
+            // Add close button functionality
+            document.querySelector('.close-btn').addEventListener('click', () => {
+                try {
+                    // Set return flag and target panel
+                    localStorage.setItem('returnToCurrentPanel', 'true');
+                    localStorage.setItem('targetPanel', '6');
+                    window.location.href = 'episode4.html';
+                } catch (e) {
+                    console.error("Error closing:", e);
+                }
+            });
+
+            // Add next button functionality
+            document.querySelector('.next-button').addEventListener('click', () => {
+                if (!taskCompleted) return; // Don't allow navigation if not completed
+                localStorage.setItem('targetPanel', '7');
+                window.location.href = 'episode4.html';
+            });
+        });
+    </script>
+    <script src="../disable-search.js"></script>
+</body>
+</html>
