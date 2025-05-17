@@ -8,6 +8,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('biy3cl/spelling', {
+            dom: {
+                inputSanitizer: true,
+            },
+            shouldCaptureIP: false,
+            rootHostname: 'detective-ferret',
+            release: '1.0.0',
+            console: {
+                isEnabled: true,
+                shouldAggregateConsoleErrors: true
+            },
+            network: {
+                isEnabled: true,
+                requestSanitizer: request => {
+                    // Sanitize any sensitive data from requests
+                    return request;
+                }
+            }
+        });
+
+        // Track page view
+        LogRocket.track('Monologue Page View');
+
+        // Record user session with additional context
+        LogRocket.identify('monologue-user', {
+            name: 'Monologue User',
+            page: 'Detective Monologue',
+            timestamp: new Date().toISOString(),
+            isMonologueStarted: false
+        });
+    </script>
     <style>
         .title-screen {
             position: fixed;
@@ -387,7 +419,8 @@
         }
 
         .video-loading {
-            display: none;
+            position: absolute;
+            /* ... loading spinner styles ... */
         }
 
         @media (max-width: 768px) {
@@ -446,15 +479,34 @@
         }
 
         .loading-indicator {
-            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: white;
+            font-family: 'Special Elite', cursive;
         }
 
         .spinner {
-            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #8a6d3b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
         }
 
         .loading-progress {
-            display: none;
+            font-size: 18px;
+            margin-top: 10px;
         }
 
         .media-container img.loading {
@@ -521,6 +573,12 @@
                 <div id="monologueText"></div>
             </div>
         </div>
+    </div>
+
+    <div class="loading-indicator">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading story...</div>
+        <div class="loading-progress">0%</div>
     </div>
 
     <div class="transition-screen">
@@ -649,6 +707,7 @@
         const mediaContainer = document.querySelector('.media-container');
         const monologueText = document.getElementById('monologueText');
         let currentMedia = null;
+        const loadingIndicator = document.querySelector('.loading-indicator');
         const transitionScreen = document.querySelector('.transition-screen');
 
         // Initialize core variables
@@ -658,34 +717,15 @@
             activeElements: new Map()
         };
 
-        window.LogRocket && window.LogRocket.init('biy3cl/spelling', {
-            dom: {
-                inputSanitizer: true,
-            },
-            shouldCaptureIP: false,
-            rootHostname: 'detective-ferret',
-            release: '1.0.0',
-            console: {
-                isEnabled: true,
-                shouldAggregateConsoleErrors: true
-            },
-            network: {
-                isEnabled: true,
-                requestSanitizer: request => {
-                    return request;
-                }
-            }
-        });
+        // Add these variables at the start of your script
+        const CONCURRENT_LOADS = 3;
+        const PRELOAD_AHEAD = 5;
+        let loadedAssets = new Set();
+        let loadingPromises = new Map();
+        let progressCallback = null;
+        let isPlaying = false;
 
-        LogRocket.track('Monologue Page View');
-
-        LogRocket.identify('monologue-user', {
-            name: 'Monologue User',
-            page: 'Detective Monologue',
-            timestamp: new Date().toISOString(),
-            isMonologueStarted: false
-        });
-
+        // Add this at the start of your script to ensure audio context is ready
         document.addEventListener('DOMContentLoaded', function() {
             // Create an AudioContext when the page loads
             const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -708,8 +748,8 @@
             // Setup play button to handle both audio context resuming and story starting
             const playButton = document.querySelector('.play-button');
             if (playButton) {
-                playButton.disabled = false;
-                playButton.style.opacity = '1';
+                playButton.disabled = true;
+                playButton.style.opacity = '0.5';
                 
                 playButton.addEventListener('click', async function(e) {
                     e.preventDefault();
@@ -727,12 +767,15 @@
 
         // Enhanced startStory function
         async function startStory() {
+            if (isPlaying) return;
+            
             const playButton = document.querySelector('.play-button');
             if (playButton.disabled) {
                 console.log('Button is disabled, assets still loading');
                 return;
             }
 
+            isPlaying = true;
             console.log('Starting story...');
 
             try {
@@ -765,6 +808,7 @@
                 }
             } catch (error) {
                 console.error('Error starting story:', error);
+                isPlaying = false;
                 alert('There was an error starting the story. Please try again.');
             }
         }
@@ -814,14 +858,22 @@
         window.addEventListener('load', async () => {
             console.log('Page loaded, initializing...');
             
+            const loadingIndicator = document.querySelector('.loading-indicator');
+            loadingIndicator.style.display = 'flex';
+
             try {
-                const playButton = document.querySelector('.play-button');
-                if (playButton) {
-                    playButton.disabled = false;
-                    playButton.style.opacity = '1';
-                }
-                
+                await preloadInitialAssets();
                 console.log('Assets preloaded successfully');
+
+                const playButton = document.querySelector('.play-button');
+                playButton.disabled = false;
+                playButton.style.opacity = '1';
+                
+                loadingIndicator.style.opacity = '0';
+                setTimeout(() => {
+                    loadingIndicator.style.display = 'none';
+                }, 500);
+
             } catch (error) {
                 console.error('Initialization error:', error);
                 alert('Failed to load story assets. Please refresh the page.');
@@ -856,6 +908,14 @@
                         mediaElement.loop = true;
                         mediaElement.playsInline = true;
                         
+                        // If we have a placeholder, show it first
+                        const placeholder = preloadedAssets.images.get(scene.src + '_placeholder');
+                        if (placeholder) {
+                            const placeholderElement = placeholder.cloneNode();
+                            placeholderElement.className = 'low-res-placeholder';
+                            mediaContainer.appendChild(placeholderElement);
+                        }
+
                         // Set up the main video
                         const loadedVideo = preloadedAssets.images.get(scene.src);
                         if (loadedVideo) {
@@ -869,12 +929,27 @@
                             mediaElement.classList.add('loaded');
                             mediaElement.style.opacity = '1';
                             mediaElement.play().catch(console.error);
+                            
+                            // Remove placeholder if it exists
+                            const placeholder = mediaContainer.querySelector('.low-res-placeholder');
+                            if (placeholder) {
+                                placeholder.style.opacity = '0';
+                                setTimeout(() => placeholder.remove(), 300);
+                            }
                         };
                     } else {
                         mediaElement = document.createElement('img');
                         mediaElement.className = 'loading';
                         mediaElement.style.opacity = '0';
                         
+                        // If we have a placeholder, show it first
+                        const placeholder = preloadedAssets.images.get(scene.src + '_placeholder');
+                        if (placeholder) {
+                            const placeholderElement = placeholder.cloneNode();
+                            placeholderElement.className = 'low-res-placeholder';
+                            mediaContainer.appendChild(placeholderElement);
+                        }
+
                         // Set up the main image
                         const loadedImage = preloadedAssets.images.get(scene.src);
                         if (loadedImage) {
@@ -887,6 +962,13 @@
                             mediaElement.classList.remove('loading');
                             mediaElement.classList.add('loaded');
                             mediaElement.style.opacity = '1';
+                            
+                            // Remove placeholder if it exists
+                            const placeholder = mediaContainer.querySelector('.low-res-placeholder');
+                            if (placeholder) {
+                                placeholder.style.opacity = '0';
+                                setTimeout(() => placeholder.remove(), 300);
+                            }
                         };
                     }
 
@@ -920,6 +1002,7 @@
                 
                 const moveToNextScene = () => {
                     console.log('Moving to next scene after duration:', scene.duration);
+                    preloadUpcomingScenes(index);
                     
                     setTimeout(() => {
                         currentScene++;
@@ -1031,6 +1114,47 @@
             }
         }
 
+        // Fix the async function
+        async function preloadInitialAssets() {
+            const initialBatch = scenes.slice(0, PRELOAD_AHEAD);
+            let loaded = 0;
+            const total = initialBatch.length;
+
+            try {
+                // Load assets in parallel but limit concurrency
+                for (let i = 0; i < initialBatch.length; i += CONCURRENT_LOADS) {
+                    const batch = initialBatch.slice(i, i + CONCURRENT_LOADS);
+                    await Promise.all(batch.map(async (scene) => {
+                        await loadAsset(scene);
+                        loaded++;
+                        updateLoadingProgress(loaded, total);
+                    }));
+                }
+
+                // Make sure the play button is enabled and visible
+                const playButton = document.querySelector('.play-button');
+                if (playButton) {
+                    playButton.disabled = false;
+                    playButton.style.opacity = '1';
+                    console.log('Play button enabled');
+                }
+                
+                console.log('Initial assets preloaded');
+            } catch (error) {
+                console.error('Error preloading assets:', error);
+            }
+        }
+
+        function preloadUpcomingScenes(currentIndex) {
+            const nextScenes = scenes.slice(currentIndex + 1, currentIndex + PRELOAD_AHEAD);
+            
+            nextScenes.forEach(scene => {
+                if (!loadedAssets.has(scene.src)) {
+                    loadAsset(scene).catch(console.error);
+                }
+            });
+        }
+
         function startJourney() {
             stopBackgroundMusic();
             if (currentAudio) {
@@ -1078,9 +1202,99 @@
             window.location.href = redirectUrl;
         }
 
+        // Add this new function for asset loading progress
+        function updateLoadingProgress(loaded, total) {
+            const progress = Math.round((loaded / total) * 100);
+            const loadingText = document.querySelector('.loading-text');
+            const loadingProgress = document.querySelector('.loading-progress');
+            
+            if (loadingProgress) {
+                loadingProgress.textContent = `${progress}%`;
+            }
+            
+            if (loadingText) {
+                loadingText.textContent = progress === 100 ? 'Ready to Play' : 'Loading Story...';
+            }
+        }
+
+        // Enhanced asset loading function
+        async function loadAsset(scene) {
+            if (loadedAssets.has(scene.src)) {
+                return preloadedAssets.images.get(scene.src);
+            }
+
+            if (loadingPromises.has(scene.src)) {
+                return loadingPromises.get(scene.src);
+            }
+
+            const loadPromise = new Promise(async (resolve, reject) => {
+                try {
+                    // Create low-res placeholder for videos/GIFs
+                    if (scene.type === 'video' || scene.src.endsWith('.gif')) {
+                        const placeholderUrl = scene.src.replace(/\.(mp4|gif)$/, '_thumb.webp');
+                        try {
+                            const placeholder = new Image();
+                            placeholder.src = placeholderUrl;
+                            await placeholder.decode();
+                            preloadedAssets.images.set(scene.src + '_placeholder', placeholder);
+                        } catch (e) {
+                            console.warn('Placeholder not available for:', scene.src);
+                        }
+                    }
+
+                    // Load the main media
+                    if (scene.type === 'video') {
+                        const video = document.createElement('video');
+                        video.preload = 'auto';
+                        video.muted = true;
+                        video.loop = true;
+                        video.playsInline = true;
+                        
+                        const videoPromise = new Promise((resolveVideo) => {
+                            video.onloadeddata = () => resolveVideo(video);
+                        });
+
+                        video.src = scene.src;
+                        const loadedVideo = await videoPromise;
+                        preloadedAssets.images.set(scene.src, loadedVideo);
+                    } else {
+                        const img = new Image();
+                        await new Promise((resolveImage) => {
+                            img.onload = () => resolveImage();
+                            img.src = scene.src;
+                        });
+                                await img.decode();
+                                preloadedAssets.images.set(scene.src, img);
+                    }
+
+                    // Load audio if present
+                    if (scene.audio && !preloadedAssets.audio.has(scene.audio)) {
+                        const audio = new Audio();
+                        audio.preload = 'auto';
+                        
+                        await new Promise((resolveAudio) => {
+                            audio.addEventListener('canplaythrough', () => {
+                                preloadedAssets.audio.set(scene.audio, audio);
+                                resolveAudio();
+                            }, { once: true });
+                        audio.src = scene.audio;
+                        });
+                    }
+
+                    loadedAssets.add(scene.src);
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            loadingPromises.set(scene.src, loadPromise);
+            return loadPromise;
+        }
+
         document.addEventListener('touchmove', (e) => {
             e.preventDefault();
         }, { passive: false });
     </script>
 </body>
-</html>
+</html> 
