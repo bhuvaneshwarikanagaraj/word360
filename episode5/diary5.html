@@ -349,6 +349,82 @@
             font-size: 1.2em;
             font-weight: bold;
         }
+        
+        /* Feedback Styles */
+        .feedback-container {
+            display: none; /* Initially hidden */
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .feedback-form {
+            margin: 30px 0;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+        }
+
+        .emoji-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .emoji-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 80px;
+        }
+
+        .emoji-option:hover {
+            background: rgba(74, 29, 119, 0.1);
+            transform: scale(1.1);
+        }
+
+        .emoji {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+
+        .emoji-label {
+            font-size: 0.9em;
+            color: #4a1d77;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .thank-you {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            font-size: 1.5em;
+            color: #4a1d77;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .thank-you .star {
+            font-size: 1.8em;
+            margin-top: 10px;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -357,22 +433,53 @@
         <div class="diary-header">
             <h1>Detective's Diary</h1>
         </div>
-        <div class="question-section">
-            <h2>Today's Question:</h2>
-            <p>Ferret discovered that lightning was involved in every disappearance — but no storms were recorded. If you were in his shoes, what would you be thinking right now? Would you believe in science, or something beyond it?</p>
-        </div>
-        <form class="diary-form" id="diaryForm">
-            <textarea id="reasons" placeholder="Share your thoughts on the supernatural vs scientific aspects of the case..." style="min-height: 200px;"></textarea>
-            <button type="submit" class="submit-btn">Save Entry</button>
-        </form>
-        <div class="success-message" id="successMessage">
-            <h2>🎉 Task Completed! 🎉</h2>
-            <p>Your thoughts have been recorded in the case files.</p>
-            <p>You've successfully completed this task.</p>
-            <div class="completion-status">
-                <span class="checkmark">✓</span> Task Marked as Complete
+        <div id="diaryForm">
+            <div class="question-section">
+                <h2>Today's Question:</h2>
+                <p>Ferret discovered that lightning was involved in every disappearance — but no storms were recorded. If you were in his shoes, what would you be thinking right now? Would you believe in science, or something beyond it?</p>
             </div>
-            <button class="next-button" onclick="handleNextEpisode()">Continue to Next Episode →</button>
+            <form class="diary-form">
+                <textarea id="reasons" placeholder="Share your thoughts on the supernatural vs scientific aspects of the case..." style="min-height: 200px;"></textarea>
+                <button type="submit" class="submit-btn">Save Entry</button>
+            </form>
+        </div>
+        
+        <!-- Add Feedback Section (initially hidden) -->
+        <div class="feedback-container" id="feedbackContainer">
+            <div class="feedback-form">
+                <h3>How did you like this story?</h3>
+                <div class="emoji-options">
+                    <div class="emoji-option" onclick="submitFeedback('love')">
+                        <div class="emoji">😍</div>
+                        <div class="emoji-label">Love it!</div>
+                    </div>
+                    <div class="emoji-option" onclick="submitFeedback('okay')">
+                        <div class="emoji">😊</div>
+                        <div class="emoji-label">Okay okay</div>
+                    </div>
+                    <div class="emoji-option" onclick="submitFeedback('not_good')">
+                        <div class="emoji">😕</div>
+                        <div class="emoji-label">Not so good</div>
+                    </div>
+                </div>
+                <div class="thank-you" id="thankYouMessage">
+                    <span>Thanks</span>
+                    <span>for</span>
+                    <span>your</span>
+                    <span>feedback</span>
+                    <span class="star">⭐</span>
+                </div>
+            </div>
+            
+            <div class="success-message" id="successMessage">
+                <h2>🎉 Task Completed! 🎉</h2>
+                <p>Your thoughts have been recorded in the case files.</p>
+                <p>You've successfully completed this task.</p>
+                <div class="completion-status">
+                    <span class="checkmark">✓</span> Task Marked as Complete
+                </div>
+                <button class="next-button" onclick="handleNextEpisode()">Continue to Next Episode →</button>
+            </div>
         </div>
     </div>
 
@@ -413,159 +520,64 @@
             localStorage.removeItem('diary5_temp_entry');
         }
 
-        // Update your form submission handler
-        document.getElementById('diaryForm').addEventListener('submit', async function(e) {
+        // Update form submission handler
+        document.querySelector('.diary-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const reasonsText = document.getElementById('reasons').value.trim();
+            const entryText = document.getElementById('reasons').value.trim();
             const submitButton = document.querySelector('.submit-btn');
-            const successMessage = document.getElementById('successMessage');
             
-            if (!reasonsText) {
+            if (!entryText) {
                 alert('Please share your thoughts before saving.');
                 return;
             }
-
+            
+            // Immediately disable the button and show loading state
             submitButton.disabled = true;
             submitButton.textContent = 'Saving...';
             
+            // Immediately show feedback UI without waiting for Firebase
+            document.getElementById('diaryForm').style.display = 'none';
+            document.getElementById('feedbackContainer').style.display = 'block';
+            
+            // Get user data
+            const authPhone = localStorage.getItem('auth_phone');
+            const authName = localStorage.getItem('auth_name');
+            const userId = localStorage.getItem('auth_userId');
+            
+            // Prepare entry data
+            const entryData = {
+                entry: entryText,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                userAgent: navigator.userAgent,
+                userName: authName || 'Anonymous',
+                userPhone: authPhone || 'unknown',
+                savedAt: new Date().toISOString(),
+                userId: userId || null
+            };
+            
             try {
-                // Verify Firebase is initialized
-                if (!db || !auth) {
-                    throw new Error('Firebase not properly initialized');
-                }
-
-                // Get user info from localStorage first (faster)
-                let userName = localStorage.getItem('auth_name');
-                let userPhone = localStorage.getItem('auth_phone');
-                let userId = localStorage.getItem('auth_userId');
+                // Save to Firebase in the background
+                const docRef = await db.collection('episode5').add(entryData);
+                console.log('Diary entry saved with ID:', docRef.id);
                 
-                // Fall back to Firebase auth if localStorage not available
-                if (!userName || !userPhone) {
-                const user = auth.currentUser;
-                if (!user) {
-                    throw new Error('User not authenticated');
-                    }
-                    userId = user.uid;
-                }
-
-                // Create the entry data
-                const entryData = {
-                    text: reasonsText,
-                    episode: 5,
-                    question: "Ferret discovered that lightning was involved in every disappearance — but no storms were recorded. If you were in his shoes, what would you be thinking right now? Would you believe in science, or something beyond it?",
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    userAgent: navigator.userAgent,
-                };
+                // Update user progress in the background
+                const progressRef = db.collection('userProgress').doc(userId || `phone_${authPhone}`);
+                await progressRef.set({
+                    completedEpisodes: firebase.firestore.FieldValue.arrayUnion(5),
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                    name: authName || 'Anonymous',
+                    phone: authPhone || 'unknown',
+                    userId: userId || null,
+                    lastEpisodeCompleted: 5
+                }, { merge: true });
                 
-                // Add user data
-                if (userId) entryData.userId = userId;
-                if (userName) entryData.userName = userName;
-                if (userPhone) entryData.userPhone = userPhone;
-
-                // Save to Firebase with optimized approach
-                try {
-                    console.time('saveOperation');
-                    
-                    // Show success message early to improve perceived performance
-                    setTimeout(() => {
-                        // Clear temporary storage
-                        clearTempStorage();
-                        
-                        // Update UI while Firebase operations continue in background
-                        submitButton.style.display = 'none';
-                        document.getElementById('reasons').disabled = true;
-                        successMessage.style.display = 'block';
-                        successMessage.querySelector('.next-button').style.display = 'inline-block';
-                        
-                        // Set local completion flags immediately
-                        localStorage.setItem('diary5_completed', 'true');
-                        localStorage.setItem('auth_isLoggedIn', 'true');
-                        markTaskAsCompleted();
-                    }, 300); // Show success quickly
-                    
-                    // Batch operations for better performance
-                    const batch = db.batch();
-                    
-                    // Create diary entry document
-                    const entryRef = db.collection('episode5').doc();
-                    batch.set(entryRef, entryData);
-                    
-                    // Update user progress
-                    if (userId) {
-                        // Direct document reference is faster
-                        const userProgressRef = db.collection('userProgress').doc(userId);
-                        batch.update(userProgressRef, {
-                            completedEpisodes: firebase.firestore.FieldValue.arrayUnion(5),
-                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    } else if (userPhone) {
-                        // Create new user progress directly
-                        const newUserRef = db.collection('userProgress').doc();
-                        batch.set(newUserRef, {
-                            phone: userPhone,
-                            name: userName || 'User',
-                            completedEpisodes: [5],
-                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-                            registrationComplete: true
-                        });
-                        
-                        // Store new userId in localStorage
-                        userId = newUserRef.id;
-                        localStorage.setItem('auth_userId', userId);
-                    }
-                    
-                    // Commit all changes in a single batch operation
-                    await batch.commit();
-                    console.timeEnd('saveOperation');
-                    
-                    // Non-blocking tracking
-                    if (window.LogRocket) {
-                        setTimeout(() => {
-                            LogRocket.track('Diary Entry Submitted', {
-                                entryLength: reasonsText.length,
-                                hasContent: true
-                            });
-                            
-                            LogRocket.track('Episode Completed', {
-                                episodeNumber: 5,
-                                completionType: 'diary_submission'
-                            });
-                        }, 0);
-                    }
-                    
-                } catch (error) {
-                    console.error('Save operation failed:', error);
-                    
-                    // Fallback save attempt with minimal operations
-                    try {
-                        // Just save the entry without progress updates
-                        await db.collection('episode5').add(entryData);
-                        console.log('Fallback save successful (entry only)');
-                    } catch (fallbackError) {
-                        throw new Error(`Save failed: ${error.message}. Fallback also failed: ${fallbackError.message}`);
-                    }
-                }
+                // Update local storage cache
+                localStorage.setItem('episode5_completed', 'true');
                 
             } catch (error) {
-                console.error("Error saving diary entry:", error);
-                
-                const errorMessage = error.code ? 
-                    `Firebase Error (${error.code}): ${error.message}` :
-                    `Error: ${error.message}`;
-                console.error(errorMessage);
-                
-                if (window.LogRocket) {
-                    LogRocket.error("Diary Entry Save Error", { 
-                        error: errorMessage,
-                        entryLength: reasonsText.length
-                    });
-                }
-                
-                alert('There was an error saving your entry. Please try again. If the problem persists, please try refreshing the page.');
-                
-                submitButton.disabled = false;
-                submitButton.textContent = 'Save Entry';
+                console.error('Error saving to Firebase:', error);
+                // Don't show error to user since UI has already updated
             }
         });
 
@@ -574,6 +586,55 @@
             // Set the target panel to panel 18
             localStorage.setItem('targetPanel', '18');
             window.location.href = 'episode5.html';
+        }
+
+        // Handle feedback submission - make it super fast
+        function submitFeedback(rating) {
+            const userPhone = localStorage.getItem('auth_phone') || 'unknown';
+            const feedbackKey = `user_${userPhone}_feedback_5`;  // Episode-specific key
+            
+            // Immediately show thank you UI
+            showFeedbackUI();
+            
+            // Check if already submitted
+            if (localStorage.getItem(feedbackKey)) {
+                return;
+            }
+            
+            // Mark as submitted in localStorage
+            localStorage.setItem(feedbackKey, 'submitted');
+            
+            // Save to Firebase in the background
+            const feedback = {
+                timestamp: new Date().toISOString(),
+                rating: rating,
+                episode: 5,
+                userPhone: userPhone,
+                userId: localStorage.getItem('auth_userId') || null
+            };
+            
+            db.collection('userFeedback').add(feedback)
+                .catch(error => console.error('Error saving feedback:', error));
+        }
+        
+        // Helper function to show feedback UI with success message
+        function showFeedbackUI() {
+            // Hide emoji options
+            document.querySelector('.emoji-options').style.display = 'none';
+            
+            // Show thank you message
+            document.getElementById('thankYouMessage').style.display = 'flex';
+            
+            // Show success message immediately
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'block';
+            
+            // Show the next button after a short delay
+            setTimeout(() => {
+                const nextButton = successMessage.querySelector('.next-button');
+                nextButton.style.display = 'inline-block';
+                nextButton.style.animation = 'fadeIn 0.5s ease-in-out';
+            }, 500);
         }
 
         // Optimize typing tracking

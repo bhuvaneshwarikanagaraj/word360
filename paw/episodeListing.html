@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Episodes - word360</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Nunito', 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        :root {
+            --primary: #6366F1;
+            --primary-light: #818CF8;
+            --primary-dark: #4F46E5;
+            --secondary: #FB7185;
+            --success: #22C55E;
+            --success-light: #86EFAC;
+            --success-dark: #16A34A;
+            --warning: #FBBF24;
+            --danger: #F87171;
+            --background: #F3F4F6;
+            --white: #FFFFFF;
+            --text-dark: #374151;
+            --text-light: #6B7280;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius: 16px;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-dark);
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 30px;
+            margin: 0;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 15px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            text-align: center;
+            padding-top: 20px;
+            flex-shrink: 0;
+        }
+        
+        .logo h1 {
+            color: var(--primary);
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .episodes-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 20px;
+            overflow-y: auto;
+            padding: 0 15px;
+            flex: 1;
+            padding-bottom: 100px;
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            &::-webkit-scrollbar {
+                display: none;
+            }
+            /* Hide scrollbar for IE, Edge and Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        .episode-card {
+            background-color: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            min-height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .episode-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .episode-number {
+            background-color: var(--primary);
+            color: white;
+            width: 35px;
+            height: 35px;
+            min-width: 35px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            font-size: 16px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .episode-content {
+            flex-grow: 1;
+            text-align: left;
+            min-width: 0;
+            padding-right: 10px;
+        }
+        
+        .episode-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-dark);
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .episode-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            background-color: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .episode-status.available {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--success-dark);
+        }
+
+        .episode-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--success-dark);
+        }
+
+        .episode-card.completed {
+            background-color: rgba(34, 197, 94, 0.1);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background-color: #E5E7EB;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 20%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 5px;
+        }
+
+        .action-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 10;
+            padding: 0 20px;
+            background: linear-gradient(to top, var(--background) 50%, transparent);
+            padding-top: 20px;
+        }
+
+        .action-button {
+            min-width: 120px;
+            height: 45px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 20px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            background-color: var(--white);
+            border: none;
+            white-space: nowrap;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .action-button.logout {
+            color: var(--danger);
+        }
+
+        .action-button.logout:hover {
+            background-color: var(--danger);
+            color: var(--white);
+        }
+
+        .action-button.share {
+            color: #25D366;
+        }
+
+        .action-button.share:hover {
+            background-color: #25D366;
+            color: var(--white);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>word360</h1>
+        </div>
+        
+        <h2 style="text-align: center; margin: 20px 0; color: var(--primary); font-weight: 800;">My Reading Journey</h2>
+        
+        <div class="progress-container">
+            <div class="progress-bar" style="width: 0%;"></div>
+        </div>
+        
+        <p style="text-align: center; margin-bottom: 20px; color: var(--text-light);">All episodes available!</p>
+        
+        <div class="episodes-container">
+            <!-- Episode 1 -->
+            <div class="episode-card" onclick="goToEpisode(1)">
+                <div class="episode-number">1</div>
+                <div class="episode-content">
+                    <div class="episode-title">Call from Stranger</div>
+                </div>
+                <div class="episode-status available">PLAY</div>
+            </div>
+            
+            <!-- Episode 2 --> 
+            <div class="episode-card" onclick="goToEpisode(2)">
+                <div class="episode-number">2</div>
+                <div class="episode-content">
+                    <div class="episode-title">New City</div>
+                </div>
+                <div class="episode-status available">PLAY</div>
+            </div>
+            
+            <!-- Episode 3 -->
+            <div class="episode-card" onclick="goToEpisode(3)">
+                <div class="episode-number">3</div>
+                <div class="episode-content">
+                    <div class="episode-title">Back to Work: The Return</div>
+                </div>
+                <div class="episode-status available">PLAY</div>
+            </div>
+
+            <!-- Episode 4 -->
+            <div class="episode-card" onclick="goToEpisode(4)">
+                <div class="episode-number">4</div>
+                <div class="episode-content">
+                    <div class="episode-title">Tools of the Trade</div>
+                </div>
+                <div class="episode-status available">PLAY</div>
+            </div>
+
+            <!-- Episode 5 -->
+            <div class="episode-card" onclick="goToEpisode(5)">
+                <div class="episode-number">5</div>
+                <div class="episode-content">
+                    <div class="episode-title">Whispers of Lightning</div>
+                </div>
+                <div class="episode-status available">PLAY</div>
+            </div>
+            
+            <!-- Coming Soon Announcement -->
+            <div class="episode-card announcement" style="background-color: rgba(99, 102, 241, 0.1); cursor: default; justify-content: center;">
+                <div style="text-align: center;">
+                    <div style="color: var(--primary); font-size: 18px; font-weight: bold;">More Adventures Coming Soon!</div>
+                    <div style="color: var(--text-light); font-size: 14px; margin-top: 5px;">Stay tuned for new episodes</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="action-button logout" onclick="logout()" title="Logout">
+                <span class="icon">⇥</span>
+                <span class="label">Logout</span>
+            </button>
+            <button class="action-button share" onclick="shareToWhatsApp()" title="Share on WhatsApp">
+                <span class="icon">⤴</span>
+                <span class="label">Share</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics-compat.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDO7cACg6BNA8KiYvMhoxonDxCSKBTgwiE",
+            authDomain: "yevvolearn.firebaseapp.com",
+            projectId: "yevvolearn",
+            storageBucket: "yevvolearn.firebasestorage.app",
+            messagingSenderId: "114822749369",
+            appId: "1:114822749369:web:599d567dd36e3ce7870f68",
+            measurementId: "G-9V2E5C1M9V"
+        };
+
+        // Initialize Firebase with custom auth handling
+        let auth;
+        let analytics;
+        let recaptchaVerifier;
+        let recaptchaWidgetId;
+        let isAuthInitialized = false;
+        
+        // Safe DOM element getter with fallback
+        function getElement(id) {
+            const element = document.getElementById(id);
+            if (!element) {
+                console.warn(`Element with id '${id}' not found`);
+                // Create a temporary element if needed
+                if (id === 'recaptcha-container') {
+                    const container = document.createElement('div');
+                    container.id = 'recaptcha-container';
+                    document.body.appendChild(container);
+                    return container;
+                }
+                return null;
+            }
+            return element;
+        }
+
+        // Safe class manipulation with fallback
+        function toggleClass(element, className, force) {
+            try {
+                if (element && element.classList) {
+                    element.classList.toggle(className, force);
+                    return true;
+                }
+            } catch (error) {
+                console.warn(`Error toggling class '${className}':`, error);
+            }
+            return false;
+        }
+
+        // Initialize Firebase
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+                analytics = firebase.analytics();
+            }
+            auth = firebase.auth();
+
+            // Set persistence to LOCAL with fallback
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                .catch(() => {
+                    console.log('Using fallback authentication method');
+                });
+        } catch (error) {
+            console.warn('Firebase services unavailable:', error);
+        }
+
+        // Initialize reCAPTCHA with cookie-less support
+        function initializeRecaptcha() {
+            try {
+                console.log('Initializing reCAPTCHA...');
+                
+                // Clear existing reCAPTCHA
+                const container = getElement('recaptcha-container');
+                if (container) {
+                    container.innerHTML = '';
+                }
+
+                // Create new reCAPTCHA verifier
+                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    size: 'invisible',  // Use invisible reCAPTCHA
+                    callback: (response) => {
+                        console.log('reCAPTCHA solved');
+                    },
+                    'expired-callback': () => {
+                        console.log('reCAPTCHA expired');
+                    }
+                });
+
+                // Render reCAPTCHA
+                recaptchaVerifier.render().then((widgetId) => {
+                    recaptchaWidgetId = widgetId;
+                    console.log('reCAPTCHA rendered successfully with widget ID:', widgetId);
+                    isAuthInitialized = true;
+                }).catch((error) => {
+                    console.warn('Error rendering reCAPTCHA:', error);
+                    useFallbackVerification();
+                });
+
+            } catch (error) {
+                console.warn('Error initializing reCAPTCHA:', error);
+                useFallbackVerification();
+            }
+        }
+
+        // Fallback verification method
+        function useFallbackVerification() {
+            console.log('Using fallback verification method');
+            isAuthInitialized = true;
+        }
+
+        // Check authentication state
+        function checkAuthState() {
+            if (!isAuthInitialized) {
+                console.log('Auth not initialized yet, waiting...');
+                setTimeout(checkAuthState, 500); // Wait and retry
+                return;
+            }
+
+            // First check localStorage
+            const isLoggedIn = localStorage.getItem('auth_isLoggedIn') === 'true';
+            const phone = localStorage.getItem('auth_phone');
+            const authTimestamp = parseInt(localStorage.getItem('auth_timestamp') || '0');
+            const isAuthValid = (Date.now() - authTimestamp) < (24 * 60 * 60 * 1000);
+
+            if (!isLoggedIn || !phone || !isAuthValid) {
+                console.log('Local auth check failed, redirecting to login');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Show episodes page
+            const episodesPage = getElement('episodes-page');
+            const authPage = getElement('auth-page');
+            
+            if (episodesPage && authPage) {
+                toggleClass(episodesPage, 'visible', true);
+                toggleClass(authPage, 'visible', false);
+            }
+
+            // If Firebase is available, verify Firebase auth
+            if (auth) {
+                auth.onAuthStateChanged((user) => {
+                    if (!user) {
+                        console.log('Firebase auth unavailable, using local auth');
+                        if (episodesPage && authPage) {
+                            toggleClass(episodesPage, 'visible', true);
+                            toggleClass(authPage, 'visible', false);
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize on DOM load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create necessary DOM elements if they don't exist
+            if (!getElement('auth-page')) {
+                const authPage = document.createElement('div');
+                authPage.id = 'auth-page';
+                authPage.className = 'auth-page';
+                document.body.appendChild(authPage);
+            }
+
+            if (!getElement('episodes-page')) {
+                const episodesPage = document.createElement('div');
+                episodesPage.id = 'episodes-page';
+                episodesPage.className = 'episodes-page';
+                document.body.appendChild(episodesPage);
+            }
+
+            initializeRecaptcha();
+            checkAuthState();
+            markCompletedEpisodes();
+        });
+
+        // Track events with fallback
+        function trackEvent(eventName, eventData) {
+            try {
+                if (analytics && auth?.currentUser) {
+                    analytics.logEvent(eventName, {
+                        ...eventData,
+                        user_id: auth.currentUser.uid,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            } catch (error) {
+                console.debug('Analytics unavailable');
+            }
+        }
+
+        // Mark completed episodes
+        function markCompletedEpisodes() {
+            try {
+                const completedEpisodes = JSON.parse(localStorage.getItem('completed_episodes') || '[]');
+                
+                document.querySelectorAll('.episode-badge').forEach(badge => {
+                    badge.style.display = 'none';
+                });
+                
+                completedEpisodes.forEach(episodeNum => {
+                    const episodeCard = document.querySelector(`.episode-card:nth-child(${episodeNum})`);
+                    if (episodeCard) {
+                        episodeCard.classList.add('completed');
+                        const badge = episodeCard.querySelector('.episode-badge');
+                        if (badge) {
+                            badge.style.display = 'block';
+                            badge.innerHTML = '✓';
+                        }
+                    }
+                });
+
+                updateProgressBar(completedEpisodes.length);
+                trackEvent('progress_update', { completed_count: completedEpisodes.length });
+            } catch (error) {
+                console.warn('Error marking completed episodes:', error);
+            }
+        }
+
+        // Handle episode navigation
+        function goToEpisode(episodeNumber) {
+            try {
+                // Store current episode
+                localStorage.setItem('current_episode', episodeNumber);
+                trackEvent('episode_started', { episode_number: episodeNumber });
+                
+                // Navigate to appropriate episode page
+                const routes = {
+                    1: 'monologue/monologue1.html',
+                    2: 'episode2/mono2.html',
+                    3: 'monologue/monologue1.html',
+                    4: 'episode4/mono4.html',
+                    5: 'monologue/monologue1.html'
+                };
+
+                const route = routes[episodeNumber];
+                if (route) {
+                    window.location.href = route;
+                } else {
+                    console.error('Invalid episode number:', episodeNumber);
+                }
+            } catch (error) {
+                console.error('Error navigating to episode:', error);
+            }
+        }
+
+        // Handle sharing
+        function shareToWhatsApp() {
+            const message = "I'm learning English with Word360! Join me on this amazing journey! 🌟";
+            trackEvent('share_attempt', { platform: 'whatsapp' });
+
+            try {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Word360 - Learning English',
+                        text: message,
+                        url: window.location.href
+                    }).then(() => {
+                        trackEvent('share_success', { platform: 'whatsapp' });
+                    }).catch(handleShareError);
+                } else {
+                    handleShareError();
+                }
+            } catch (error) {
+                handleShareError();
+            }
+
+            function handleShareError() {
+                const url = "https://wa.me/?text=" + encodeURIComponent(message);
+                window.open(url, '_blank');
+            }
+        }
+
+        // Handle logout
+        function logout() {
+            try {
+                // Clear auth data from localStorage
+                localStorage.removeItem('auth_isLoggedIn');
+                localStorage.removeItem('auth_phone');
+                localStorage.removeItem('auth_uid');
+                localStorage.removeItem('auth_timestamp');
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('current_episode');
+
+                // Sign out from Firebase if available
+                if (auth) {
+                    auth.signOut().catch(console.warn);
+                }
+
+                // Clear completed episodes
+                localStorage.removeItem('completed_episodes');
+
+                // Redirect to login
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
