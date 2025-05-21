@@ -557,52 +557,6 @@
                 -webkit-transform: translateZ(0);
             }
         }
-
-        /* Lazy loading styles */
-        img[data-src], video[data-src] {
-            opacity: 0;
-            transition: opacity 0.3s ease-in;
-        }
-
-        img.loaded, video.loaded {
-            opacity: 1;
-        }
-
-        .loading-placeholder {
-            background: #f0f0f0;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 0.8; }
-            100% { opacity: 0.6; }
-        }
-
-        .skip-button {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: 'Special Elite', cursive;
-            font-size: 1.2em;
-            padding: 12px 25px;
-            background-color: rgba(254, 251, 243, 0.95);
-            color: #8a6d3b;
-            border: 2px solid #8a6d3b;
-            border-radius: 8px;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.5s;
-            z-index: 1010;
-        }
-        .skip-button.visible {
-            opacity: 1;
-            display: block;
-        }
-        .skip-button:active {
-            transform: translateX(-50%) scale(0.95);
-        }
     </style>
 </head>
 <body>
@@ -627,30 +581,9 @@
         <div class="loading-progress">0%</div>
     </div>
 
-    <button class="skip-button" style="display:none;">Skip Intro</button>
-
-    <script>
-        function showSkipButton() {
-            const skipButton = document.querySelector('.skip-button');
-            skipButton.classList.add('visible');
-            skipButton.style.display = 'block';
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const skipButton = document.querySelector('.skip-button');
-            skipButton.addEventListener('click', function() {
-                window.location.href = '../episode1/episode1.html';
-            });
-
-            // Attach to play button
-            const playButton = document.querySelector('.play-button');
-            if (playButton) {
-                playButton.addEventListener('click', function() {
-                    showSkipButton();
-                });
-            }
-        });
-    </script>
+    <div class="transition-screen">
+        <button class="journey-button" onclick="startJourney()">Begin Episode</button>
+    </div>
 
     <script>
         const scenes = [
@@ -1362,107 +1295,6 @@
         document.addEventListener('touchmove', (e) => {
             e.preventDefault();
         }, { passive: false });
-
-        // Lazy loading functionality
-        class LazyLoader {
-            constructor() {
-                this.imageObserver = null;
-                this.videoObserver = null;
-                this.init();
-            }
-
-            init() {
-                const observerOptions = {
-                    rootMargin: '50px 0px',
-                    threshold: 0.1
-                };
-
-                this.imageObserver = new IntersectionObserver(
-                    (entries, observer) => this.handleIntersection(entries, observer, 'image'),
-                    observerOptions
-                );
-
-                this.videoObserver = new IntersectionObserver(
-                    (entries, observer) => this.handleIntersection(entries, observer, 'video'),
-                    observerOptions
-                );
-
-                this.observeElements();
-            }
-
-            handleIntersection(entries, observer, type) {
-                entries.forEach(entry => {
-                    if (!entry.isIntersecting) {
-                        if (type === 'video') {
-                            const video = entry.target;
-                            video.pause();
-                            video.removeAttribute('src');
-                            video.load();
-                        }
-                        return;
-                    }
-
-                    const element = entry.target;
-                    
-                    if (type === 'image') {
-                        this.loadImage(element);
-                    } else {
-                        this.loadVideo(element);
-                    }
-
-                    observer.unobserve(element);
-                });
-            }
-
-            loadImage(img) {
-                const src = img.dataset.src;
-                const srcset = img.dataset.srcset;
-
-                if (srcset) {
-                    img.srcset = srcset;
-                    img.removeAttribute('data-srcset');
-                }
-
-                if (src) {
-                    img.src = src;
-                    img.removeAttribute('data-src');
-                }
-
-                img.classList.add('loaded');
-            }
-
-            loadVideo(video) {
-                const src = video.dataset.src;
-                if (src) {
-                    video.src = src;
-                    video.removeAttribute('data-src');
-                    video.load();
-                    
-                    // Only autoplay if the video has autoplay attribute
-                    if (video.hasAttribute('autoplay')) {
-                        video.play().catch(err => console.log('Auto-play failed:', err));
-                    }
-                }
-                video.classList.add('loaded');
-            }
-
-            observeElements() {
-                // Observe images
-                document.querySelectorAll('img[data-src], img[data-srcset]').forEach(img => {
-                    this.imageObserver.observe(img);
-                });
-
-                // Observe videos
-                document.querySelectorAll('video[data-src]').forEach(video => {
-                    this.videoObserver.observe(video);
-                });
-            }
-        }
-
-        // Initialize lazy loading when DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            new LazyLoader();
-        });
     </script>
 </body>
-</html>
+</html> 
