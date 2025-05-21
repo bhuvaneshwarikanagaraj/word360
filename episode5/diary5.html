@@ -447,7 +447,7 @@
         <!-- Add Feedback Section (initially hidden) -->
         <div class="feedback-container" id="feedbackContainer">
             <div class="feedback-form">
-                <h3>How did you like this story?</h3>
+                <h3>What do you think of the story?</h3>
                 <div class="emoji-options">
                     <div class="emoji-option" onclick="submitFeedback('love')">
                         <div class="emoji">😍</div>
@@ -472,12 +472,7 @@
             </div>
             
             <div class="success-message" id="successMessage">
-                <h2>🎉 Task Completed! 🎉</h2>
-                <p>Your thoughts have been recorded in the case files.</p>
-                <p>You've successfully completed this task.</p>
-                <div class="completion-status">
-                    <span class="checkmark">✓</span> Task Marked as Complete
-                </div>
+                <h2>🎉Well done—Episode 5 is now complete!</h2>
                 <button class="next-button" onclick="handleNextEpisode()">Continue to Next Episode →</button>
             </div>
         </div>
@@ -663,21 +658,66 @@
                 const name = localStorage.getItem('auth_name');
                 const phone = localStorage.getItem('auth_phone');
                 const userId = localStorage.getItem('auth_userId');
+                const now = new Date().getTime();
+                const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours from now
                 
-                console.log('Handling next episode with user data:', {
-                    name,
-                    phone,
-                    userId: userId || 'None'
-                });
-                
-                // Make sure auth_isLoggedIn is set
+                // Set required flags immediately for episode 5 completion
                 localStorage.setItem('auth_isLoggedIn', 'true');
+                localStorage.setItem('diary_completed', 'true');
+                localStorage.setItem('episode5_completed', 'true');
+                localStorage.setItem('show_episodes_page', 'true');
+                localStorage.setItem('episode5_completed_at', now.toString());
+                localStorage.setItem('next_episode_unlock', unlockTime.toString());
                 
-                // Store user data in sessionStorage for compatibility with other pages
+                // Update user progress in Firebase
+                if (db && (userId || phone)) {
+                    try {
+                        const userRef = userId 
+                            ? db.collection('userProgress').doc(userId)
+                            : db.collection('userProgress').where('phone', '==', phone).limit(1);
+                        
+                        const updateData = {
+                            completedEpisodes: firebase.firestore.FieldValue.arrayUnion(5),
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                            name: name || 'Anonymous',
+                            phone: phone || 'unknown',
+                            episode5Completed: true,
+                            episode5CompletedAt: firebase.firestore.Timestamp.fromMillis(now),
+                            nextEpisodeUnlock: firebase.firestore.Timestamp.fromMillis(unlockTime),
+                            allEpisodesCompleted: true  // Mark that all episodes are now completed
+                        };
+
+                        if (userId) {
+                            // Update by userId
+                            await userRef.set(updateData, { merge: true });
+                        } else {
+                            // Update by phone if no userId
+                            const userQuery = await userRef.get();
+                            if (!userQuery.empty) {
+                                await userQuery.docs[0].ref.update(updateData);
+                            } else {
+                                // Create new progress document if none exists
+                                await db.collection('userProgress').add({
+                                    ...updateData,
+                                    completedEpisodes: [5],
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        }
+                        console.log('Updated completedEpisodes in user progress for episode 5');
+                    } catch (progressError) {
+                        console.error('Error updating user progress:', progressError);
+                    }
+                }
+                
+                // Store user data in sessionStorage
                 if (name && phone) {
                     const userData = {
                         name: name,
-                        phone: phone
+                        phone: phone,
+                        episode5CompletedAt: now,
+                        nextEpisodeUnlock: unlockTime,
+                        allEpisodesCompleted: true
                     };
                     
                     if (userId) {
@@ -685,42 +725,26 @@
                     }
                     
                     sessionStorage.setItem('userData', JSON.stringify(userData));
-                    console.log('Stored user data in sessionStorage');
-                } else {
-                    // If localStorage auth not available, try using Firebase user
-                    const user = auth.currentUser;
-                    if (user) {
-                    const userData = {
-                        uid: user.uid,
-                        email: user.email
-                    };
-                    sessionStorage.setItem('userData', JSON.stringify(userData));
-                        console.log('Stored Firebase user data in sessionStorage');
-                    }
                 }
                 
-                // Mark episode as completed in localStorage
-                localStorage.setItem('diary5_completed', 'true');
-                localStorage.setItem('episode5_completed', 'true');
-                
-                // Set a flag to ensure the episodes page shows immediately on index.html
-                localStorage.setItem('show_episodes_page', 'true');
-                    
-                    // Track in LogRocket
-                    if (window.LogRocket) {
-                        LogRocket.track('Moving to Next Episode', {
-                            from: 'diary5',
-                        to: 'index',
-                        userPhone: phone
+                // Track in LogRocket (non-blocking)
+                if (window.LogRocket) {
+                    setTimeout(() => {
+                        LogRocket.track('All Episodes Completed', {
+                            from: 'episode5_diary',
+                            to: 'episode_list',
+                            userPhone: phone,
+                            unlockTime: new Date(unlockTime).toISOString(),
+                            allEpisodesCompleted: true
                         });
-                    }
-                    
-                console.log('Redirecting to index.html with episodes page flag set');
-                    // Redirect to index.html
-                window.location.href = '../index.html#episodes';
+                    }, 0);
+                }
+                
+                // Redirect to the episode listing page with completion flag
+                window.location.href = '../index.html#episodes&completed=all';
             } catch (error) {
-                console.error('Error handling next episode:', error);
-                // If there's an error, still try to redirect
+                console.error('Error handling navigation:', error);
+                // If there's an error, still redirect to ensure user can continue
                 window.location.href = '../index.html#episodes';
             }
         }

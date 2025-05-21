@@ -578,6 +578,31 @@
             50% { opacity: 0.8; }
             100% { opacity: 0.6; }
         }
+
+        .skip-button {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Special Elite', cursive;
+            font-size: 1.2em;
+            padding: 12px 25px;
+            background-color: rgba(254, 251, 243, 0.95);
+            color: #8a6d3b;
+            border: 2px solid #8a6d3b;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 1010;
+        }
+        .skip-button.visible {
+            opacity: 1;
+            display: block;
+        }
+        .skip-button:active {
+            transform: translateX(-50%) scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -602,9 +627,30 @@
         <div class="loading-progress">0%</div>
     </div>
 
-    <div class="transition-screen">
-        <button class="journey-button" onclick="startJourney()">Begin Episode</button>
-    </div>
+    <button class="skip-button" style="display:none;">Skip Intro</button>
+
+    <script>
+        function showSkipButton() {
+            const skipButton = document.querySelector('.skip-button');
+            skipButton.classList.add('visible');
+            skipButton.style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const skipButton = document.querySelector('.skip-button');
+            skipButton.addEventListener('click', function() {
+                window.location.href = '../episode1/episode1.html';
+            });
+
+            // Attach to play button
+            const playButton = document.querySelector('.play-button');
+            if (playButton) {
+                playButton.addEventListener('click', function() {
+                    showSkipButton();
+                });
+            }
+        });
+    </script>
 
     <script>
         const scenes = [

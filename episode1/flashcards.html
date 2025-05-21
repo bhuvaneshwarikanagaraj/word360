@@ -200,17 +200,16 @@
             display: none;
             font-size: 1em;
             line-height: 1.3;
+            color: #fff !important;
         }
 
         .result-message.correct {
             background: rgba(107, 142, 35, 0.2);
-            color: #556B2F;
             border: 2px solid #6B8E23;
         }
 
         .result-message.incorrect {
             background: rgba(205, 92, 92, 0.2);
-            color: #8B0000;
             border: 2px solid #CD5C5C;
         }
 
@@ -534,18 +533,17 @@
             } catch (e) {
                 console.error("Error storing selected answer:", e);
             }
-
             if (selectedCard.dataset.value === correctAnswer) {
                 selectedCard.classList.add('correct');
-                resultMessage.textContent = "That's right! 'Expertise' means having special skills and knowledge in a particular field. Mr. Ginger needs Ferret's detective expertise to solve the case.";
+                resultMessage.textContent = "Correct! 'Expertise' means special skills.";
                 resultMessage.classList.add('correct');
                 playVictorySound();
             } else {
                 selectedCard.classList.add('incorrect');
-                resultMessage.textContent = "That's not correct. 'Expertise' refers to special skills and knowledge in a particular field. The correct answer is highlighted in green.";
+                resultMessage.textContent = "Wrong. 'Expertise' means special skills. Correct answer is in green.";
                 resultMessage.classList.add('incorrect');
             }
-            
+
             // Mark task as completed
             completionTag.textContent = "Task Completed!";
             completionTag.classList.add('completed');

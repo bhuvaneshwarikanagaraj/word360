@@ -1075,8 +1075,41 @@
         color: var(--primary);
     }
     </style>
+  <style>
+    body.loading * {
+      pointer-events: none !important;
+    }
+    body.loading #loadingOverlay {
+      pointer-events: all !important;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 6px solid #ccc;
+      border-top: 6px solid #8a6d3b;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
+  <div id="loadingOverlay" style="
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 100vh;
+    background: #fff;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s;
+  ">
+    <div class="spinner"></div>
+  </div>
   <!-- Share Popup -->
   <div class="share-popup" id="sharePopup">
     <div class="share-card">
@@ -1602,180 +1635,6 @@
         }
     }
 
-    // Add a helper function to handle OTP send errors
-    function handleSendOTPError(error, phoneInput, formattedPhone) {
-            console.error('Send OTP error:', error);
-
-            LogRocket.track('OTP Send Error', {
-                error: error.message,
-                code: error.code,
-            phone: formattedPhone
-        });
-
-        // Clear the phone input on error
-        if (phoneInput) {
-            phoneInput.value = '';
-            phoneInput.style.borderColor = 'var(--danger)';
-            phoneInput.focus();
-        }
-
-        if (error.code === 'auth/invalid-phone-number') {
-                showPrompt('Invalid phone number format. Please check and try again.');
-            } else if (error.code === 'auth/too-many-requests') {
-                showPrompt('Too many attempts. Please try again later.');
-            } else if (error.code === 'auth/quota-exceeded') {
-                showPrompt('SMS quota exceeded. Please try again later.');
-            } else {
-            showPrompt(error.message || 'An error occurred. Please try again.');
-        }
-    }
-
-    // Function to verify OTP
-    async function verifyOTP() {
-        const otpInput = document.getElementById('otp-input');
-        const otp = otpInput?.value || '';
-        
-        if (!otp || otp.length !== 6) {
-            showPrompt('Please enter a valid 6-digit OTP');
-            return;
-        }
-
-        try {
-            // Set registration in progress flag - VERY IMPORTANT - set this BEFORE authentication!
-            isRegistrationInProgress = true;
-            console.log('Set isRegistrationInProgress to TRUE in verifyOTP');
-
-            // Disable verify button while processing
-            const verifyButton = document.querySelector('#otp-form button');
-            if (verifyButton) {
-            verifyButton.disabled = true;
-            verifyButton.textContent = 'Verifying...';
-            }
-
-            if (!verificationId || !signupData) {
-                console.error('Missing verification data');
-                showPrompt('Verification session expired. Please try again.');
-                return;
-            }
-
-            const credential = firebase.auth.PhoneAuthProvider.credential(verificationId, otp);
-
-            try {
-                if (firebase.auth().currentUser) {
-                    await firebase.auth().signOut();
-                }
-
-                // We're deliberately about to sign in, but we've set isRegistrationInProgress = true above
-                await firebase.auth().signInWithCredential(credential);
-                signupData.credential = credential;
-
-                // Clear OTP input and timer
-                if (otpTimer) {
-                    clearInterval(otpTimer);
-                }
-                otpInput.value = '';
-
-                // Hide OTP form and show registration form
-                document.getElementById('otp-form').classList.remove('active');
-                
-                // Update the registration form HTML to show name and password only
-                const step1Form = document.getElementById('signup-step-1');
-                step1Form.innerHTML = `
-                    <div class="form-group">
-                        <label for="signup-name">What's your name?</label>
-                        <input type="text" id="signup-name" placeholder="Enter your name" autocomplete="name">
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-password">Create a Password <span style="color:var(--danger);">*</span></label>
-                        <div class="password-container">
-                            <input type="password" id="signup-password" placeholder="Create a secure password (min 6 characters)" minlength="6" autocomplete="new-password">
-                            <span class="password-toggle" onclick="togglePasswordVisibility('signup-password', this)">👁️</span>
-                        </div>
-                        <div id="password-strength" style="margin-top: 5px; font-size: 12px; color: var(--text-light);">
-                            Password must be at least 6 characters
-                        </div>
-                    </div>
-                    <button class="ripple" onclick="completeRegistration()">Complete Registration</button>
-                `;
-                step1Form.classList.add('active');
-
-                // Force the auth page to be visible in case the auth state listener tried to hide it
-                document.getElementById('auth-page').classList.add('visible');
-                document.getElementById('episodes-page').classList.remove('visible');
-
-                // Show success message
-                showPrompt('Phone verified! Please enter your name and create a password.');
-
-                // Add password validation
-                setTimeout(() => {
-                    const passwordInput = document.getElementById('signup-password');
-                    const strengthIndicator = document.getElementById('password-strength');
-                    
-                    if (passwordInput && strengthIndicator) {
-                        passwordInput.addEventListener('input', function() {
-                            const password = this.value;
-                            
-                            if (password.length < 6) {
-                                strengthIndicator.style.color = 'var(--danger)';
-                                strengthIndicator.textContent = 'Password must be at least 6 characters';
-                                this.style.borderColor = 'var(--danger)';
-                            } else if (password.length < 8) {
-                                strengthIndicator.style.color = 'var(--warning)';
-                                strengthIndicator.textContent = 'Password strength: Moderate';
-                                this.style.borderColor = 'var(--warning)';
-                            } else {
-                                strengthIndicator.style.color = 'var(--success)';
-                                strengthIndicator.textContent = 'Password strength: Strong';
-                                this.style.borderColor = 'var(--success)';
-                            }
-                        });
-                    }
-                    
-                    // Focus on name input
-                    document.getElementById('signup-name').focus();
-                }, 100);
-
-                LogRocket.track('OTP Verification Success', {
-                    phone: signupData.phone
-                });
-
-                console.log('OTP verified successfully, showing name/password form. isRegistrationInProgress=', isRegistrationInProgress);
-
-            } catch (error) {
-                console.error('OTP Verification error:', error);
-                let errorMessage = 'Verification failed. Please try again.';
-                if (error.code === 'auth/invalid-verification-code') {
-                    errorMessage = 'Incorrect OTP. Please check and try again.';
-                } else if (error.code === 'auth/code-expired') {
-                    errorMessage = 'OTP has expired. Please request a new one.';
-                }
-                showPrompt(errorMessage);
-                
-                if (otpInput) {
-                    otpInput.value = '';
-                    otpInput.focus();
-                }
-                
-                // Reset registration in progress since verification failed
-                isRegistrationInProgress = false;
-                console.log('Reset isRegistrationInProgress to FALSE due to verification error');
-            }
-        } catch (error) {
-            console.error('Verification process error:', error);
-            showPrompt('Verification failed. Please try again.');
-            
-            // Reset registration in progress since verification failed
-            isRegistrationInProgress = false;
-            console.log('Reset isRegistrationInProgress to FALSE due to process error');
-        } finally {
-            const verifyButton = document.querySelector('#otp-form button');
-            if (verifyButton) {
-            verifyButton.disabled = false;
-            verifyButton.textContent = 'Verify OTP';
-            }
-        }
-    }
-
     // Update the resend OTP function
     async function showResendCaptcha() {
         // Check if max attempts reached
@@ -1885,10 +1744,17 @@
 
     // Add helper function for resend errors
     function handleResendError(error) {
-        console.error('Resend OTP error:', error);
-        
-            // Decrement the counter if the resend failed
-            resendAttempts--;
+            console.error('Resend OTP error:', error);
+
+            LogRocket.track('OTP Resend Error', {
+                error: error.message,
+                code: error.code,
+            phone: signupData.phone,
+                attemptNumber: resendAttempts
+            });
+
+        // Decrement the counter if the resend failed
+        resendAttempts--;
         
         const resendButton = document.getElementById('resend-otp');
         if (resendButton) {
@@ -1916,12 +1782,6 @@
         } else {
             showPrompt(error.message || 'Failed to resend OTP. Please try again.');
         }
-
-        LogRocket.track('OTP Resend Error', {
-            error: error.message,
-            code: error.code,
-            attemptNumber: resendAttempts
-        });
     }
 
     // Update startOTPTimer to handle resend button state
@@ -2274,6 +2134,10 @@
         console.log('Found episode cards:', episodeCards.length);
         
         try {
+            // Get unlock time from localStorage or Firestore
+            let nextEpisodeUnlock = parseInt(localStorage.getItem('next_episode_unlock')) || 0;
+            let completedEpisodes = [];
+            
             // Try to find user data by phone
             const userQuery = await db.collection('userProgress')
                 .where('phone', '==', phone)
@@ -2319,7 +2183,7 @@
             
             // Get user data
             const userData = userQuery.docs[0].data();
-            const completedEpisodes = userData.completedEpisodes || [];
+            completedEpisodes = userData.completedEpisodes || [];
             
             console.log('Retrieved user progress:', {
                 name: userData.name,
@@ -3164,8 +3028,247 @@
         // Focus on the input field after toggling
         passwordInput.focus();
     }
+
+    // Helper function to format remaining time
+    function formatTimeRemaining(timestamp) {
+        if (!timestamp) return '';
+        
+        const now = new Date().getTime();
+        const diff = timestamp - now;
+        
+        if (diff <= 0) return '';
+        
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        
+        if (hours > 0) {
+            return `Unlocks in ${hours}h ${minutes}m`;
+        }
+        return `Unlocks in ${minutes}m`;
+    }
+
+    // Update the checkEpisodeCompletion function
+    async function checkEpisodeCompletion() {
+        // Check if user is logged in via our custom auth
+        const isLoggedIn = localStorage.getItem('auth_isLoggedIn') === 'true';
+        const phone = localStorage.getItem('auth_phone');
+        
+        if (!isLoggedIn || !phone) {
+            console.log('No logged in user found, skipping episode completion check');
+            return;
+        }
+
+        console.log('Checking episode completion for user with phone:', phone);
+        
+        // Get all episode cards
+        const episodeCards = document.querySelectorAll('.episode-card:not(.announcement)');
+        console.log('Found episode cards:', episodeCards.length);
+        
+        try {
+            // Get unlock time from localStorage or Firestore
+            let nextEpisodeUnlock = parseInt(localStorage.getItem('next_episode_unlock')) || 0;
+            let completedEpisodes = [];
+            
+            // Try to find user data by phone
+            const userQuery = await db.collection('userProgress')
+                .where('phone', '==', phone)
+                .limit(1)
+                .get();
+            
+            if (userQuery.empty) {
+                console.log('No user progress found for phone:', phone);
+                // Initialize empty progress for new users
+                episodeCards.forEach((card, index) => {
+                    // First clear any existing classes
+                    card.classList.remove('completed', 'next', 'locked');
+                    
+                    if (index === 0) {
+                        // First episode is next
+                        card.classList.add('next');
+                        const statusElement = card.querySelector('.episode-status');
+                        statusElement.textContent = 'PLAY';
+                        statusElement.classList.add('blink-text');
+                        // Handle special URL for episode 2 and 4
+                        if (index + 1 === 2) {
+                            card.onclick = () => window.location.href = `episode2/mono2.html?episode=${index + 1}`;
+                        } else if (index + 1 === 4) {
+                            card.onclick = () => window.location.href = `episode4/mono4.html?episode=${index + 1}`;
+                        } else {
+                            card.onclick = () => window.location.href = `monologue/monologue1.html?episode=${index + 1}`;
+                        }
+                    } else {
+                        // All other episodes are locked
+                        card.classList.add('locked');
+                        card.querySelector('.episode-status').textContent = 'LOCKED';
+                        card.onclick = null;
+                    }
+                });
+                
+                // Update progress bar and text for new users
+                const progressBar = document.querySelector('.progress-bar');
+                progressBar.style.width = '0%';
+                const progressText = document.querySelector('.progress-container + p');
+                progressText.textContent = 'Start your reading journey!';
+                return;
+            }
+            
+            // Get user data
+            const userData = userQuery.docs[0].data();
+            completedEpisodes = userData.completedEpisodes || [];
+            
+            // Use Firestore's timestamp if available
+            if (userData.nextEpisodeUnlock) {
+                nextEpisodeUnlock = userData.nextEpisodeUnlock.toDate().getTime();
+                // Update localStorage for offline access
+                localStorage.setItem('next_episode_unlock', nextEpisodeUnlock.toString());
+            } else if (userData.episodeCompletedAt) {
+                // Fallback: If nextEpisodeUnlock doesn't exist but episodeCompletedAt does, calculate it
+                const completedAt = userData.episodeCompletedAt.toDate().getTime();
+                nextEpisodeUnlock = completedAt + (24 * 60 * 60 * 1000);
+                localStorage.setItem('next_episode_unlock', nextEpisodeUnlock.toString());
+            }
+            
+            console.log('Retrieved user progress:', {
+                name: userData.name,
+                completedEpisodes: completedEpisodes,
+                nextEpisodeUnlock: new Date(nextEpisodeUnlock).toISOString(),
+                currentTime: new Date().toISOString()
+            });
+            
+            const now = new Date().getTime();
+            const isNextEpisodeUnlocked = now >= nextEpisodeUnlock;
+            let nextEpisodeFound = false;
+            
+            console.log('Next episode unlock status:', {
+                isUnlocked: isNextEpisodeUnlocked,
+                timeUntilUnlock: nextEpisodeUnlock - now,
+                unlockTime: new Date(nextEpisodeUnlock).toISOString(),
+                currentTime: new Date(now).toISOString()
+            });
+            
+            // Update episode cards
+            episodeCards.forEach((card, index) => {
+                const episodeNumber = index + 1;
+                console.log(`Processing episode ${episodeNumber}`);
+                
+                // Remove all classes first
+                card.classList.remove('completed', 'next', 'locked');
+                
+                // Mark completed episodes
+                if (completedEpisodes.includes(episodeNumber)) {
+                    console.log(`Episode ${episodeNumber} is completed`);
+                    card.classList.add('completed');
+                    card.querySelector('.episode-status').textContent = 'COMPLETED';
+                    // Special handling for episodes 2 and 4
+                    if (episodeNumber === 2) {
+                        card.onclick = () => window.location.href = `episode2/mono2.html?episode=${episodeNumber}`;
+                    } else if (episodeNumber === 4) {
+                        card.onclick = () => window.location.href = `episode4/mono4.html?episode=${episodeNumber}`;
+                    } else {
+                        card.onclick = () => window.location.href = `monologue/monologue1.html?episode=${episodeNumber}`;
+                    }
+                }
+                // Find next incomplete episode
+                else if (!nextEpisodeFound && 
+                (episodeNumber === 1 || completedEpisodes.includes(episodeNumber - 1))) {
+                    
+                    // Check if the next episode is unlocked or if it's the first episode
+                    if (episodeNumber === 1 || isNextEpisodeUnlocked || completedEpisodes.includes(episodeNumber - 1)) {
+                        console.log(`Episode ${episodeNumber} is next`);
+                        card.classList.add('next');
+                        const statusElement = card.querySelector('.episode-status');
+                        statusElement.textContent = 'PLAY';
+                        statusElement.classList.add('blink-text');
+                        // Special handling for episodes 2 and 4
+                        if (episodeNumber === 2) {
+                            card.onclick = () => window.location.href = `episode2/mono2.html?episode=${episodeNumber}`;
+                        } else if (episodeNumber === 4) {
+                            card.onclick = () => window.location.href = `episode4/mono4.html?episode=${episodeNumber}`;
+                        } else {
+                            card.onclick = () => window.location.href = `monologue/monologue1.html?episode=${episodeNumber}`;
+                        }
+                        nextEpisodeFound = true;
+                    } else {
+                        // Show countdown for locked next episode
+                        console.log(`Episode ${episodeNumber} is time-locked`);
+                        card.classList.add('locked');
+                        const statusElement = card.querySelector('.episode-status');
+                        const remaining = formatTimeRemaining(nextEpisodeUnlock);
+                        statusElement.textContent = remaining || 'LOCKED';
+                        statusElement.style.fontSize = '12px';
+                        statusElement.style.whiteSpace = 'nowrap';
+                        card.onclick = null;
+                        
+                        // Update the status text every minute
+                        const updateInterval = setInterval(() => {
+                            const remaining = formatTimeRemaining(nextEpisodeUnlock);
+                            if (remaining) {
+                                statusElement.textContent = remaining;
+                            } else {
+                                clearInterval(updateInterval);
+                                // Reload the page to update the UI when the timer expires
+                                window.location.reload();
+                            }
+                        }, 60000);
+                        
+                        nextEpisodeFound = true; // Still mark as found to prevent showing later episodes
+                    }
+                }
+                // Lock remaining episodes
+                else {
+                    console.log(`Episode ${episodeNumber} is locked`);
+                    card.classList.add('locked');
+                    card.querySelector('.episode-status').textContent = 'LOCKED';
+                    card.onclick = null;
+                }
+            });
+
+            // Update progress bar
+            const progressBar = document.querySelector('.progress-bar');
+            const progressPercentage = (completedEpisodes.length / 5) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+            console.log(`Progress: ${progressPercentage}%`);
+
+            // Update progress text
+            const progressText = document.querySelector('.progress-container + p');
+            if (completedEpisodes.length === 5) {
+                progressText.textContent = 'All episodes completed! 🎉';
+            } else {
+                progressText.textContent = `${completedEpisodes.length} out of 5 episodes completed`;
+            }
+        } catch (error) {
+            console.error('Error checking episode completion:', error);
+        }
+    }
   </script>
   <!-- Disable search functionality -->
   <script src="disable-search.js"></script>
+  <script>
+    function getCompletedEpisodes() {
+      try {
+        return JSON.parse(localStorage.getItem('completedEpisodes') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function updateUIBasedOnCompletedEpisodes(completedEpisodes) {
+      completedEpisodes.forEach(epNum => {
+        const card = document.getElementById('ep' + epNum);
+        if (card) card.classList.add('completed');
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      document.body.classList.add('loading');
+      const completedEpisodes = getCompletedEpisodes();
+      updateUIBasedOnCompletedEpisodes(completedEpisodes);
+      document.getElementById('loadingOverlay').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.body.classList.remove('loading');
+      }, 300);
+    });
+  </script>
 </body>
 </html>

@@ -329,7 +329,7 @@
         // Update skip button to use transition screen
         skipButton.addEventListener('click', () => {
             LogRocket.track('Video Skipped');
-            showTransitionScreen();
+            window.location.href = './episode4.html';
         });
 
         function startStory() {
@@ -407,4 +407,4 @@
     </script>
     <script src="../disable-search.js"></script>
 </body>
-</html> 
+</html>
