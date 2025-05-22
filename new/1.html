@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interactive Storybook</title>
+  <style>
+    /* Reset and base styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Garamond', 'Georgia', serif;
+      background-color: #f0ebfa; /* Lighter lavender background */
+      overflow: hidden;
+    }
+
+    .storybook-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+    }
+
+    /* Book appearance */
+    .book {
+      flex: 1;
+      display: flex;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(102, 51, 153, 0.2), 0 0 8px rgba(102, 51, 153, 0.1);
+      perspective: 1500px;
+      overflow: hidden;
+      border: 1px solid #d8c5f7;
+    }
+
+    /* Page container */
+    .page-container {
+      position: relative;
+      flex: 1;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+
+    .page {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+      background-color: #fdfaff; /* Very light purple background */
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .page.active {
+      opacity: 1;
+      z-index: 10;
+    }
+
+    /* Page turn effect */
+    .page-turn-effect {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: 50px;
+      background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(147, 112, 219, 0.05) 100%);
+      display: none;
+    }
+
+    .page:not(:first-child).active .page-turn-effect {
+      display: block;
+    }
+
+    /* Image container */
+    .image-container {
+      width: 100%;
+      max-height: 60%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 0;
+      overflow: hidden;
+    }
+
+    .image-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 4px;
+      box-shadow: 0 4px 8px rgba(102, 51, 153, 0.15);
+      border: 2px solid #e6d7ff;
+    }
+
+    /* Text container */
+    .text-container {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-size: 1.25rem;
+      line-height: 1.6;
+      color: #4b3a73; /* Dark purple text */
+    }
+
+    /* Navigation controls */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+    }
+
+    .nav-button {
+      background-color: #9370DB; /* Medium purple */
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(102, 51, 153, 0.2);
+    }
+
+    .nav-button:hover {
+      background-color: #8a65d6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 51, 153, 0.25);
+    }
+
+    .nav-button:disabled {
+      background-color: #d0c3e8;
+      color: #ffffff;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .page-counter {
+      font-size: 1rem;
+      color: #6b5b95; /* Muted purple */
+      font-style: italic;
+    }
+
+    /* Media Queries */
+    @media (max-width: 768px) {
+      .storybook-container {
+        padding: 10px;
+      }
+
+      .text-container {
+        font-size: 1.6rem;
+        padding: 10px;
+      }
+
+      .nav-button {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+      }
+    }
+
+    /* Increase text size for tablets and up */
+    @media (min-width: 768px) {
+      .text-container {
+        font-size: 1.7rem;
+      }
+      .page-counter {
+        font-size: 1.1rem;
+      }
+    }
+    /* Laptops and up */
+    @media (min-width: 1024px) {
+      .text-container {
+        font-size: 2rem;
+      }
+      .page-counter {
+        font-size: 1.2rem;
+      }
+    }
+    /* TVs and very large screens */
+    @media (min-width: 1920px) {
+      .text-container {
+        font-size: 2.5rem;
+      }
+      .page-counter {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (max-height: 600px) {
+      .image-container {
+        max-height: 50%;
+      }
+
+      .text-container {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="storybook-container">
+    <div class="book">
+      <div class="page-container">
+        <!-- Page 1 -->
+        <div class="page active" id="page-1">
+          <div class="image-container">
+            <img src="./image.png" alt="Magic Filled Forest" />
+          </div>
+          <div class="text-container">
+            <p>Once upon a time in a faraway land, magic filled the air. The trees whispered secrets, and the sky danced with colors never seen before.</p>
+          </div>
+          <div class="page-turn-effect"></div>
+        </div>
+        
+        <!-- Page 2 -->
+        <div class="page" id="page-2">
+          <div class="image-container">
+            <img src="./image.png" alt="Young Explorer" />
+          </div>
+          <div class="text-container">
+            <p>A young explorer named Ellie discovered an ancient map hidden beneath a mossy stone. The map glowed with mysterious symbols that only she could understand.</p>
+          </div>
+          <div class="page-turn-effect"></div>
+        </div>
+        
+        <!-- Page 3 -->
+        <div class="page" id="page-3">
+          <div class="image-container">
+            <img src="./image.png" alt="Crystal Cave" />
+          </div>
+          <div class="text-container">
+            <p>The map led Ellie to a hidden crystal cave where rainbows were born. Inside, tiny guardian sprites watched over the magic that kept the world in balance.</p>
+          </div>
+          <div class="page-turn-effect"></div>
+        </div>
+        
+        <!-- Page 4 -->
+        <div class="page" id="page-4">
+          <div class="image-container">
+            <img src="./image.png" alt="Shadow Creature" />
+          </div>
+          <div class="text-container">
+            <p>But shadows were growing longer in the land. A creature of darkness sought the crystal's power, turning everything it touched to stone.</p>
+          </div>
+          <div class="page-turn-effect"></div>
+        </div>
+        
+        <!-- Page 5 -->
+        <div class="page" id="page-5">
+          <div class="image-container">
+            <img src="./image.png" alt="Ellie's Courage" />
+          </div>
+          <div class="text-container">
+            <p>With courage in her heart and magic at her fingertips, Ellie stood between the shadows and the light. "This land is worth protecting," she whispered.</p>
+          </div>
+          <div class="page-turn-effect"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <button class="nav-button" id="prev-btn" disabled>&#8592;</button>
+      <div class="page-counter">Page <span id="current-page">1</span> of <span id="total-pages">5</span></div>
+      <button class="nav-button" id="next-btn">&#8594;</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const pages = document.querySelectorAll('.page');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const currentPageElem = document.getElementById('current-page');
+      const totalPagesElem = document.getElementById('total-pages');
+      
+      let currentPageIndex = 0;
+      const totalPages = pages.length;
+      
+      totalPagesElem.textContent = totalPages;
+      
+      // Initialize page visibility
+      updatePageVisibility();
+      
+      // Event listeners
+      prevBtn.addEventListener('click', goToPrevPage);
+      nextBtn.addEventListener('click', goToNextPage);
+      
+      // Add keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+          goToPrevPage();
+        } else if (e.key === 'ArrowRight') {
+          goToNextPage();
+        }
+      });
+      
+      // Navigate to previous page
+      function goToPrevPage() {
+        if (currentPageIndex > 0) {
+          currentPageIndex--;
+          updatePageVisibility();
+          playPageTurnSound('prev');
+        }
+      }
+      
+      // Navigate to next page
+      function goToNextPage() {
+        if (currentPageIndex < totalPages - 1) {
+          currentPageIndex++;
+          updatePageVisibility();
+          playPageTurnSound('next');
+        }
+      }
+      
+      // Update which page is visible
+      function updatePageVisibility() {
+        // Update pages
+        pages.forEach((page, index) => {
+          if (index === currentPageIndex) {
+            page.classList.add('active');
+            
+
+          } else {
+            page.classList.remove('active');
+          }
+        });
+        
+        // Update buttons
+        prevBtn.disabled = currentPageIndex === 0;
+        nextBtn.disabled = currentPageIndex === totalPages - 1;
+        
+        // Update counter
+        currentPageElem.textContent = currentPageIndex + 1;
+      }
+      
+      // Play page turn sound effect
+      function playPageTurnSound(direction) {
+        // This is where you could add actual sound if desired
+        console.log(`Page turn sound: ${direction}`);
+      }
+      
+
+      
+      // Add touch swipe support
+      let touchStartX = 0;
+      let touchEndX = 0;
+      
+      document.querySelector('.book').addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+      });
+      
+      document.querySelector('.book').addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      });
+      
+      function handleSwipe() {
+        const swipeThreshold = 50;
+        if (touchEndX < touchStartX - swipeThreshold) {
+          // Swipe left
+          goToNextPage();
+        } else if (touchEndX > touchStartX + swipeThreshold) {
+          // Swipe right
+          goToPrevPage();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

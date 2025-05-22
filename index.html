@@ -1224,7 +1224,7 @@
     
     <div class="episodes-container">
       <!-- Episode 1 -->
-      <div class="episode-card" onclick="window.location.href='monologue/monologue1.html?episode=1'">
+      <div class="episode-card" onclick="window.location.href='episode1/episode1.html'">
         <div class="episode-number">1</div>
         <div class="episode-content">
           <div class="episode-title">Call from Stranger</div>
@@ -1234,7 +1234,7 @@
       </div>
       
       <!-- Episode need to change2 --> 
-      <div class="episode-card" onclick="window.location.href='episode2/mono2.html?episode=2'">
+      <div class="episode-card" onclick="window.location.href='episode2/index1.html'">
         <div class="episode-number">2</div>
         <div class="episode-content">
           <div class="episode-title">New City</div>
@@ -1243,7 +1243,7 @@
       </div>
       
       <!-- Episode 3 -->
-      <div class="episode-card" onclick="window.location.href='monologue/monologue1.html?episode=3'">
+      <div class="episode-card" onclick="window.location.href='episode3/episode3.html'">
         <div class="episode-number">3</div>
         <div class="episode-content">
           <div class="episode-title">Back to Work: The Return</div>
@@ -1252,7 +1252,7 @@
       </div>
 
       <!-- Episode 4 need to change -->
-      <div class="episode-card" onclick="window.location.href='episode4/mono4.html?episode=4'">
+      <div class="episode-card" onclick="window.location.href='episode4/episode4.html'">
         <div class="episode-number">4</div>
         <div class="episode-content">
           <div class="episode-title">Tools of the Trade</div>
@@ -1261,7 +1261,7 @@
       </div>
 
       <!-- Episode 5 -->
-      <div class="episode-card" onclick="window.location.href='monologue/monologue1.html?episode=5'">
+      <div class="episode-card" onclick="window.location.href='episode4/episode5.html'">
         <div class="episode-number">5</div>
         <div class="episode-content">
           <div class="episode-title">Whispers of Lightning</div>
@@ -2295,11 +2295,11 @@
                         statusElement.classList.add('blink-text');
                         // Handle special URL for episode 2 and 4
                         if (index + 1 === 2) {
-                            card.onclick = () => window.location.href = `episode2/mono2.html?episode=${index + 1}`;
+                            card.onclick = () => window.location.href = `episode2/index1.html`; // updated to new episode path
                         } else if (index + 1 === 4) {
-                            card.onclick = () => window.location.href = `episode4/mono4.html?episode=${index + 1}`;
+                            card.onclick = () => window.location.href = `episode4/episode4.html`; // updated to new episode path
                         } else {
-                            card.onclick = () => window.location.href = `monologue/monologue1.html?episode=${index + 1}`;
+                            card.onclick = () => window.location.href = `episode${index + 1}/episode${index + 1}.html`; // updated to new episode path
                         }
                     } else {
                         // All other episodes are locked
@@ -2343,11 +2343,11 @@
                         card.querySelector('.episode-status').textContent = 'COMPLETED';
                     // Special handling for episodes 2 and 4
                     if (episodeNumber === 2) {
-                        card.onclick = () => window.location.href = `episode2/mono2.html?episode=${episodeNumber}`;
+                        card.onclick = () => window.location.href = `episode2/index1.html`; // updated to new episode path
                     } else if (episodeNumber === 4) {
-                        card.onclick = () => window.location.href = `episode4/mono4.html?episode=${episodeNumber}`;
+                        card.onclick = () => window.location.href = `episode4/episode4.html`; // updated to new episode path
                     } else {
-                        card.onclick = () => window.location.href = `monologue/monologue1.html?episode=${episodeNumber}`;
+                        card.onclick = () => window.location.href = `episode${episodeNumber}/episode${episodeNumber}.html`; // updated to new episode path
                     }
                     }
                     // Find next incomplete episode
@@ -2360,11 +2360,11 @@
                     statusElement.classList.add('blink-text');
                     // Special handling for episodes 2 and 4
                     if (episodeNumber === 2) {
-                        card.onclick = () => window.location.href = `episode2/mono2.html?episode=${episodeNumber}`;
+                        card.onclick = () => window.location.href = `episode2/index1.html`; // updated to new episode path
                     } else if (episodeNumber === 4) {
-                        card.onclick = () => window.location.href = `episode4/mono4.html?episode=${episodeNumber}`;
+                        card.onclick = () => window.location.href = `episode4/episode4.html`; // updated to new episode path
                     } else {
-                        card.onclick = () => window.location.href = `monologue/monologue1.html?episode=${episodeNumber}`;
+                        card.onclick = () => window.location.href = `episode${episodeNumber}/episode${episodeNumber}.html`; // updated to new episode path
                     }
                         nextEpisodeFound = true;
                     }
