@@ -542,6 +542,13 @@
         document.getElementById('diaryForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // Check if any episode timer is running
+            if (window.parent && window.parent.isAnyTimerRunning && window.parent.isAnyTimerRunning()) {
+                const activeTimers = window.parent.getActiveTimers();
+                alert(`⏰ Please wait! Episode ${activeTimers.join(', ')} timer is still running. Diary submissions are temporarily disabled.`);
+                return;
+            }
+            
             const summaryText = document.getElementById('summary').value.trim();
             const analysisText = document.getElementById('analysis').value.trim();
             const submitButton = document.querySelector('.submit-btn');
@@ -700,12 +707,111 @@
         document.getElementById('summary').addEventListener('input', saveToLocalStorage);
         document.getElementById('analysis').addEventListener('input', saveToLocalStorage);
 
+        // Function to check and display timer status
+        function checkTimerStatus() {
+            if (window.parent && window.parent.isAnyTimerRunning && window.parent.isAnyTimerRunning()) {
+                const activeTimers = window.parent.getActiveTimers();
+                showTimerWarning(activeTimers);
+            } else {
+                hideTimerWarning();
+            }
+        }
+
+        // Function to show timer warning
+        function showTimerWarning(activeTimers) {
+            let warningDiv = document.getElementById('timer-warning');
+            if (!warningDiv) {
+                warningDiv = document.createElement('div');
+                warningDiv.id = 'timer-warning';
+                warningDiv.style.cssText = `
+                    background: rgba(255, 152, 0, 0.05);
+                    border: 1px solid #ff9800;
+                    padding: 8px 12px;
+                    margin: 8px 0;
+                    border-radius: 4px;
+                    text-align: center;
+                    color: #e65100;
+                    font-size: 0.85em;
+                    font-weight: normal;
+                    opacity: 0.9;
+                `;
+                document.querySelector('.diary-container').insertBefore(warningDiv, document.getElementById('diaryForm'));
+            }
+            warningDiv.innerHTML = `⏰ Episode ${activeTimers.join(', ')} timer running - submissions disabled`;
+            warningDiv.style.display = 'block';
+            
+            // Disable submit button visually
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+            submitBtn.title = 'Disabled while episode timer is running';
+        }
+
+        // Function to hide timer warning
+        function hideTimerWarning() {
+            const warningDiv = document.getElementById('timer-warning');
+            if (warningDiv) {
+                warningDiv.style.display = 'none';
+            }
+            
+            // Re-enable submit button visually
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+            submitBtn.title = '';
+        }
+
+        // Check timer status every 5 seconds
+        setInterval(checkTimerStatus, 5000);
+        
+        // Check immediately on load
+        setTimeout(checkTimerStatus, 1000);
+
         async function handleNextEpisode() {
             try {
-                // Get user data from localStorage
-                const name = localStorage.getItem('auth_name');
+                // Check if any timer is currently running
+                if (window.parent && window.parent.isAnyTimerRunning && window.parent.isAnyTimerRunning()) {
+                    console.log('Timer is already running, redirecting to episodes page without creating new timer');
+                    window.location.href = '../index.html#episodes';
+                    return;
+                }
+                
+                // Check if next episode (episode 4) is already opened
                 const phone = localStorage.getItem('auth_phone');
                 const userId = localStorage.getItem('auth_userId');
+                
+                if (db && (userId || phone)) {
+                    try {
+                        let userData = null;
+                        
+                        if (userId) {
+                            const userDoc = await db.collection('userProgress').doc(userId).get();
+                            if (userDoc.exists) {
+                                userData = userDoc.data();
+                            }
+                        } else {
+                            const userQuery = await db.collection('userProgress')
+                                .where('phone', '==', phone)
+                                .limit(1)
+                                .get();
+                            if (!userQuery.empty) {
+                                userData = userQuery.docs[0].data();
+                            }
+                        }
+                        
+                        // If episode 4 is already opened, don't create timer
+                        if (userData && userData.episode4_opened === true) {
+                            console.log('Episode 4 is already opened, redirecting without creating timer');
+                            window.location.href = '../index.html#episodes';
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Error checking episode opened status:', error);
+                    }
+                }
+                
+                // Get user data from localStorage
+                const name = localStorage.getItem('auth_name');
                 const now = new Date().getTime();
                 const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours from now
                 

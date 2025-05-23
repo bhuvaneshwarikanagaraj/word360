@@ -402,10 +402,10 @@
       position: absolute;
       top: 8px;
       right: 8px;
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-weight: 600;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 500;
       white-space: nowrap;
       background-color: rgba(99, 102, 241, 0.1);
       color: var(--primary);
@@ -470,8 +470,8 @@
       }
 
       .episode-status {
-        font-size: 10px;
-        padding: 2px 6px;
+        font-size: 8px;
+        padding: 2px 5px;
       }
     }
 
@@ -494,8 +494,8 @@
       }
 
       .episode-status {
-        font-size: 9px;
-        padding: 2px 5px;
+        font-size: 7px;
+        padding: 1px 4px;
       }
     }
 
@@ -737,6 +737,7 @@
       color: var(--white);
     }
 
+
     @media (max-width: 768px) {
       .episodes-container {
         gap: 12px;
@@ -785,27 +786,65 @@
     }
 
     .episode-card.next {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.1));
         border: 2px solid var(--primary);
-        box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
-        animation: next-episode-pulse 2s infinite;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05));
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), 0 4px 15px rgba(99, 102, 241, 0.2);
+        animation: pulse-glow 2s infinite;
+        transform: scale(1.02);
     }
 
-    @keyframes next-episode-pulse {
-        0% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
-        50% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
-        100% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
+    @keyframes pulse-glow {
+        0% { 
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+        50% { 
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.6), 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+        100% { 
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
     }
 
     .episode-card.next .episode-number {
         background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+        animation: number-glow 2s infinite;
+    }
+
+    @keyframes number-glow {
+        0% { 
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+        }
+        50% { 
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.7);
+        }
+        100% { 
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+        }
     }
 
     .episode-card.next .episode-status {
-        background-color: rgba(99, 102, 241, 0.2);
-        color: var(--primary);
-        animation: blink-text 1.5s infinite;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(79, 70, 229, 0.3));
+        color: #ffffff;
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        border: 1px solid rgba(99, 102, 241, 0.5);
+        animation: status-glow 1.5s infinite;
+    }
+
+    @keyframes status-glow {
+        0% { 
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(79, 70, 229, 0.3));
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        50% { 
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(79, 70, 229, 0.5));
+            text-shadow: 0 0 15px rgba(99, 102, 241, 1);
+        }
+        100% { 
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(79, 70, 229, 0.3));
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
     }
 
     .episode-card.completed .episode-title {
@@ -816,6 +855,20 @@
     .episode-card.next .episode-title {
         color: var(--primary);
         font-weight: 800;
+        text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        animation: title-glow 2s infinite;
+    }
+
+    @keyframes title-glow {
+        0% { 
+            text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        }
+        50% { 
+            text-shadow: 0 0 12px rgba(99, 102, 241, 0.8);
+        }
+        100% { 
+            text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        }
     }
 
     .episode-card.completed .episode-status {
@@ -1074,6 +1127,532 @@
     .password-toggle.visible {
         color: var(--primary);
     }
+
+    /* Waiting state for episode cards */
+    .episode-card.waiting {
+      opacity: 0.8;
+      cursor: pointer;
+      position: relative;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1));
+      border: 2px solid #F59E0B;
+    }
+    
+    .episode-card.waiting .episode-number {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      box-shadow: none;
+    }
+
+    .episode-card.waiting .episode-title {
+      color: #D97706;
+    }
+
+    .episode-card.waiting .episode-status {
+      background-color: rgba(251, 191, 36, 0.2);
+      color: #D97706;
+      font-size: 1.2em;
+      font-weight: bold;
+      padding: 8px 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      animation: pulse 2s infinite;
+    }
+
+    .episode-card.waiting .episode-status.countdown-warning {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #D97706;
+      animation: pulse 1.5s infinite;
+    }
+
+    .episode-card.waiting .episode-status.countdown-urgent {
+      background-color: rgba(220, 38, 38, 0.2);
+      color: #DC2626;
+      animation: pulse 0.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .episode-card.waiting::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: #D97706;
+      animation: bounce 1s infinite;
+    }
+
+    .episode-card.waiting:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Animation for waiting status */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(-50%); }
+      50% { transform: translateY(-60%); }
+    }
+
+    .episode-status {
+        font-size: 8px;
+        padding: 2px 5px;
+        border-radius: 5px;
+        background: rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .countdown-warning {
+        color: #ff9800;
+        animation: pulse 1s infinite;
+    }
+
+    .countdown-urgent {
+        color: #f44336;
+        animation: pulse 0.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    /* Timer-blocked episode styling */
+    .episode-card.timer-blocked {
+      opacity: 0.8;
+      cursor: not-allowed;
+      position: relative;
+      background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 193, 7, 0.1));
+      border: 2px solid #FF9800;
+      animation: timer-blocked-pulse 2s infinite;
+    }
+    
+    .episode-card.timer-blocked .episode-number {
+      background: linear-gradient(135deg, #FF9800, #F57C00);
+      box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+    }
+
+    .episode-card.timer-blocked .episode-title {
+      color: #E65100;
+    }
+
+    .episode-card.timer-blocked .episode-status {
+      background-color: rgba(255, 152, 0, 0.2);
+      color: #E65100;
+    }
+
+    .episode-card.timer-blocked::after {
+      content: "⏰";
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: #FF9800;
+      animation: timer-pulse 1.5s infinite;
+    }
+
+    .episode-card.timer-blocked:hover {
+      transform: none;
+      box-shadow: 0 0 15px rgba(255, 152, 0, 0.4);
+    }
+
+    @keyframes timer-blocked-pulse {
+      0% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.2); }
+      50% { box-shadow: 0 0 20px rgba(255, 152, 0, 0.5); }
+      100% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.2); }
+    }
+
+    @keyframes timer-pulse {
+      0% { transform: translateY(-50%) scale(1); }
+      50% { transform: translateY(-50%) scale(1.2); }
+      100% { transform: translateY(-50%) scale(1); }
+    }
+
+    .episode-card.next:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 40px rgba(99, 102, 241, 0.7), 0 8px 25px rgba(99, 102, 241, 0.4);
+        border-color: rgba(99, 102, 241, 0.8);
+        cursor: pointer;
+    }
+
+    .episode-card.next:hover .episode-number {
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.8);
+        transform: scale(1.1);
+    }
+
+    .episode-card.next:hover .episode-status {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.6), rgba(79, 70, 229, 0.6));
+        text-shadow: 0 0 20px rgba(99, 102, 241, 1);
+    }
+
+    .episode-card.next:hover .episode-title {
+        text-shadow: 0 0 15px rgba(99, 102, 241, 1);
+    }
+
+    /* Ensure any episode with PLAY status gets bright blue illumination */
+    .episode-card:has(.episode-status:contains("PLAY")):not(.completed):not(.locked) {
+        border: 2px solid var(--primary);
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05));
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), 0 4px 15px rgba(99, 102, 241, 0.2);
+        animation: pulse-glow 2s infinite;
+        transform: scale(1.02);
+    }
+
+    /* Alternative approach using attribute selector for PLAY status */
+    .episode-card[data-status="PLAY"] {
+        border: 2px solid var(--primary) !important;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05)) !important;
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), 0 4px 15px rgba(99, 102, 241, 0.2) !important;
+        animation: pulse-glow 2s infinite !important;
+        transform: scale(1.02) !important;
+    }
+
+    .episode-card[data-status="PLAY"] .episode-number {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.5) !important;
+        animation: number-glow 2s infinite !important;
+    }
+
+    .episode-card[data-status="PLAY"] .episode-status {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(79, 70, 229, 0.3)) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        text-shadow: 0 0 10px rgba(99, 102, 241, 0.8) !important;
+        border: 1px solid rgba(99, 102, 241, 0.5) !important;
+        animation: status-glow 1.5s infinite !important;
+    }
+
+    .episode-card[data-status="PLAY"] .episode-title {
+        color: var(--primary) !important;
+        font-weight: 800 !important;
+        text-shadow: 0 0 8px rgba(99, 102, 241, 0.6) !important;
+        animation: title-glow 2s infinite !important;
+    }
+
+    /* New state: Episode opened but not completed - Blue illumination */
+    .episode-card.opened {
+        position: relative;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(79, 70, 229, 0.08)) !important;
+        border: 2px solid var(--primary) !important;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.3), 0 4px 12px rgba(99, 102, 241, 0.2) !important;
+        animation: opened-glow 3s infinite;
+        transform: scale(1.01);
+    }
+
+    @keyframes opened-glow {
+        0% { 
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3), 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+        50% { 
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.5), 0 6px 18px rgba(99, 102, 241, 0.3);
+        }
+        100% { 
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3), 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+    }
+
+    .episode-card.opened .episode-number {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        animation: opened-number-glow 3s infinite;
+    }
+
+    @keyframes opened-number-glow {
+        0% { 
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        }
+        50% { 
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+        }
+        100% { 
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        }
+    }
+
+    .episode-card.opened .episode-title {
+        color: var(--primary);
+        font-weight: 700;
+        text-shadow: 0 0 6px rgba(99, 102, 241, 0.5);
+        animation: opened-title-glow 3s infinite;
+    }
+
+    @keyframes opened-title-glow {
+        0% { 
+            text-shadow: 0 0 6px rgba(99, 102, 241, 0.5);
+        }
+        50% { 
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
+        }
+        100% { 
+            text-shadow: 0 0 6px rgba(99, 102, 241, 0.5);
+        }
+    }
+
+    .episode-card.opened .episode-status {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+        color: var(--primary);
+        font-weight: 600;
+        text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        border: 1px solid rgba(99, 102, 241, 0.4);
+        animation: opened-status-glow 3s infinite;
+    }
+
+    @keyframes opened-status-glow {
+        0% { 
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+            text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        }
+        50% { 
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(79, 70, 229, 0.3));
+            text-shadow: 0 0 12px rgba(99, 102, 241, 0.8);
+        }
+        100% { 
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+            text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        }
+    }
+
+    /* Hover effects for opened episodes */
+    .episode-card.opened:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.6), 0 8px 20px rgba(99, 102, 241, 0.4);
+        border-color: rgba(99, 102, 241, 0.8);
+        cursor: pointer;
+    }
+
+    .episode-card.opened:hover .episode-number {
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.7);
+        transform: scale(1.05);
+    }
+
+    .episode-card.opened:hover .episode-status {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(79, 70, 229, 0.4));
+        text-shadow: 0 0 15px rgba(99, 102, 241, 1);
+    }
+
+    .episode-card.opened:hover .episode-title {
+        text-shadow: 0 0 12px rgba(99, 102, 241, 0.9);
+    }
+
+    /* CSS for CONTINUE status - matches opened episode styling */
+    .episode-card[data-status="CONTINUE"] {
+        position: relative;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(79, 70, 229, 0.08)) !important;
+        border: 2px solid var(--primary) !important;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.3), 0 4px 12px rgba(99, 102, 241, 0.2) !important;
+        animation: continue-glow 3s infinite;
+        transform: scale(1.01);
+    }
+
+    @keyframes continue-glow {
+        0% { 
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3), 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+        50% { 
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.5), 0 6px 18px rgba(99, 102, 241, 0.3);
+        }
+        100% { 
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3), 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+    }
+
+    .episode-card[data-status="CONTINUE"] .episode-number {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        animation: continue-number-glow 3s infinite;
+    }
+
+    @keyframes continue-number-glow {
+        0% { 
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        }
+        50% { 
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+        }
+        100% { 
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        }
+    }
+
+    .episode-card[data-status="CONTINUE"] .episode-title {
+        color: var(--primary);
+        font-weight: 700;
+        text-shadow: 0 0 6px rgba(99, 102, 241, 0.5);
+        animation: continue-title-glow 3s infinite;
+    }
+
+    @keyframes continue-title-glow {
+        0% { 
+            text-shadow: 0 0 6px rgba(99, 102, 241, 0.5);
+        }
+        50% { 
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
+        }
+        100% { 
+            text-shadow: 0 0 6px rgba(99, 102, 241, 0.5);
+        }
+    }
+
+    .episode-card[data-status="CONTINUE"] .episode-status {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+        color: var(--primary);
+        font-weight: 600;
+        text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        border: 1px solid rgba(99, 102, 241, 0.4);
+        animation: continue-status-glow 3s infinite;
+    }
+
+    @keyframes continue-status-glow {
+        0% { 
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+            text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        }
+        50% { 
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(79, 70, 229, 0.3));
+            text-shadow: 0 0 12px rgba(99, 102, 241, 0.8);
+        }
+        100% { 
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+            text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        }
+    }
+
+    /* Hover effects for CONTINUE status */
+    .episode-card[data-status="CONTINUE"]:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.6), 0 8px 20px rgba(99, 102, 241, 0.4);
+        border-color: rgba(99, 102, 241, 0.8);
+        cursor: pointer;
+    }
+
+    .episode-card[data-status="CONTINUE"]:hover .episode-number {
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.7);
+        transform: scale(1.05);
+    }
+
+    .episode-card[data-status="CONTINUE"]:hover .episode-status {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(79, 70, 229, 0.4));
+        text-shadow: 0 0 15px rgba(99, 102, 241, 1);
+    }
+
+    .episode-card[data-status="CONTINUE"]:hover .episode-title {
+        text-shadow: 0 0 12px rgba(99, 102, 241, 0.9);
+    }
+
+    /* CSS for START status - Yellow illumination */
+    .episode-card[data-status="START"] {
+        position: relative;
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.08), rgba(255, 152, 0, 0.08)) !important;
+        border: 2px solid #FFC107 !important;
+        box-shadow: 0 0 15px rgba(255, 193, 7, 0.3), 0 4px 12px rgba(255, 193, 7, 0.2) !important;
+        animation: start-glow 3s infinite;
+        transform: scale(1.01);
+    }
+
+    @keyframes start-glow {
+        0% { 
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.3), 0 4px 12px rgba(255, 193, 7, 0.2);
+        }
+        50% { 
+            box-shadow: 0 0 25px rgba(255, 193, 7, 0.5), 0 6px 18px rgba(255, 193, 7, 0.3);
+        }
+        100% { 
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.3), 0 4px 12px rgba(255, 193, 7, 0.2);
+        }
+    }
+
+    .episode-card[data-status="START"] .episode-number {
+        background: linear-gradient(135deg, #FFC107, #FF9800);
+        box-shadow: 0 0 12px rgba(255, 193, 7, 0.4);
+        animation: start-number-glow 3s infinite;
+    }
+
+    @keyframes start-number-glow {
+        0% { 
+            box-shadow: 0 0 12px rgba(255, 193, 7, 0.4);
+        }
+        50% { 
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.6);
+        }
+        100% { 
+            box-shadow: 0 0 12px rgba(255, 193, 7, 0.4);
+        }
+    }
+
+    .episode-card[data-status="START"] .episode-title {
+        color: #FF8F00;
+        font-weight: 700;
+        text-shadow: 0 0 6px rgba(255, 193, 7, 0.5);
+        animation: start-title-glow 3s infinite;
+    }
+
+    @keyframes start-title-glow {
+        0% { 
+            text-shadow: 0 0 6px rgba(255, 193, 7, 0.5);
+        }
+        50% { 
+            text-shadow: 0 0 10px rgba(255, 193, 7, 0.7);
+        }
+        100% { 
+            text-shadow: 0 0 6px rgba(255, 193, 7, 0.5);
+        }
+    }
+
+    .episode-card[data-status="START"] .episode-status {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2));
+        color: #FF8F00;
+        font-weight: 600;
+        text-shadow: 0 0 8px rgba(255, 193, 7, 0.6);
+        border: 1px solid rgba(255, 193, 7, 0.4);
+        animation: start-status-glow 3s infinite;
+    }
+
+    @keyframes start-status-glow {
+        0% { 
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2));
+            text-shadow: 0 0 8px rgba(255, 193, 7, 0.6);
+        }
+        50% { 
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.3), rgba(255, 152, 0, 0.3));
+            text-shadow: 0 0 12px rgba(255, 193, 7, 0.8);
+        }
+        100% { 
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2));
+            text-shadow: 0 0 8px rgba(255, 193, 7, 0.6);
+        }
+    }
+
+    /* Hover effects for START status */
+    .episode-card[data-status="START"]:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 30px rgba(255, 193, 7, 0.6), 0 8px 20px rgba(255, 193, 7, 0.4);
+        border-color: rgba(255, 193, 7, 0.8);
+        cursor: pointer;
+    }
+
+    .episode-card[data-status="START"]:hover .episode-number {
+        box-shadow: 0 0 25px rgba(255, 193, 7, 0.7);
+        transform: scale(1.05);
+    }
+
+    .episode-card[data-status="START"]:hover .episode-status {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.4), rgba(255, 152, 0, 0.4));
+        text-shadow: 0 0 15px rgba(255, 193, 7, 1);
+    }
+
+    .episode-card[data-status="START"]:hover .episode-title {
+        text-shadow: 0 0 12px rgba(255, 193, 7, 0.9);
+    }
     </style>
 </head>
 <body>
@@ -1150,6 +1729,10 @@
             <input type="tel" id="signup-phone" placeholder="Enter your phone number" pattern="[0-9]{10}">
           </div>
         </div>
+        <!-- CAPTCHA Instructions -->
+        <div style="text-align: center; margin: 15px 0 10px 0; color: var(--primary); font-weight: 600; font-size: 14px;">
+        👇 Click the square below to verify and send OTP
+        </div>
         <!-- reCAPTCHA container - improved with better styling -->
         <div id="recaptcha-container" style="margin: 20px 0; display: flex; justify-content: center; min-height: 78px; position: relative; z-index: 10;"></div>
         <div style="text-align: center; margin-top: 15px;">
@@ -1167,6 +1750,10 @@
         <button class="ripple" onclick="verifyOTP()">Verify OTP</button>
         <button class="ripple resend-btn" id="resend-otp" onclick="showResendCaptcha()" disabled>Resend OTP</button>
         <div id="resend-captcha-container" style="display: none;">
+          <!-- CAPTCHA Instructions for Resend -->
+          <div style="text-align: center; margin: 15px 0 10px 0; color: var(--primary); font-weight: 600; font-size: 14px;">
+            👇 Click the square below to verify and resend OTP
+          </div>
           <div id="recaptcha-container-otp"></div>
         </div>
       </div>
@@ -1214,7 +1801,11 @@
       <h1>word360</h1>
     </div>
     
-    <h2 style="text-align: center; margin: 20px 0; color: var(--primary); font-weight: 800;">My Reading Journey</h2>
+    <h2 style="text-align: center; margin: 20px 0; color: var(--primary); font-weight: 800;">
+      My Reading Journey
+      <span id="auto-refresh-indicator" style="display: none; font-size: 12px; color: var(--success); margin-left: 10px;">
+      </span>
+    </h2>
     
     <div class="progress-container">
       <div class="progress-bar" style="width: 100%;"></div>
@@ -1301,6 +1892,37 @@
   <script src="https://www.google.com/recaptcha/api.js"></script>
   
   <script>
+    // ============== CONFIGURATION ==============
+    // Easy configuration for wait times between episodes
+    const EPISODE_CONFIG = {
+        // Set minimum wait time between episodes (in minutes)
+        // Options: 1 = 1 minute, 30 = 30 minutes, 60 = 1 hour, 1440 = 24 hours
+        MIN_WAIT_TIME_MINUTES: 60,
+        
+        // For testing purposes - set to true to reduce wait time to 1 minute
+        TESTING_MODE: false,
+        
+        // Enable debug logging
+        DEBUG_MODE: true
+    };
+    
+    // Get the actual wait time based on configuration
+    function getWaitTimeMs() {
+        if (EPISODE_CONFIG.TESTING_MODE) {
+            console.log('🧪 TESTING MODE: Using 1 minute wait time');
+            return 1 * 60 * 1000; // 1 minute for testing
+        }
+        return EPISODE_CONFIG.MIN_WAIT_TIME_MINUTES * 60 * 1000;
+    }
+    
+    // Debug logging function
+    function debugLog(message, data = null) {
+        if (EPISODE_CONFIG.DEBUG_MODE) {
+            console.log(`⏰[Episode Timer] ${message}`, data || '');
+        }
+    }
+    // ==========================================
+    
     // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDO7cACg6BNA8KiYvMhoxonDxCSKBTgwiE",
@@ -2183,50 +2805,34 @@
     
     // Logout function
     function logout() {
-        // Clear auth data from localStorage
-        localStorage.removeItem('auth_name');
-        localStorage.removeItem('auth_phone');
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_isLoggedIn');
-        localStorage.removeItem('auth_userId');
-        localStorage.removeItem('show_episodes_page');
-        localStorage.removeItem(STORAGE_KEYS.PHONE);
-        localStorage.removeItem(STORAGE_KEYS.COUNTRY_CODE);
+        cleanupAuthData();
+        stopAutoRefresh(); // Stop automatic refresh when logging out
 
-        // Clear signup data
-        signupData = null;
-        verificationId = null;
-        isRegistrationInProgress = false;
-
-        // Log analytics
-        LogRocket.track('Logout Success');
-        
-        // Reset UI
-        document.getElementById('episodes-page').classList.remove('visible');
-        document.getElementById('auth-page').classList.add('visible');
-        
-        // Reset forms
-        document.getElementById('login-form').reset();
-        document.getElementById('signup-form').reset();
-        
-        // Hide all forms except login
-        document.getElementById('login-form').classList.add('active');
-        document.getElementById('signup-form').classList.remove('active');
-        document.getElementById('otp-form').classList.remove('active');
-        document.getElementById('signup-step-1').classList.remove('active');
-        document.getElementById('signup-step-2').classList.remove('active');
-        document.getElementById('signup-step-3').classList.remove('active');
-        
-        // Update tabs
-        document.querySelector('.auth-tab:nth-child(1)').classList.add('active');
-        document.querySelector('.auth-tab:nth-child(2)').classList.remove('active');
-        
         // Sign out from Firebase
-        firebase.auth().signOut().catch((error) => {
-            console.error('Firebase logout error:', error);
+        firebase.auth().signOut().then(() => {
+            LogRocket.track('Logout Success');
+            
+            // Reset UI
+            document.getElementById('episodes-page').classList.remove('visible');
+            document.getElementById('auth-page').classList.add('visible');
+            
+            // Reset forms
+            document.getElementById('login-form').reset();
+            document.getElementById('signup-form').reset();
+            
+            // Show login form
+            document.getElementById('login-form').classList.add('active');
+            document.getElementById('signup-form').classList.remove('active');
+            
+            // Update tabs
+            document.querySelector('.auth-tab:nth-child(1)').classList.add('active');
+            document.querySelector('.auth-tab:nth-child(2)').classList.remove('active');
+            
+        }).catch((error) => {
+            console.error('Logout error:', error);
             LogRocket.track('Logout Error', {
-          error: error.message
-        });
+                error: error.message
+            });
         });
     }
 
@@ -2256,145 +2862,290 @@
       window.open(whatsappUrl, '_blank');
     }
 
+    // Function to handle next episode state
+    async function handleNextEpisode(card, episodeNumber, currentTime, episodeCompletionTimes, MIN_WAIT_TIME_MS, userData) {
+        if (episodeNumber > 1) {
+            const previousEpisodeCompletionTime = episodeCompletionTimes[episodeNumber - 1];
+            
+            if (previousEpisodeCompletionTime) {
+                const timeSinceCompletion = currentTime - previousEpisodeCompletionTime;
+                
+                if (timeSinceCompletion < MIN_WAIT_TIME_MS) {
+                    // Show waiting state with countdown timer
+                    const remainingTime = MIN_WAIT_TIME_MS - timeSinceCompletion;
+                    const statusElement = card.querySelector('.episode-status');
+                    startCountdownTimer(episodeNumber, remainingTime, statusElement);
+                    
+                    // Add waiting state styling
+                    card.classList.add('waiting');
+                    statusElement.classList.remove('blink-text');
+                    card.setAttribute('data-status', 'WAITING');
+                    
+                    // Add click handler to show wait message AND check if timer has expired
+                    card.onclick = () => {
+                        // Recalculate remaining time in real-time
+                        const currentTimeNow = Date.now();
+                        const timeSinceCompletionNow = currentTimeNow - previousEpisodeCompletionTime;
+                        
+                        if (timeSinceCompletionNow >= MIN_WAIT_TIME_MS) {
+                            // Timer has actually expired, refresh the episode status
+                            debugLog(`Timer expired for episode ${episodeNumber}, refreshing status`);
+                            checkEpisodeCompletion();
+                        } else {
+                            // Still waiting, show the message
+                            const currentRemainingMs = MIN_WAIT_TIME_MS - timeSinceCompletionNow;
+                            const currentRemainingSeconds = Math.ceil(currentRemainingMs / 1000);
+                            showWaitMessage(Math.ceil(currentRemainingSeconds / 60));
+                        }
+                    };
+                    return true;
+                } else {
+                    // Timer has completed, episode is ready to play
+                    debugLog(`Episode ${episodeNumber} timer completed - episode is ready`);
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Function to apply timer-blocked styling to episodes
+    function applyTimerBlockedStyling(episodeCards) {
+        if (!window.isAnyTimerRunning || !window.getActiveTimers) {
+            return; // Timer functions not available
+        }
+
+        if (window.isAnyTimerRunning()) {
+            const activeTimers = window.getActiveTimers();
+            
+            episodeCards.forEach((card, index) => {
+                const episodeNumber = index + 1;
+                
+                // Check if this episode is the immediate previous episode of any running timer
+                const shouldBlock = activeTimers.some(timerEpisode => timerEpisode === episodeNumber + 1);
+                
+                if (shouldBlock && (card.classList.contains('completed') || card.classList.contains('next'))) {
+                    // Add timer-blocked styling but keep the original functionality
+                    card.classList.add('timer-blocked');
+                    const statusElement = card.querySelector('.episode-status');
+                    
+                    // Update status text to indicate timer blocking
+                    if (card.classList.contains('completed')) {
+                        statusElement.textContent = 'TIMER ACTIVE';
+                        card.setAttribute('data-status', 'TIMER_ACTIVE');
+                    } else if (card.classList.contains('next')) {
+                        statusElement.textContent = 'TIMER ACTIVE';
+                        card.setAttribute('data-status', 'TIMER_ACTIVE');
+                    }
+                    
+                    debugLog(`Episode ${episodeNumber} is timer-blocked due to Episode ${episodeNumber + 1} timer`);
+                }
+            });
+        }
+    }
+
     // Update the checkEpisodeCompletion function
     async function checkEpisodeCompletion() {
-        // Check if user is logged in via our custom auth
         const isLoggedIn = localStorage.getItem('auth_isLoggedIn') === 'true';
         const phone = localStorage.getItem('auth_phone');
         
         if (!isLoggedIn || !phone) {
-            console.log('No logged in user found, skipping episode completion check');
-        return;
-      }
+            debugLog('No logged in user found, skipping episode completion check');
+            return;
+        }
 
-        console.log('Checking episode completion for user with phone:', phone);
+        debugLog('Checking episode completion for user with phone:', phone);
         
-        // Get all episode cards
         const episodeCards = document.querySelectorAll('.episode-card:not(.announcement)');
-        console.log('Found episode cards:', episodeCards.length);
+        const MIN_WAIT_TIME_MS = getWaitTimeMs();
         
         try {
-            // Try to find user data by phone
             const userQuery = await db.collection('userProgress')
                 .where('phone', '==', phone)
                 .limit(1)
                 .get();
             
             if (userQuery.empty) {
-                console.log('No user progress found for phone:', phone);
-                // Initialize empty progress for new users
-                episodeCards.forEach((card, index) => {
-                    // First clear any existing classes
-                    card.classList.remove('completed', 'next', 'locked');
-                    
-                    if (index === 0) {
-                        // First episode is next
-                        card.classList.add('next');
-                        const statusElement = card.querySelector('.episode-status');
-                        statusElement.textContent = 'PLAY';
-                        statusElement.classList.add('blink-text');
-                        // Handle special URL for episode 2 and 4
-                        if (index + 1 === 2) {
-                            card.onclick = () => window.location.href = `episode2/index1.html`; // updated to new episode path
-                        } else if (index + 1 === 4) {
-                            card.onclick = () => window.location.href = `episode4/episode4.html`; // updated to new episode path
-                        } else {
-                            card.onclick = () => window.location.href = `episode${index + 1}/episode${index + 1}.html`; // updated to new episode path
-                        }
-                    } else {
-                        // All other episodes are locked
-                        card.classList.add('locked');
-                        card.querySelector('.episode-status').textContent = 'LOCKED';
-                        card.onclick = null;
-                    }
-                });
-                
-                // Update progress bar and text for new users
-                const progressBar = document.querySelector('.progress-bar');
-                progressBar.style.width = '0%';
-                const progressText = document.querySelector('.progress-container + p');
-                progressText.textContent = 'Start your reading journey!';
+                await initializeNewUserProgress(episodeCards);
                 return;
             }
             
-            // Get user data
             const userData = userQuery.docs[0].data();
             const completedEpisodes = userData.completedEpisodes || [];
+            const episodeCompletionTimes = {};
             
-            console.log('Retrieved user progress:', {
-                name: userData.name,
-                completedEpisodes: completedEpisodes
-            });
+            // Get completion times for each episode
+            for (let i = 1; i <= 5; i++) {
+                const completionTimeField = `episode${i}CompletedAt`;
+                if (userData[completionTimeField]) {
+                    episodeCompletionTimes[i] = userData[completionTimeField].toMillis ? 
+                        userData[completionTimeField].toMillis() : userData[completionTimeField];
+                }
+            }
             
-                let nextEpisodeFound = false;
+            const currentTime = Date.now();
+            let nextEpisodeFound = false;
+            
+            // Process each episode card
+            episodeCards.forEach((card, index) => {
+                const episodeNumber = index + 1;
+                debugLog(`Processing episode ${episodeNumber}`);
                 
-                // Update episode cards
-                episodeCards.forEach((card, index) => {
-                    const episodeNumber = index + 1;
-                    console.log(`Processing episode ${episodeNumber}`);
-                    
-                    // Remove all classes first
-                    card.classList.remove('completed', 'next', 'locked');
-                    
-                    // Mark completed episodes
-                if (completedEpisodes.includes(episodeNumber)) {
-                        console.log(`Episode ${episodeNumber} is completed`);
-                        card.classList.add('completed');
-                        card.querySelector('.episode-status').textContent = 'COMPLETED';
-                    // Special handling for episodes 2 and 4
-                    if (episodeNumber === 2) {
-                        card.onclick = () => window.location.href = `episode2/index1.html`; // updated to new episode path
-                    } else if (episodeNumber === 4) {
-                        card.onclick = () => window.location.href = `episode4/episode4.html`; // updated to new episode path
-                    } else {
-                        card.onclick = () => window.location.href = `episode${episodeNumber}/episode${episodeNumber}.html`; // updated to new episode path
-                    }
-                    }
-                    // Find next incomplete episode
-                    else if (!nextEpisodeFound && 
-                    (episodeNumber === 1 || completedEpisodes.includes(episodeNumber - 1))) {
-                        console.log(`Episode ${episodeNumber} is next`);
-                        card.classList.add('next');
+                // Reset card classes
+                card.classList.remove('completed', 'next', 'locked', 'waiting', 'timer-blocked', 'opened');
+                card.removeAttribute('data-status');
+                
+                // Check if episode is opened but not completed
+                const isOpened = userData[`episode${episodeNumber}_opened`] === true;
+                const isCompleted = completedEpisodes.includes(episodeNumber);
+                
+                if (isCompleted) {
+                    // Completed episode
+                    card.classList.add('completed');
+                    const statusElement = card.querySelector('.episode-status');
+                    statusElement.textContent = 'PLAY AGAIN';
+                    card.setAttribute('data-status', 'PLAY_AGAIN');
+                    setEpisodeClickHandler(card, episodeNumber);
+                }
+                else if (isOpened && !isCompleted) {
+                    // Episode is opened but not completed - apply blue illumination
+                    card.classList.add('opened');
+                    const statusElement = card.querySelector('.episode-status');
+                    statusElement.textContent = 'CONTINUE';
+                    statusElement.classList.add('blink-text');
+                    card.setAttribute('data-status', 'CONTINUE');
+                    setEpisodeClickHandler(card, episodeNumber);
+                    debugLog(`Episode ${episodeNumber} is opened but not completed - applying opened styling`);
+                }
+                else if (!nextEpisodeFound && episodeNumber === 1) {
+                    // First episode is always playable
+                    card.classList.add('next');
                     const statusElement = card.querySelector('.episode-status');
                     statusElement.textContent = 'PLAY';
                     statusElement.classList.add('blink-text');
-                    // Special handling for episodes 2 and 4
-                    if (episodeNumber === 2) {
-                        card.onclick = () => window.location.href = `episode2/index1.html`; // updated to new episode path
-                    } else if (episodeNumber === 4) {
-                        card.onclick = () => window.location.href = `episode4/episode4.html`; // updated to new episode path
-                    } else {
-                        card.onclick = () => window.location.href = `episode${episodeNumber}/episode${episodeNumber}.html`; // updated to new episode path
-                    }
-                        nextEpisodeFound = true;
-                    }
-                    // Lock remaining episodes
-                    else {
-                        console.log(`Episode ${episodeNumber} is locked`);
-                        card.classList.add('locked');
-                        card.querySelector('.episode-status').textContent = 'LOCKED';
-                        card.onclick = null;
-                    }
-                });
-
-                // Update progress bar
-                const progressBar = document.querySelector('.progress-bar');
-            const progressPercentage = (completedEpisodes.length / 5) * 100;
-                progressBar.style.width = `${progressPercentage}%`;
-                console.log(`Progress: ${progressPercentage}%`);
-
-                // Update progress text
-                const progressText = document.querySelector('.progress-container + p');
-            if (completedEpisodes.length === 5) {
-                    progressText.textContent = 'All episodes completed! 🎉';
-                } else {
-                progressText.textContent = `${completedEpisodes.length} out of 5 episodes completed`;
+                    card.setAttribute('data-status', 'PLAY');
+                    setEpisodeClickHandler(card, episodeNumber);
+                    nextEpisodeFound = true;
                 }
+                else if (!nextEpisodeFound && completedEpisodes.includes(episodeNumber - 1)) {
+                    // Next available episode - check wait time
+                    const isWaiting = handleNextEpisode(card, episodeNumber, currentTime, episodeCompletionTimes, MIN_WAIT_TIME_MS, userData);
+                    if (!isWaiting) {
+                        // Episode is ready to play
+                        card.classList.add('next');
+                        const statusElement = card.querySelector('.episode-status');
+                        statusElement.textContent = 'START';
+                        statusElement.classList.add('blink-text');
+                        card.setAttribute('data-status', 'START');
+                        setEpisodeClickHandler(card, episodeNumber);
+                    }
+                    nextEpisodeFound = true;
+                }
+                else {
+                    // Locked episode
+                    card.classList.add('locked');
+                    const statusElement = card.querySelector('.episode-status');
+                    statusElement.textContent = 'LOCKED';
+                    card.setAttribute('data-status', 'LOCKED');
+                    card.onclick = () => showPrompt('Complete previous episodes to unlock this one! 🔒');
+                }
+            });
+
+            // Apply timer-blocked styling after processing all episodes
+            applyTimerBlockedStyling(episodeCards);
+
+            // Update progress indicators
+            updateProgressBar(completedEpisodes.length);
+            
         } catch (error) {
             console.error('Error checking episode completion:', error);
+            showPrompt('Error updating episode status. Please try again.');
         }
     }
-    
+// Helper function to set episode click handler
+function setEpisodeClickHandler(card, episodeNumber) {
+    if (episodeNumber === 2) {
+        card.onclick = async () => {
+            // Check if any timer is running and if this is the previous episode
+            if (window.isAnyTimerRunning && window.isAnyTimerRunning()) {
+                const activeTimers = window.getActiveTimers();
+                // Block only if this episode is the immediate previous episode of any running timer
+                const shouldBlock = activeTimers.some(timerEpisode => timerEpisode === episodeNumber + 1);
+                if (shouldBlock) {
+                    showPrompt(`⏰ Episode ${episodeNumber + 1} timer is running. Episode ${episodeNumber} is temporarily blocked until the timer completes.`);
+                    return;
+                }
+            }
+            await markEpisodeOpened(episodeNumber);
+            window.location.href = 'episode2/index1.html';
+        };
+    } else if (episodeNumber === 4) {
+        card.onclick = async () => {
+            // Check if any timer is running and if this is the previous episode
+            if (window.isAnyTimerRunning && window.isAnyTimerRunning()) {
+                const activeTimers = window.getActiveTimers();
+                // Block only if this episode is the immediate previous episode of any running timer
+                const shouldBlock = activeTimers.some(timerEpisode => timerEpisode === episodeNumber + 1);
+                if (shouldBlock) {
+                    showPrompt(`⏰ Episode ${episodeNumber + 1} timer is running. Episode ${episodeNumber} is temporarily blocked until the timer completes.`);
+                    return;
+                }
+            }
+            await markEpisodeOpened(episodeNumber);
+            window.location.href = 'episode4/episode4.html';
+        };
+    } else {
+        card.onclick = async () => {
+            // Check if any timer is running and if this is the previous episode
+            if (window.isAnyTimerRunning && window.isAnyTimerRunning()) {
+                const activeTimers = window.getActiveTimers();
+                // Block only if this episode is the immediate previous episode of any running timer
+                const shouldBlock = activeTimers.some(timerEpisode => timerEpisode === episodeNumber + 1);
+                if (shouldBlock) {
+                    showPrompt(`⏰ Episode ${episodeNumber + 1} timer is running. Episode ${episodeNumber} is temporarily blocked until the timer completes.`);
+                    return;
+                }
+            }
+            await markEpisodeOpened(episodeNumber);
+            window.location.href = `episode${episodeNumber}/episode${episodeNumber}.html`;
+        };
+    }
+}     // Helper function to update progress bar
+    function updateProgressBar(completedCount) {
+        const progressBar = document.querySelector('.progress-bar');
+        const progressText = document.querySelector('.progress-container + p');
+        
+        const progressPercentage = (completedCount / 5) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+        
+        if (completedCount === 5) {
+            progressText.textContent = 'All episodes completed! 🎉';
+        } else {
+            progressText.textContent = `${completedCount} out of 5 episodes completed`;
+        }
+    }
+
+    // Function to show wait message when user tries to access locked episode
+    function showWaitMessage(remainingMinutes) {
+        const message = `Please wait ${remainingMinutes} more minute${remainingMinutes > 1 ? 's' : ''} before accessing the next episode. This helps reinforce your learning! 📚⏰`;
+        
+        // Create and show a modal or alert
+        if (window.confirm) {
+            alert(message);
+        } else {
+            // Fallback for environments without alert
+            console.log(message);
+        }
+        
+        // Track the attempt in LogRocket
+        if (window.LogRocket) {
+            LogRocket.track('Attempted Early Episode Access', {
+                remainingMinutes: remainingMinutes,
+                attemptTime: new Date().toISOString()
+            });
+        }
+    }
+
     // Add back the auth state observer
     // Update the auth state observer to be more defensive
     auth.onAuthStateChanged((user) => {
@@ -2439,6 +3190,7 @@
         if (isLoggedIn && phone) {
           checkEpisodeCompletion();
         }
+        startAutoRefresh(); // Start automatic refresh when episodes page is shown
         return;
       }
       
@@ -2448,10 +3200,12 @@
         document.getElementById('auth-page').classList.remove('visible');
         document.getElementById('episodes-page').classList.add('visible');
         checkEpisodeCompletion();
+        startAutoRefresh(); // Start automatic refresh when episodes page is shown
         } else {
         // Clear any potentially invalid auth data to prevent unwanted redirects
         localStorage.removeItem('show_episodes_page');
         console.log('User is not logged in, showing auth page');
+        stopAutoRefresh(); // Stop auto-refresh when not on episodes page
     }
     });
 
@@ -3164,8 +3918,404 @@
         // Focus on the input field after toggling
         passwordInput.focus();
     }
+
+    // Global variable to track active countdown timers
+    let activeCountdowns = {};
+    
+    // Function to check if any episode timer is currently running
+    function isAnyTimerRunning() {
+        return Object.keys(activeCountdowns).length > 0;
+    }
+    
+    // Function to get which episodes have active timers
+    function getActiveTimers() {
+        return Object.keys(activeCountdowns).map(ep => parseInt(ep));
+    }
+    
+    // Make timer check functions globally accessible
+    window.isAnyTimerRunning = isAnyTimerRunning;
+    window.getActiveTimers = getActiveTimers;
+    
+    // Function to format time as MM:SS
+    function formatCountdown(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Function to start countdown timer for an episode
+    function startCountdownTimer(episodeNumber, remainingTimeMs, statusElement) {
+        // Clear any existing countdown for this episode
+        if (activeCountdowns[episodeNumber]) {
+            clearInterval(activeCountdowns[episodeNumber]);
+        }
+        
+        let remainingSeconds = Math.ceil(remainingTimeMs / 1000);
+        debugLog(`Starting countdown for episode ${episodeNumber}: ${remainingSeconds} seconds`);
+        
+        // Update immediately
+        statusElement.textContent = `WAIT ${formatCountdown(remainingSeconds)}`;
+        
+        // Update every second
+        activeCountdowns[episodeNumber] = setInterval(async () => {
+            remainingSeconds--;
+            
+            // Update the countdown display
+            if (remainingSeconds > 0) {
+                statusElement.textContent = `WAIT ${formatCountdown(remainingSeconds)}`;
+                
+                // Add visual feedback for last 10 seconds
+                if (remainingSeconds <= 10) {
+                    statusElement.classList.add('countdown-urgent');
+                    statusElement.classList.remove('countdown-warning');
+                } else if (remainingSeconds <= 30) {
+                    statusElement.classList.add('countdown-warning');
+                    statusElement.classList.remove('countdown-urgent');
+                }
+            } else {
+                // Time's up! Clear the countdown and refresh episodes
+                clearInterval(activeCountdowns[episodeNumber]);
+                delete activeCountdowns[episodeNumber];
+                debugLog(`Countdown finished for episode ${episodeNumber}, refreshing...`);
+                
+                // Remove countdown classes
+                statusElement.classList.remove('countdown-warning', 'countdown-urgent');
+                
+                // Get the episode card
+                const episodeCard = statusElement.closest('.episode-card');
+                if (episodeCard) {
+                    // Check if episode was previously opened
+                    const phone = localStorage.getItem('auth_phone');
+                    let isOpened = false;
+                    
+                    if (phone && db) {
+                        try {
+                            const userQuery = await db.collection('userProgress')
+                                .where('phone', '==', phone)
+                                .limit(1)
+                                .get();
+                            
+                            if (!userQuery.empty) {
+                                const userData = userQuery.docs[0].data();
+                                isOpened = userData[`episode${episodeNumber}_opened`] === true;
+                            }
+                        } catch (error) {
+                            console.error('Error checking opened status:', error);
+                        }
+                    }
+                    
+                    // Remove waiting state
+                    episodeCard.classList.remove('waiting');
+                    
+                    if (isOpened) {
+                        // Episode was previously opened - apply opened state with blue illumination
+                        episodeCard.classList.add('opened');
+                        statusElement.textContent = 'CONTINUE';
+                        statusElement.classList.add('blink-text');
+                        episodeCard.setAttribute('data-status', 'CONTINUE');
+                        debugLog(`Episode ${episodeNumber} timer completed - restored opened state with blue illumination`);
+                    } else {
+                        // Episode not opened yet - apply next state
+                        episodeCard.classList.add('next');
+                        statusElement.textContent = 'START';
+                        statusElement.classList.add('blink-text');
+                        episodeCard.setAttribute('data-status', 'START');
+                        debugLog(`Episode ${episodeNumber} timer completed - applied START state`);
+                    }
+                    
+                    // Set click handler immediately
+                    setEpisodeClickHandler(episodeCard, episodeNumber);
+                    
+                    debugLog(`Episode ${episodeNumber} card made immediately clickable`);
+                }
+                
+                // Force immediate and aggressive refresh
+                forceImmediateRefresh(episodeNumber);
+                
+                // Also show a notification to the user
+                showPrompt(`Episode ${episodeNumber} is now available! 🎉`);
+            }
+        }, 1000);
+    }
+
+    // Function to check if episode has been started
+    async function checkEpisodeStarted(episodeNumber, phone) {
+        try {
+            const userQuery = await db.collection('userProgress')
+                .where('phone', '==', phone)
+                .limit(1)
+                .get();
+                
+            if (!userQuery.empty) {
+                const userData = userQuery.docs[0].data();
+                return userData[`episode${episodeNumber}_started`] === true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error checking episode started status:', error);
+            return false;
+        }
+    }
+
+    // Function to mark episode as started
+    async function markEpisodeStarted(episodeNumber, phone) {
+        try {
+            const userQuery = await db.collection('userProgress')
+                .where('phone', '==', phone)
+                .limit(1)
+                .get();
+                
+            if (!userQuery.empty) {
+                const updateData = {};
+                updateData[`episode${episodeNumber}_started`] = true;
+                await userQuery.docs[0].ref.update(updateData);
+                debugLog(`Marked episode ${episodeNumber} as started in Firebase`);
+            }
+        } catch (error) {
+            console.error('Error marking episode as started:', error);
+        }
+    }
+
+    // Function to handle episode completion
+    async function handleEpisodeCompletion(episodeNumber) {
+        try {
+            const phone = localStorage.getItem('auth_phone');
+            if (!phone) return;
+
+            const userQuery = await db.collection('userProgress')
+                .where('phone', '==', phone)
+                .limit(1)
+                .get();
+
+            if (!userQuery.empty) {
+                const userDoc = userQuery.docs[0];
+                const userData = userDoc.data();
+                const completedEpisodes = userData.completedEpisodes || [];
+                const completionTimeField = `episode${episodeNumber}CompletedAt`;
+                const updateData = {};
+
+                // Only set completion time if this is the first time completing the episode
+                if (!userData[completionTimeField]) {
+                    updateData[completionTimeField] = firebase.firestore.Timestamp.fromDate(new Date());
+                }
+
+                // Add to completed episodes if not already there
+                if (!completedEpisodes.includes(episodeNumber)) {
+                    updateData.completedEpisodes = [...completedEpisodes, episodeNumber];
+                }
+
+                // Update Firebase only if we have changes
+                if (Object.keys(updateData).length > 0) {
+                    await userDoc.ref.update(updateData);
+                }
+
+                debugLog(`Episode ${episodeNumber} completion processed. First completion: ${!userData[completionTimeField]}`);
+            }
+        } catch (error) {
+            console.error('Error handling episode completion:', error);
+        }
+    }
+
+    // Function to check next episode availability
+    async function checkNextEpisodeAvailability(episodeNumber) {
+        try {
+            const phone = localStorage.getItem('auth_phone');
+            if (!phone) return false;
+
+            const userQuery = await db.collection('userProgress')
+                .where('phone', '==', phone)
+                .limit(1)
+                .get();
+
+            if (!userQuery.empty) {
+                const userData = userQuery.docs[0].data();
+                const previousEpisodeField = `episode${episodeNumber - 1}CompletedAt`;
+                const completionTime = userData[previousEpisodeField];
+
+                if (completionTime) {
+                    const timeSinceCompletion = Date.now() - completionTime.toMillis();
+                    return timeSinceCompletion >= MIN_WAIT_TIME_MS;
+                }
+            }
+            return false;
+        } catch (error) {
+            console.error('Error checking episode availability:', error);
+            return false;
+        }
+    }
+
+    // Add this to your episode HTML files
+    document.addEventListener('DOMContentLoaded', () => {
+        // Add completion handler to your submit/complete button
+        const completeButton = document.querySelector('#complete-button'); // adjust selector as needed
+        if (completeButton) {
+            completeButton.addEventListener('click', async () => {
+                const episodeNumber = getCurrentEpisodeNumber(); // implement this based on your page
+                await completeEpisode(episodeNumber);
+            });
+        }
+    });
+
+    // Global variable to track automatic refresh interval
+    let autoRefreshInterval = null;
+    let fastRefreshInterval = null;
+
+    // Function to start automatic episode status checking
+    function startAutoRefresh() {
+        // Clear any existing intervals
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+        if (fastRefreshInterval) {
+            clearInterval(fastRefreshInterval);
+        }
+        
+        // Show auto-refresh indicator
+        const indicator = document.getElementById('auto-refresh-indicator');
+        if (indicator) {
+            indicator.style.display = 'inline';
+        }
+        
+        // Fast refresh every 2 seconds when timers are active
+        fastRefreshInterval = setInterval(() => {
+            const isLoggedIn = localStorage.getItem('auth_isLoggedIn') === 'true';
+            const isEpisodesPageVisible = document.getElementById('episodes-page').classList.contains('visible');
+            
+            if (isLoggedIn && isEpisodesPageVisible) {
+                // Check if any timers are running
+                const hasActiveTimers = Object.keys(activeCountdowns).length > 0;
+                
+                if (hasActiveTimers) {
+                    debugLog('Fast auto-refresh: Checking episode status (timers active)');
+                    checkEpisodeCompletion();
+                }
+            }
+        }, 2000); // 2 seconds when timers are active
+        
+        // Regular refresh every 10 seconds for general updates
+        autoRefreshInterval = setInterval(() => {
+            const isLoggedIn = localStorage.getItem('auth_isLoggedIn') === 'true';
+            const isEpisodesPageVisible = document.getElementById('episodes-page').classList.contains('visible');
+            
+            if (isLoggedIn && isEpisodesPageVisible) {
+                debugLog('Regular auto-refresh: Checking episode status');
+                checkEpisodeCompletion();
+            }
+        }, 10000); // 10 seconds for regular updates
+        
+        debugLog('Auto-refresh started: fast refresh every 2s (when timers active), regular refresh every 10s');
+    }
+
+    // Function to stop automatic refresh
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+        if (fastRefreshInterval) {
+            clearInterval(fastRefreshInterval);
+            fastRefreshInterval = null;
+        }
+        
+        // Hide auto-refresh indicator
+        const indicator = document.getElementById('auto-refresh-indicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+        
+        debugLog('Auto-refresh stopped');
+    }
+
+    // Function to force immediate refresh when timer completes
+    function forceImmediateRefresh(episodeNumber) {
+        debugLog(`Forcing immediate refresh for episode ${episodeNumber}`);
+        
+        // Multiple refresh attempts to ensure it works
+        checkEpisodeCompletion();
+        
+        setTimeout(() => {
+            checkEpisodeCompletion();
+            debugLog(`Second refresh attempt for episode ${episodeNumber}`);
+        }, 500);
+        
+        setTimeout(() => {
+            checkEpisodeCompletion();
+            debugLog(`Third refresh attempt for episode ${episodeNumber}`);
+        }, 1000);
+    }
+
+    // Function to mark episode as opened/accessed
+    async function markEpisodeOpened(episodeNumber) {
+        try {
+            const phone = localStorage.getItem("auth_phone");
+            if (!phone) return;
+
+            const userQuery = await db.collection("userProgress")
+                .where("phone", "==", phone)
+                .limit(1)
+                .get();
+                
+            if (!userQuery.empty) {
+                const updateData = {};
+                updateData[`episode${episodeNumber}_opened`] = true;
+                updateData[`episode${episodeNumber}_openedAt`] = firebase.firestore.Timestamp.fromDate(new Date());
+                await userQuery.docs[0].ref.update(updateData);
+                debugLog(`Marked episode ${episodeNumber} as opened in Firebase`);
+            }
+        } catch (error) {
+            console.error("Error marking episode as opened:", error);
+        }
+    }
+
+    // Debug logging function
   </script>
   <!-- Disable search functionality -->
   <script src="disable-search.js"></script>
+
+  <script>
+    // Add back the auth state observer
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('Page loaded, checking authentication...');
+      
+      // Check if user is already logged in
+      const isLoggedIn = localStorage.getItem('auth_isLoggedIn') === 'true';
+      const phone = localStorage.getItem('auth_phone');
+      const showEpisodesPage = localStorage.getItem('show_episodes_page') === 'true' || window.location.hash === '#episodes';
+      const isRegistrationInProgress = localStorage.getItem('registration_in_progress') === 'true';
+      
+      console.log('Auth check results:', { isLoggedIn, phone, showEpisodesPage, isRegistrationInProgress });
+      
+      // If coming from episode completion or URL has #episodes, show episodes page immediately
+      if (showEpisodesPage) {
+        console.log('Found show_episodes_page flag or #episodes fragment, showing episodes page directly');
+        document.getElementById('auth-page').classList.remove('visible');
+        document.getElementById('episodes-page').classList.add('visible');
+        localStorage.removeItem('show_episodes_page'); // Clear the flag once used
+        
+        // Call checkEpisodeCompletion with a short delay to ensure UI is updated
+        if (isLoggedIn && phone) {
+          checkEpisodeCompletion();
+        }
+        startAutoRefresh(); // Start automatic refresh when episodes page is shown
+        debugLog('Auto-refresh started from page load (episodes page)');
+        return;
+      }
+      
+      // Normal flow - only redirect to episodes page if properly authenticated
+      if (isLoggedIn && phone && !isRegistrationInProgress) {
+        console.log('User is logged in via custom auth, redirecting to episodes page');
+        document.getElementById('auth-page').classList.remove('visible');
+        document.getElementById('episodes-page').classList.add('visible');
+        checkEpisodeCompletion();
+        startAutoRefresh(); // Start automatic refresh when episodes page is shown
+        debugLog('Auto-refresh started from page load (authenticated user)');
+        } else {
+        // Clear any potentially invalid auth data to prevent unwanted redirects
+        localStorage.removeItem('show_episodes_page');
+        console.log('User is not logged in, showing auth page');
+        stopAutoRefresh(); // Stop auto-refresh when not on episodes page
+    }
+    });
+  </script>
 </body>
 </html>

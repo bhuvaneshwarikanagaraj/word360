@@ -1151,6 +1151,10 @@
             <input type="tel" id="signup-phone" placeholder="Enter your phone number" pattern="[0-9]{10}">
           </div>
         </div>
+        <!-- CAPTCHA Instructions -->
+        <div style="text-align: center; margin: 15px 0 10px 0; color: var(--primary); font-weight: 600; font-size: 14px;">
+          👆 Click the square below to verify and send OTP
+        </div>
         <!-- reCAPTCHA container - improved with better styling -->
         <div id="recaptcha-container" style="margin: 20px 0; display: flex; justify-content: center; min-height: 78px; position: relative; z-index: 10;"></div>
         <div style="text-align: center; margin-top: 15px;">
@@ -1168,6 +1172,10 @@
         <button class="ripple" onclick="verifyOTP()">Verify OTP</button>
         <button class="ripple resend-btn" id="resend-otp" onclick="showResendCaptcha()" disabled>Resend OTP</button>
         <div id="resend-captcha-container" style="display: none;">
+          <!-- CAPTCHA Instructions for Resend -->
+          <div style="text-align: center; margin: 15px 0 10px 0; color: var(--primary); font-weight: 600; font-size: 14px;">
+            👆 Click the square below to verify and resend OTP
+          </div>
           <div id="recaptcha-container-otp"></div>
         </div>
       </div>
