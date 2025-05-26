@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Daily Weather Chronicle</title>
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('hit1rk/word360');
+        
+        // Track report page view
+        LogRocket.track('Weather Report Activity View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode5_weather_report'
+        });
+    </script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script>
@@ -429,6 +443,13 @@
             // Prevent interaction if activity is completed
             if (localStorage.getItem('reportActivityCompleted') === 'true') return;
 
+            // Track option selection
+            LogRocket.track('Weather Report - Option Selected', {
+                questionId: element.parentElement.parentElement.id,
+                selectedOption: element.textContent,
+                isCorrect: isCorrect
+            });
+
             // Clear any previous selections
             const options = element.parentElement.getElementsByClassName('option');
             for (let i = 0; i < options.length; i++) {
@@ -441,10 +462,21 @@
                 element.classList.add('correct');
                 element.parentElement.parentElement.getElementsByClassName('feedback correct')[0].style.display = 'block';
                 element.parentElement.parentElement.getElementsByClassName('feedback incorrect')[0].style.display = 'none';
+                
+                // Track correct answer
+                LogRocket.track('Weather Report - Correct Answer', {
+                    questionId: element.parentElement.parentElement.id
+                });
             } else {
                 element.classList.add('incorrect');
                 element.parentElement.parentElement.getElementsByClassName('feedback incorrect')[0].style.display = 'block';
                 element.parentElement.parentElement.getElementsByClassName('feedback correct')[0].style.display = 'none';
+                
+                // Track incorrect answer
+                LogRocket.track('Weather Report - Incorrect Answer', {
+                    questionId: element.parentElement.parentElement.id,
+                    selectedOption: element.textContent
+                });
             }
             
             // Show the next button if this is the first question, or proceed button if it's the last
@@ -456,11 +488,20 @@
         }
         
         function showNextQuestion() {
+            // Track navigation to next question
+            LogRocket.track('Weather Report - Next Question Shown', {
+                fromQuestion: 'question1',
+                toQuestion: 'question2'
+            });
+            
             document.getElementById('question1').style.display = 'none';
             document.getElementById('question2').style.display = 'block';
         }
         
         function showCompletion() {
+            // Track activity completion
+            LogRocket.track('Weather Report - Activity Completed');
+            
             document.getElementById('question2').style.display = 'none';
             document.querySelector('.completion-message').style.display = 'block';
             document.querySelector('.completion-buttons').style.display = 'flex';
@@ -477,11 +518,19 @@
         }
 
         function closeReport() {
+            // Track report closure
+            LogRocket.track('Weather Report - Closed', {
+                completed: localStorage.getItem('reportActivityCompleted') === 'true'
+            });
+            
             localStorage.setItem('targetPanel', '14');
             window.location.replace('episode5.html');
         }
 
         function proceedToNext() {
+            // Track proceeding to next panel
+            LogRocket.track('Weather Report - Proceeded to Next Panel');
+            
             localStorage.setItem('targetPanel', '14.5');
             window.location.href = 'episode5.html';
         }
@@ -495,6 +544,11 @@
 
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', () => {
+            // Track initial page load state
+            LogRocket.track('Weather Report - Initial State', {
+                isCompleted: localStorage.getItem('reportActivityCompleted') === 'true'
+            });
+            
             // Show scroll indicator only if task is not completed
             const scrollIndicator = document.getElementById('scrollIndicator');
             const taskCompletedBanner = document.getElementById('taskCompletedBanner');
@@ -512,6 +566,11 @@
                         document.querySelector('.completion-buttons').style.display = 'flex';
                         disableInteraction();
                         scrollIndicator.style.opacity = '0';
+                        
+                        // Track completed state loaded from Firebase
+                        LogRocket.track('Weather Report - Completed State Loaded', {
+                            source: 'firebase'
+                        });
                     } else if (localStorage.getItem('reportActivityCompleted') === 'true') {
                         taskCompletedBanner.style.display = 'block';
                         document.getElementById('question1').style.display = 'none';
@@ -520,26 +579,52 @@
                         document.querySelector('.completion-buttons').style.display = 'flex';
                         disableInteraction();
                         scrollIndicator.style.opacity = '0';
+                        
+                        // Track completed state loaded from localStorage
+                        LogRocket.track('Weather Report - Completed State Loaded', {
+                            source: 'localStorage'
+                        });
                     } else {
                         // Only show scroll indicator if task is not completed
                         scrollIndicator.style.opacity = '1';
                         handleScrollIndicator();
+                        
+                        // Track new session start
+                        LogRocket.track('Weather Report - New Session Started');
                     }
                 })
                 .catch((error) => {
                     console.error("Error checking completion status:", error);
+                    // Track error in completion status check
+                    LogRocket.track('Weather Report - Error', {
+                        type: 'completion_status_check',
+                        error: error.message
+                    });
                 });
         });
 
         function handleScrollIndicator() {
+            let lastScrollPosition = 0;
             window.addEventListener('scroll', () => {
                 const windowHeight = window.innerHeight;
                 const documentHeight = document.documentElement.scrollHeight;
                 const scrollTop = window.scrollY || document.documentElement.scrollTop;
                 
+                // Track significant scroll events
+                if (Math.abs(scrollTop - lastScrollPosition) > 100) {
+                    LogRocket.track('Weather Report - Significant Scroll', {
+                        scrollPosition: scrollTop,
+                        documentHeight: documentHeight,
+                        percentageScrolled: ((scrollTop + windowHeight) / documentHeight * 100).toFixed(2)
+                    });
+                    lastScrollPosition = scrollTop;
+                }
+                
                 // Check if user is near bottom (within 50px of bottom)
                 if ((windowHeight + scrollTop) >= documentHeight - 50) {
                     document.getElementById('scrollIndicator').style.opacity = '0';
+                    // Track reaching bottom of page
+                    LogRocket.track('Weather Report - Reached Bottom');
                 } else {
                     document.getElementById('scrollIndicator').style.opacity = '1';
                 }

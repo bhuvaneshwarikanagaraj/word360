@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Natural Phenomenon</title>
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('hit1rk/word360');
+        
+        // Track phenomenon page view
+        LogRocket.track('Natural Phenomenon Activity View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode5_phenomenon'
+        });
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -302,11 +316,20 @@
             radioButtons.forEach(radio => {
                 radio.addEventListener('change', () => {
                     checkButton.classList.add('active');
+                    // Track option selection
+                    LogRocket.track('Natural Phenomenon - Option Selected', {
+                        optionId: radio.id,
+                        optionValue: radio.value,
+                        optionText: radio.nextElementSibling.textContent
+                    });
                 });
             });
 
             // Close button handler - return to panel 14
             closeButton.onclick = () => {
+                // Track close button click
+                LogRocket.track('Natural Phenomenon - Closed Activity');
+                
                 const buttonClickSound = document.getElementById('buttonClickSound');
                 if (buttonClickSound) {
                     buttonClickSound.currentTime = 0;
@@ -319,6 +342,9 @@
 
             // Next button handler - go to panel 15
             nextButton.onclick = () => {
+                // Track next button click
+                LogRocket.track('Natural Phenomenon - Next Button Clicked');
+                
                 const buttonClickSound = document.getElementById('buttonClickSound');
                 if (buttonClickSound) {
                     buttonClickSound.currentTime = 0;
@@ -342,6 +368,12 @@
                 const selectedOption = document.querySelector('input[name="prank"]:checked');
                 if (!selectedOption) return;
 
+                // Track answer submission
+                LogRocket.track('Natural Phenomenon - Answer Submitted', {
+                    selectedOption: selectedOption.value,
+                    isCorrect: selectedOption.value === correctAnswer
+                });
+
                 if (selectedOption.value === correctAnswer) {
                     document.getElementById('hintText').textContent = "🌟 Congratulations! That's correct! Lightning is indeed what all reports mention!";
                     const victorySound = document.getElementById('victorySound');
@@ -349,8 +381,16 @@
                         victorySound.currentTime = 0;
                         victorySound.play().catch(console.error);
                     }
+                    
+                    // Track correct answer
+                    LogRocket.track('Natural Phenomenon - Correct Answer');
                 } else {
                     document.getElementById('hintText').textContent = "The correct answer is 'Lightning'. Keep investigating!";
+                    
+                    // Track incorrect answer
+                    LogRocket.track('Natural Phenomenon - Incorrect Answer', {
+                        selectedOption: selectedOption.value
+                    });
                 }
 
                 // Disable radio buttons and check button after attempt
@@ -365,6 +405,9 @@
 
             // Hint button handler
             hintButton.onclick = () => {
+                // Track hint button click
+                LogRocket.track('Natural Phenomenon - Hint Requested');
+                
                 const buttonClickSound = document.getElementById('buttonClickSound');
                 if (buttonClickSound) {
                     buttonClickSound.currentTime = 0;

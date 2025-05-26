@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ferret Family Photo</title>
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('hit1rk/word360');
+        
+        // Track scratch card page view
+        LogRocket.track('Scratch Card Page View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode1_scratch_card'
+        });
+    </script>
+    
     <style>
         body {
             margin: 0;
@@ -196,11 +212,19 @@
                 familyPhoto.classList.add('loaded');
                 loadingOverlay.style.display = 'none';
                 setCanvasSize();
+                
+                // Track successful image load
+                LogRocket.track('Scratch Card - Image Loaded Successfully');
             };
 
             familyPhoto.onerror = function() {
                 loadingOverlay.style.display = 'none';
                 errorOverlay.style.display = 'flex';
+                
+                // Track image loading error
+                LogRocket.track('Scratch Card - Image Load Error', {
+                    imageSource: familyPhoto.src
+                });
             };
 
             // Force reload of image
@@ -249,6 +273,11 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 // Show next button
                 document.getElementById('nextButton').classList.add('visible');
+                
+                // Track scratch completion
+                LogRocket.track('Scratch Card - Revealed Successfully', {
+                    scratchProgress: progress
+                });
             }
         }
 
@@ -279,6 +308,9 @@
             const rect = canvas.getBoundingClientRect();
             lastX = (e.clientX || e.touches[0].clientX) - rect.left;
             lastY = (e.clientY || e.touches[0].clientY) - rect.top;
+            
+            // Track scratch start
+            LogRocket.track('Scratch Card - Scratch Started');
         }
 
         function stopScratching() {
@@ -296,6 +328,9 @@
 
         // Add next button click handler
         document.getElementById('nextButton').addEventListener('click', function() {
+            // Track next button click
+            LogRocket.track('Scratch Card - Next Button Clicked');
+            
             // First send message to enable next panel
             window.parent.postMessage('enableNext', '*');
             // Then send message to close the modal

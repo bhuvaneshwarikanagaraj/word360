@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boarding Pass</title>
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('hit1rk/word360');
+        
+        // Track dragdrop page view
+        LogRocket.track('Boarding Pass Activity View');
+        
+        // Identify user if needed
+        LogRocket.identify('USER_ID', {
+            name: 'Detective Ferret Player',
+            gameProgress: 'episode2_dragdrop'
+        });
+    </script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -657,6 +673,13 @@
             const isValidDrop = dropZone.id === draggedType + '-field';
             
             if (isValidDrop) {
+                // Track successful drop
+                LogRocket.track('Boarding Pass - Item Dropped', {
+                    itemType: draggedType,
+                    dropZone: dropZone.id,
+                    success: true
+                });
+                
                 // Clear the drop zone
                 dropZone.innerHTML = '';
                 
@@ -705,6 +728,12 @@
                 
                 // Check completion
                 checkCompletion();
+            } else {
+                // Track invalid drop attempt
+                LogRocket.track('Boarding Pass - Invalid Drop', {
+                    itemType: draggedType,
+                    attemptedDropZone: dropZone.id
+                });
             }
         }
 
@@ -717,6 +746,13 @@
                 const dashText = dashes[currentText].querySelector('.dash-text');
                 dashText.textContent = letter;
                 dashes[currentText].classList.add('filled');
+                
+                // Track letter typed
+                LogRocket.track('Boarding Pass - Letter Typed', {
+                    position: currentText + 1,
+                    letter: letter
+                });
+                
                 checkCompletion();
             }
         }
@@ -978,6 +1014,9 @@
 
         // Navigation functions
         function navigateBack() {
+            // Track navigation
+            LogRocket.track('Boarding Pass - Navigated Back');
+            
             try {
                 // Set flag to return to panel 5
                 localStorage.setItem('returnToPanelFive', 'true');
@@ -990,6 +1029,11 @@
         }
 
         function closeActivity() {
+            // Track activity close
+            LogRocket.track('Boarding Pass - Activity Closed', {
+                completed: localStorage.getItem('DRAGDROP_ACTIVITY_KEY') === 'true'
+            });
+            
             try {
                 // Clear any existing navigation flags
                 localStorage.removeItem('returnToCurrentPanel');
@@ -1036,14 +1080,28 @@
                 .map(dash => dash.querySelector('.dash-text').textContent)
                 .join('');
 
+            // Track submission attempt
+            LogRocket.track('Boarding Pass - Submitted', {
+                enteredDestination: destinationText,
+                isCorrect: destinationText.toLowerCase() === 'london'
+            });
+
             // Show appropriate message based on correct/incorrect answer
             const successContainer = document.getElementById('success-container');
             successContainer.style.display = 'flex';
             
             if (destinationText.toLowerCase() === 'london') {
                 successContainer.querySelector('.success-message').textContent = "Congratulations! Boarding pass completed correctly!";
+                
+                // Track successful completion
+                LogRocket.track('Boarding Pass - Completed Successfully');
             } else {
                 successContainer.querySelector('.success-message').textContent = "Incorrect destination. The correct destination is LONDON. Check panel 5 for the answer!";
+                
+                // Track incorrect attempt
+                LogRocket.track('Boarding Pass - Incorrect Destination', {
+                    enteredDestination: destinationText
+                });
             }
 
             // Mark as completed
