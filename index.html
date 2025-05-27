@@ -434,9 +434,10 @@
 
     .progress-bar {
       height: 100%;
-      width: 20%; /* 1 out of 5 episodes */
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      border-radius: 5px;
+      background-color: var(--success);
+      border-radius: 8px;
+      width: 16.67%; /* 1 out of 6 episodes */
+      transition: width 0.3s ease;
     }
 
     /* Responsive adjustments */
@@ -1859,6 +1860,15 @@
         </div>
         <div class="episode-status available">PLAY</div>
       </div>
+
+      <!-- Episode 6 -->
+      <div class="episode-card" onclick="window.location.href='episode6/episode6.html'">
+        <div class="episode-number">6</div>
+        <div class="episode-content">
+          <div class="episode-title">The Final Challenge</div>
+        </div>
+        <div class="episode-status available">PLAY</div>
+      </div>
       
       <!-- Coming Soon Announcement -->
       <div class="episode-card announcement" style="background-color: rgba(99, 102, 241, 0.1); cursor: default; justify-content: center;">
@@ -3115,13 +3125,13 @@ function setEpisodeClickHandler(card, episodeNumber) {
         const progressBar = document.querySelector('.progress-bar');
         const progressText = document.querySelector('.progress-container + p');
         
-        const progressPercentage = (completedCount / 5) * 100;
+        const progressPercentage = (completedCount / 6) * 100;
         progressBar.style.width = `${progressPercentage}%`;
         
-        if (completedCount === 5) {
+        if (completedCount === 6) {
             progressText.textContent = 'All episodes completed! 🎉';
         } else {
-            progressText.textContent = `${completedCount} out of 5 episodes completed`;
+            progressText.textContent = `${completedCount} out of 6 episodes completed`;
         }
     }
 
