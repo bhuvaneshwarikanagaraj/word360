@@ -546,6 +546,12 @@
             if (taskCompleted) {
                 localStorage.setItem('spelling7_completed', 'true');
                 localStorage.setItem('SPELLINGS7_ACTIVITY_KEY', 'true');
+                localStorage.setItem('episode7_spelling7_completed', 'true');
+                try {
+                    window.parent.postMessage('spelling7_success', '*');
+                } catch (e) {
+                    console.error('Error posting success message:', e);
+                }
             }
         }
 
@@ -578,6 +584,7 @@
             // Save completion status
             localStorage.setItem('spelling7_completed', 'true');
             localStorage.setItem('SPELLINGS7_ACTIVITY_KEY', 'true');
+            localStorage.setItem('episode7_spelling7_completed', 'true');
             
             // Navigate to panel 3
             window.location.href = 'episode7.html?panel=3';
@@ -670,8 +677,9 @@
                 // Save progress with correct storage keys
                 localStorage.setItem('spelling7_completed', 'true');
                 localStorage.setItem('SPELLINGS7_ACTIVITY_KEY', 'true');
+                localStorage.setItem('episode7_spelling7_completed', 'true');
 
-                // Notify parent window of completion with correct message
+                // Notify parent window of completion
                 try {
                     window.parent.postMessage('spelling7_success', '*');
                 } catch (e) {

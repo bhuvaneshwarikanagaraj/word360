@@ -1562,6 +1562,16 @@
                         } else {
                             console.error(`Text content element not found for panel ${i}`);
                         }
+
+                        // Show feedback container on the last panel
+                        if (i === panelsData.length - 1) {
+                            setTimeout(() => {
+                                const feedbackContainer = document.getElementById('feedbackContainer');
+                                if (feedbackContainer) {
+                                    feedbackContainer.style.display = 'block';
+                                }
+                            }, 2000);
+                        }
                     }
                 });
 
@@ -1604,9 +1614,18 @@
                             nextBtn.style.cursor = 'not-allowed';
                             nextBtn.title = 'Complete the order activity first!';
                         } else {
-                            nextBtn.disabled = index === panelsData.length - 1;
-                            nextBtn.style.opacity = index === panelsData.length - 1 ? '0.5' : '1';
-                            nextBtn.style.cursor = index === panelsData.length - 1 ? 'not-allowed' : 'pointer';
+                            // Keep next button enabled on last panel
+                            if (index === panelsData.length - 1) {
+                                nextBtn.disabled = false;
+                                nextBtn.style.opacity = '1';
+                                nextBtn.style.cursor = 'pointer';
+                                nextBtn.onclick = () => {
+                                    const feedbackContainer = document.getElementById('feedbackContainer');
+                                    if (feedbackContainer) {
+                                        feedbackContainer.style.display = 'block';
+                                    }
+                                };
+                            }
                             nextBtn.title = '';
                         }
                     }
