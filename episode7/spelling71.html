@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Task</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #ecf0f1;
+            font-family: 'Special Elite', cursive;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .spelling-popup {
+            width: 95%;
+            max-width: 500px;
+            min-height: 550px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 35px 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            animation: popup-appear 0.5s ease-out;
+            position: relative;
+        }
+
+        @keyframes popup-appear {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .revealed-letters {
+            color: #2c3e50;
+            letter-spacing: 3px;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.8em;
+            min-height: 35px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin: 25px 0;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .key {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(145deg, #ffffff, #f5f6fa);
+            border: 2px solid #e8e8e8;
+            color: #2c3e50;
+            border-radius: 12px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .key:hover {
+            transform: translateY(-3px) scale(1.02);
+            background: linear-gradient(145deg, #ffffff, #f8f9fe);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .key:active {
+            transform: scale(0.95);
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+            justify-content: center;
+        }
+
+        .check-button, .hint-button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Special Elite', cursive;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .check-button {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .check-button.active {
+            opacity: 1;
+            pointer-events: auto;
+            animation: button-pulse 2s infinite;
+        }
+
+        @keyframes button-pulse {
+            0% { transform: scale(1); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 4px 20px rgba(52, 152, 219, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); }
+        }
+
+        .hint-button {
+            background: linear-gradient(145deg, #f5f6fa, #e8e8e8);
+            color: #2c3e50;
+            border: 1px solid #e8e8e8;
+        }
+
+        .hint-button:hover {
+            background: linear-gradient(145deg, #e8e8e8, #dcdde1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .hint-text {
+            color: #2c3e50;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1em;
+            min-height: 20px;
+            padding: 10px 15px;
+            border-radius: 12px;
+            background: rgba(236, 240, 241, 0.8);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(189, 195, 199, 0.3);
+            animation: hint-appear 0.3s ease-out;
+        }
+
+        @keyframes hint-appear {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .speaker-icon {
+            font-size: 40px;
+            color: #3498db;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .speaker-icon:hover {
+            transform: scale(1.1);
+            color: #2980b9;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(145deg, #ffffff, #f5f6fa);
+            border: 2px solid #e8e8e8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #2c3e50;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .close-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            border-color: #2980b9;
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .revealed-letters span.correct {
+            color: #2ecc71;
+            animation: letter-correct 0.5s ease-out;
+        }
+
+        @keyframes letter-correct {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .revealed-letters span.incorrect {
+            color: #e74c3c;
+            animation: letter-incorrect 0.5s ease-out;
+        }
+
+        @keyframes letter-incorrect {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-2px); }
+            40%, 80% { transform: translateX(2px); }
+        }
+
+        .key.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            background: #f5f6fa;
+            border-color: #dcdde1;
+        }
+
+        .key.correct {
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .key.incorrect {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            color: white;
+            border-color: #c0392b;
+        }
+
+        .hint-text.success {
+            color: #27ae60;
+            background: rgba(46, 204, 113, 0.1);
+            border-color: rgba(46, 204, 113, 0.3);
+            font-weight: bold;
+        }
+
+        .hint-text.error {
+            color: #c0392b;
+            background: rgba(231, 76, 60, 0.1);
+            border-color: rgba(231, 76, 60, 0.3);
+        }
+
+        @media (max-width: 480px) {
+            .spelling-popup {
+                width: 98%;
+                padding: 20px 10px;
+                min-height: 500px;
+            }
+
+            .keyboard {
+                transform: scale(0.95);
+                margin: 15px 0;
+                gap: 8px;
+            }
+
+            .keyboard-row {
+                gap: 6px;
+            }
+
+            .key {
+                width: 38px;
+                height: 38px;
+                font-size: 1.2em;
+                border-radius: 10px;
+            }
+
+            .revealed-letters {
+                font-size: 1.5em;
+            }
+
+            .check-button, .hint-button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+
+        @media (min-width: 375px) and (max-width: 480px) {
+            .key {
+                width: 42px;
+                height: 42px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .key {
+                width: 55px;
+                height: 55px;
+                font-size: 1.4em;
+            }
+
+            .keyboard-row {
+                gap: 10px;
+            }
+        }
+
+        .success-message {
+            text-align: center;
+            margin-top: 15px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #next-btn {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            font-family: 'Special Elite', cursive;
+            margin: 20px auto 0 auto;
+            display: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(145deg, #2980b9, #3498db);
+        }
+
+        #next-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="spelling-popup" id="spellingPopup">
+        <button class="close-btn" onclick="closeActivity()">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <i class="fas fa-volume-up speaker-icon" onclick="playWord()"></i>
+        
+        <div class="revealed-letters" id="revealedLetters">R _ _ _ _ _ _ _ _ _ _</div>
+        
+        <div class="keyboard" id="keyboard">
+            <!-- Keys will be added dynamically -->
+        </div>
+
+        <div class="button-container">
+            <button class="check-button" id="checkButton">CHECK</button>
+            <button class="hint-button" id="hintButton">HINT</button>
+        </div>
+
+        <div class="hint-text" id="hintText"></div>
+
+        <div class="success-message" id="successMessage">
+            <button id="next-btn" onclick="navigateToNextPanel()" style="display: none;">NEXT</button>
+        </div>
+    </div>
+
+    <audio id="wordAudio" src="./audio/reassurance.mp3"></audio>
+    <audio id="buttonClickSound" src="./audio/button_click.mp3"></audio>
+    <audio id="victorySound" src="./audio/victory_sound.mp3"></audio>
+
+    <script>
+        let attempts = 3;
+        const correctSpelling = "REASSURANCE";
+        let currentAnswer = "";
+        let revealedLetters = new Array(correctSpelling.length).fill(null);
+        let taskCompleted = false;
+        let attemptMade = false;
+        
+        const hints = [
+            "🤗 The act of removing someone's doubts or fears...",
+            "💭 When you need confidence, you seek this...",
+            "✨ Something that makes you feel more certain or less worried..."
+        ];
+
+        const revealPositions = [
+            { index: 2, letter: 'A' },  // First reveal: A in "REASSURANCE"
+            { index: 5, letter: 'U' },  // Second reveal: U in "REASSURANCE"
+            { index: 8, letter: 'N' }   // Third reveal: N in "REASSURANCE"
+        ];
+
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            const rows = [
+                ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+                ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+                ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']
+            ];
+            
+            rows.forEach((row, index) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+                
+                if (index === 1) {
+                    rowDiv.style.marginLeft = '12px';
+                }
+                
+                row.forEach(key => {
+                    const button = document.createElement('button');
+                    button.className = 'key';
+                    if (key === '⌫') {
+                        button.style.width = '40px';
+                        button.style.fontSize = '0.8em';
+                        button.onclick = () => {
+                            // Play click sound
+                            const buttonClickSound = document.getElementById('buttonClickSound');
+                            if (buttonClickSound) {
+                                buttonClickSound.currentTime = 0;
+                                buttonClickSound.play().catch(console.error);
+                            }
+                            removeLetter();
+                        };
+                    } else {
+                        button.onclick = () => {
+                            // Play click sound
+                            const buttonClickSound = document.getElementById('buttonClickSound');
+                            if (buttonClickSound) {
+                                buttonClickSound.currentTime = 0;
+                                buttonClickSound.play().catch(console.error);
+                            }
+                            addLetter(key);
+                        };
+                    }
+                    button.textContent = key;
+                    rowDiv.appendChild(button);
+                });
+                
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        function addLetter(letter) {
+            // Count positions that are not revealed vowels
+            const availablePositions = revealedLetters.reduce((count, letter, index) => {
+                // If it's not a revealed vowel position, count it as available
+                if (letter === null) {
+                    return count + 1;
+                }
+                return count;
+            }, 0);
+            
+            if (currentAnswer.length < availablePositions) {
+                currentAnswer += letter;
+                updateDisplay();
+            }
+        }
+
+        function removeLetter() {
+            if (currentAnswer.length > 0) {
+                currentAnswer = currentAnswer.slice(0, -1);
+                updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            let display = '';
+            let currentAnswerIndex = 0;
+            let filledCount = 0;
+            
+            for (let i = 0; i < correctSpelling.length; i++) {
+                if (revealedLetters[i] !== null) {
+                    display += revealedLetters[i];
+                    filledCount++;
+                } else if (currentAnswerIndex < currentAnswer.length) {
+                    display += currentAnswer[currentAnswerIndex++];
+                    filledCount++;
+                } else {
+                    display += '_';
+                }
+                display += ' ';
+            }
+            
+            document.getElementById('revealedLetters').textContent = display.trim();
+
+            const checkButton = document.getElementById('checkButton');
+            if (filledCount === correctSpelling.length) {
+                checkButton.classList.add('active');
+            } else {
+                checkButton.classList.remove('active');
+            }
+        }
+
+        function resetAnswer() {
+            currentAnswer = "";
+            updateDisplay();
+        }
+
+        function playWord() {
+            // Then play the word audio
+            const audio = document.getElementById('wordAudio');
+            audio.play().catch(console.error);
+        }
+
+        function closeActivity() {
+            // Save the current state
+            saveState();
+            // Navigate back to panel 8
+            window.location.href = 'episode7.html?panel=8';
+        }
+
+        function saveState() {
+            // Save any necessary state before closing
+            if (taskCompleted) {
+                localStorage.setItem('spelling71_completed', 'true');
+                localStorage.setItem('SPELLINGS71_ACTIVITY_KEY', 'true');
+            }
+        }
+
+        function initialize() {
+            createKeyboard();
+            revealedLetters = new Array(correctSpelling.length).fill(null);
+            revealedLetters[0] = 'R'; // Show first letter 'R'
+            resetAnswer();
+            attempts = 3;
+            taskCompleted = false;
+            attemptMade = false;
+            document.getElementById('hintText').textContent = '';
+            document.getElementById('checkButton').classList.remove('active');
+            document.getElementById('checkButton').style.display = 'block';
+            document.getElementById('next-btn').style.display = 'none';
+            
+            // Check for saved progress
+            const isCompleted = localStorage.getItem('spelling71_completed') === 'true';
+            if (isCompleted) {
+                taskCompleted = true;
+                revealedLetters = correctSpelling.split('');
+                updateDisplay();
+                showFeedback(true, "🌟 You've already completed this activity!");
+                document.getElementById('next-btn').style.display = 'block';
+                document.getElementById('checkButton').style.display = 'none';
+            }
+        }
+
+        function navigateToNextPanel() {
+            // Save completion status
+            localStorage.setItem('spelling71_completed', 'true');
+            localStorage.setItem('SPELLINGS71_ACTIVITY_KEY', 'true');
+            
+            // Navigate to panel 9
+            window.location.href = 'episode7.html?panel=9';
+        }
+
+        function showFeedback(isCorrect, message) {
+            const hintText = document.getElementById('hintText');
+            hintText.textContent = message;
+            hintText.className = 'hint-text ' + (isCorrect ? 'success' : 'error');
+            
+            if (taskCompleted) {
+                document.getElementById('next-btn').style.display = 'block';
+            }
+            
+            // Highlight correct/incorrect letters
+            const letters = document.querySelectorAll('.revealed-letters span');
+            letters.forEach((span, index) => {
+                if (span.textContent !== '_') {
+                    if (span.textContent === correctSpelling[index]) {
+                        span.classList.add('correct');
+                    } else {
+                        span.classList.add('incorrect');
+                    }
+                }
+            });
+        }
+
+        function disableUsedKeys() {
+            const usedLetters = new Set([...currentAnswer, ...revealedLetters.filter(l => l !== null)]);
+            document.querySelectorAll('.key').forEach(key => {
+                if (usedLetters.has(key.textContent)) {
+                    key.classList.add('disabled');
+                }
+            });
+        }
+
+        function checkAnswer() {
+            if (!document.getElementById('checkButton').classList.contains('active') || attemptMade) {
+                return;
+            }
+
+            attemptMade = true;
+            document.getElementById('checkButton').style.display = 'none';
+
+            // Play button click sound
+            const buttonClickSound = document.getElementById('buttonClickSound');
+            if (buttonClickSound) {
+                buttonClickSound.currentTime = 0;
+                buttonClickSound.play().catch(console.error);
+            }
+
+            let fullAnswer = '';
+            let currentAnswerIndex = 0;
+            
+            for (let i = 0; i < correctSpelling.length; i++) {
+                if (revealedLetters[i] !== null) {
+                    fullAnswer += revealedLetters[i];
+                } else if (currentAnswerIndex < currentAnswer.length) {
+                    fullAnswer += currentAnswer[currentAnswerIndex++];
+                }
+            }
+
+            if (fullAnswer === correctSpelling) {
+                let congratsMessage = "";
+                const attemptsUsed = 3 - attempts;
+                switch(attemptsUsed) {
+                    case 0:
+                        congratsMessage = "🌟 Outstanding! First try success! You're a spelling master!";
+                        break;
+                    case 1:
+                        congratsMessage = "🎉 Excellent work! You got it on your second try!";
+                        break;
+                    case 2:
+                        congratsMessage = "👏 Well done! Third time's the charm!";
+                        break;
+                    case 3:
+                        congratsMessage = "✨ Good job! You figured it out!";
+                        break;
+                }
+                
+                taskCompleted = true;
+
+                // Play victory sound
+                const victorySound = document.getElementById('victorySound');
+                if (victorySound) {
+                    victorySound.currentTime = 0;
+                    victorySound.play().catch(console.error);
+                }
+
+                // Save progress with correct storage keys
+                localStorage.setItem('spelling71_completed', 'true');
+                localStorage.setItem('SPELLINGS71_ACTIVITY_KEY', 'true');
+
+                // Notify parent window of completion with correct message
+                try {
+                    window.parent.postMessage('spelling7_success', '*');
+                } catch (e) {
+                    console.error('Error posting success message:', e);
+                }
+
+                // Show feedback
+                showFeedback(true, congratsMessage);
+            } else {
+                attempts--;
+                if (attempts > 0) {
+                    showFeedback(false, `Incorrect! ${attempts} attempts remaining.`);
+                    // Reveal new letter for this attempt
+                    const revealPos = revealPositions[2 - attempts];
+                    if (revealPos) {
+                        revealedLetters[revealPos.index] = revealPos.letter;
+                    }
+                    resetAnswer();
+                    updateDisplay();
+                    attemptMade = false;
+                    document.getElementById('checkButton').style.display = 'block';
+                } else {
+                    currentAnswer = "";
+                    revealedLetters = correctSpelling.split('');
+                    updateDisplay();
+                    taskCompleted = true;
+                    showFeedback(false, "The correct spelling is 'REASSURANCE'... Keep Learning..!");
+                }
+            }
+        }
+
+        document.getElementById('checkButton').onclick = checkAnswer;
+
+        document.getElementById('hintButton').onclick = () => {
+            // Play click sound
+            const buttonClickSound = document.getElementById('buttonClickSound');
+            if (buttonClickSound) {
+                buttonClickSound.currentTime = 0;
+                buttonClickSound.play().catch(console.error);
+            }
+
+            const hintIndex = Math.min(2, 3 - attempts);
+            document.getElementById('hintText').textContent = hints[hintIndex];
+
+            if (window.LogRocket) {
+                LogRocket.track('Show Spelling Hint', {
+                    hintNumber: hintIndex + 1,
+                    attemptsRemaining: attempts
+                });
+            }
+        };
+
+        // Initialize when the page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("Spelling task initialized");
+            initialize();
+            
+            // Listen for messages from parent
+            window.addEventListener('message', function(event) {
+                console.log("Message received:", event.data);
+                
+                if (event.data.type === 'init_flashcard') {
+                    console.log("Received init command from parent");
+                    initialize();
+                }
+            });
+            
+            // Inform parent that we're ready
+            try {
+                window.parent.postMessage("spelling_ready", "*");
+                console.log("Ready message posted to parent");
+            } catch (e) {
+                console.error("Error posting ready message:", e);
+            }
+
+            // Set up close button click handler
+            document.querySelector('.close-btn').addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                closeActivity();
+            });
+        });
+
+        // Remove the click outside handler that was causing issues
+        // ... existing code ...
+    </script>
+</body>
+</html>

@@ -1869,6 +1869,15 @@
         </div>
         <div class="episode-status available">PLAY</div>
       </div>
+
+      <!-- Episode 7 -->
+      <div class="episode-card" onclick="window.location.href='episode7/episode7.html'">
+        <div class="episode-number">7</div>
+        <div class="episode-content">
+          <div class="episode-title">The Vanished</div>
+        </div>
+        <div class="episode-status available">PLAY</div>
+      </div>
       
       <!-- Coming Soon Announcement -->
       <div class="episode-card announcement" style="background-color: rgba(99, 102, 241, 0.1); cursor: default; justify-content: center;">
@@ -2681,6 +2690,37 @@
 
             console.log('Password verified successfully');
 
+            // Update login time in userProgress collection
+            try {
+                console.log('Attempting to update login time for phone:', formattedPhone);
+                const userQuery = await db.collection('userProgress')
+                    .where('phone', '==', formattedPhone)
+                    .limit(1)
+                    .get();
+                
+                if (!userQuery.empty) {
+                    const userDoc = userQuery.docs[0];
+                    console.log('Found user document:', userDoc.id);
+
+                    // Get current timestamp
+                    const now = new Date();
+                    const loginTime = firebase.firestore.Timestamp.fromDate(now);
+                    
+                    // Update document with login time
+                    await db.collection('userProgress').doc(userDoc.id).update({
+                        lastLoginAt: loginTime,
+                        loginTimes: firebase.firestore.FieldValue.arrayUnion(loginTime)
+                    });
+
+                    console.log('Successfully updated login time for user:', userDoc.id);
+                } else {
+                    console.error('No user document found for phone:', formattedPhone);
+                }
+            } catch (error) {
+                console.error('Error updating login time:', error);
+                console.error('Error details:', error.message);
+            }
+
             // Instead of using signInAnonymously, we'll use custom auth
             // Just set authentication state in our app without Firebase Auth
             // Store auth data
@@ -2985,7 +3025,7 @@
             const episodeCompletionTimes = {};
             
             // Get completion times for each episode
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 8; i++) {  // Updated to include episodes 6, 7, and 8
                 const completionTimeField = `episode${i}CompletedAt`;
                 if (userData[completionTimeField]) {
                     episodeCompletionTimes[i] = userData[completionTimeField].toMillis ? 
@@ -3125,13 +3165,14 @@ function setEpisodeClickHandler(card, episodeNumber) {
         const progressBar = document.querySelector('.progress-bar');
         const progressText = document.querySelector('.progress-container + p');
         
-        const progressPercentage = (completedCount / 6) * 100;
+        const totalEpisodes = 8;  // Updated to include all episodes
+        const progressPercentage = (completedCount / totalEpisodes) * 100;
         progressBar.style.width = `${progressPercentage}%`;
         
-        if (completedCount === 6) {
+        if (completedCount === totalEpisodes) {
             progressText.textContent = 'All episodes completed! 🎉';
         } else {
-            progressText.textContent = `${completedCount} out of 6 episodes completed`;
+            progressText.textContent = `${completedCount} out of ${totalEpisodes} episodes completed`;
         }
     }
 
@@ -3438,6 +3479,8 @@ function setEpisodeClickHandler(card, episodeNumber) {
                 registrationComplete: true,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
+                loginTimes: [firebase.firestore.FieldValue.serverTimestamp()],
                 userId: userId,
                 completedEpisodes: []
             });

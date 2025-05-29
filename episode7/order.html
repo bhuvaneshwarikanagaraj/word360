@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Order the Events</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2C3E50;
+            --secondary-color: #E74C3C;
+            --accent-color: #3498DB;
+            --success-color: #2ECC71;
+            --background-color: #ECF0F1;
+            --card-background: #FFFFFF;
+            --text-color: #2C3E50;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--background-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(52, 152, 219, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(231, 76, 60, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 50% 50%, rgba(46, 204, 113, 0.05) 0%, transparent 30%);
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 20px auto;
+            padding: 30px;
+            background: var(--card-background);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
+        }
+
+        h1 {
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: 600;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 3px;
+        }
+
+        .attempts {
+            text-align: center;
+            margin: 20px 0;
+            color: var(--text-color);
+            font-size: 1.1em;
+            background: rgba(52, 152, 219, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .attempts-left {
+            font-weight: 600;
+            color: var(--accent-color);
+            background: rgba(52, 152, 219, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .draggable-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .draggable-item {
+            background: var(--card-background);
+            padding: 15px 20px;
+            border: 2px solid rgba(44, 62, 80, 0.1);
+            border-radius: 12px;
+            margin: 12px 0;
+            cursor: grab;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            font-weight: 500;
+        }
+
+        .draggable-item::before {
+            content: '≡';
+            margin-right: 15px;
+            color: var(--accent-color);
+            font-size: 1.5em;
+            opacity: 0.7;
+        }
+
+        .draggable-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--shadow-color);
+            border-color: var(--accent-color);
+        }
+
+        .draggable-item.dragging {
+            opacity: 0.9;
+            background: var(--background-color);
+            border: 2px dashed var(--accent-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .check-button, .next-button {
+            display: block;
+            margin: 30px auto;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .check-button {
+            background: linear-gradient(45deg, var(--accent-color), #2980b9);
+        }
+
+        .next-button {
+            background: linear-gradient(45deg, var(--success-color), #27ae60);
+        }
+
+        .check-button:hover, .next-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .check-button:active, .next-button:active {
+            transform: translateY(0);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(231, 76, 60, 0.1);
+            border: none;
+            color: #E74C3C;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            padding: 0;
+            margin: 0;
+            outline: none;
+            font-family: Arial, sans-serif;
+        }
+
+        .close-button:hover {
+            background: #E74C3C;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .close-button:active {
+            transform: scale(0.95);
+        }
+
+        .feedback {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            opacity: 0;
+            transition: all 0.3s ease;
+            transform: translateY(10px);
+        }
+
+        .feedback.success {
+            opacity: 1;
+            transform: translateY(0);
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(46, 204, 113, 0.2);
+        }
+
+        .feedback.error {
+            opacity: 1;
+            transform: translateY(0);
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--secondary-color);
+            border: 1px solid rgba(231, 76, 60, 0.2);
+        }
+
+        .drag-placeholder {
+            background: rgba(52, 152, 219, 0.1);
+            border: 2px dashed var(--accent-color);
+            height: 60px;
+            margin: 8px 0;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        /* Confetti styles */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-color);
+            position: absolute;
+            top: -10px;
+            animation: fall 3s linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.4em;
+            }
+
+            .draggable-item {
+                padding: 12px 15px;
+                margin: 8px 0;
+                font-size: 0.95em;
+            }
+
+            .check-button, .next-button {
+                padding: 12px 30px;
+                font-size: 1em;
+            }
+
+            .attempts {
+                font-size: 0.95em;
+                padding: 8px;
+            }
+
+            .close-button {
+                top: 10px;
+                right: 10px;
+                width: 32px;
+                height: 32px;
+                font-size: 20px;
+            }
+        }
+
+        /* Touch feedback */
+        .touch-feedback {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px var(--shadow-color);
+        }
+
+        /* Loading animation for buttons */
+        .button-loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .button-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="close-button" id="closeButton" onclick="closeActivity()">×</button>
+        <h1>Put the following events in the correct order based on the video footage:</h1>
+        
+        <div class="attempts">
+            Attempts remaining: <span class="attempts-left" id="attemptsLeft">3</span>
+        </div>
+
+        <ul class="draggable-list" id="draggable-list">
+            <li class="draggable-item" draggable="true">David vanishes</li>
+            <li class="draggable-item" draggable="true">David walks</li>
+            <li class="draggable-item" draggable="true">Footage ends</li>
+            <li class="draggable-item" draggable="true">The symbol appears</li>
+            <li class="draggable-item" draggable="true">David looks up</li>
+        </ul>
+
+        <button class="check-button" id="checkButton" onclick="checkOrder()">Check Order</button>
+        <div class="feedback" id="feedback"></div>
+        <button class="next-button" id="nextButton" onclick="goToNextPage()" style="display: none;">Continue to Next Page →</button>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="buttonClickSound" src="button_click.mp3"></audio>
+    <audio id="victorySound" src="victory_sound.mp3"></audio>
+
+    <script>
+        const draggableList = document.getElementById('draggable-list');
+        const feedback = document.getElementById('feedback');
+        const nextButton = document.getElementById('nextButton');
+        const checkButton = document.getElementById('checkButton');
+        const attemptsLeftSpan = document.getElementById('attemptsLeft');
+        let dragStartIndex;
+        let attemptsLeft = 3;
+        let touchStartY = 0;
+        let currentDragItem = null;
+        let placeholder = null;
+        let isDragging = false;
+
+        // Correct order of events
+        const correctOrder = [
+            'David looks up',
+            'The symbol appears',
+            'David walks',
+            'Footage ends',
+            'David vanishes'
+        ];
+
+        // Touch event handlers
+        function addEventListeners() {
+            const draggables = document.querySelectorAll('.draggable-item');
+            draggables.forEach(draggable => {
+                // Mouse events
+                draggable.addEventListener('dragstart', dragStart);
+                draggable.addEventListener('dragend', dragEnd);
+                draggable.addEventListener('dragover', dragOver);
+                draggable.addEventListener('drop', dragDrop);
+
+                // Touch events
+                draggable.addEventListener('touchstart', touchStart, { passive: false });
+                draggable.addEventListener('touchmove', touchMove, { passive: false });
+                draggable.addEventListener('touchend', touchEnd);
+            });
+        }
+
+        function touchStart(e) {
+            e.preventDefault();
+            if (isDragging) return;
+
+            const touch = e.touches[0];
+            touchStartY = touch.clientY;
+            currentDragItem = this;
+            
+            // Create placeholder
+            placeholder = document.createElement('div');
+            placeholder.className = 'drag-placeholder';
+            currentDragItem.parentNode.insertBefore(placeholder, currentDragItem);
+            
+            // Style dragged item
+            currentDragItem.classList.add('dragging', 'touch-feedback');
+            currentDragItem.style.position = 'fixed';
+            currentDragItem.style.zIndex = '1000';
+            currentDragItem.style.left = '50%';
+            currentDragItem.style.transform = 'translateX(-50%)';
+            currentDragItem.style.width = `${currentDragItem.offsetWidth}px`;
+            
+            updateDragPosition(touch.clientY);
+            isDragging = true;
+        }
+
+        function touchMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            updateDragPosition(touch.clientY);
+            
+            // Find and update placeholder position
+            const items = [...draggableList.children].filter(child => !child.classList.contains('dragging') && child !== placeholder);
+            const closestItem = findClosestItem(touch.clientY, items);
+            
+            if (closestItem) {
+                const rect = closestItem.getBoundingClientRect();
+                const isAfter = touch.clientY > rect.top + rect.height / 2;
+                
+                if (isAfter) {
+                    closestItem.parentNode.insertBefore(placeholder, closestItem.nextSibling);
+                } else {
+                    closestItem.parentNode.insertBefore(placeholder, closestItem);
+                }
+            }
+        }
+
+        function touchEnd() {
+            if (!isDragging) return;
+            
+            // Reset dragged item styles
+            currentDragItem.style.position = '';
+            currentDragItem.style.top = '';
+            currentDragItem.style.left = '';
+            currentDragItem.style.transform = '';
+            currentDragItem.style.width = '';
+            currentDragItem.classList.remove('dragging', 'touch-feedback');
+            
+            // Insert dragged item at placeholder position
+            placeholder.parentNode.insertBefore(currentDragItem, placeholder);
+            placeholder.remove();
+            
+            isDragging = false;
+            currentDragItem = null;
+            placeholder = null;
+        }
+
+        function updateDragPosition(clientY) {
+            if (!currentDragItem) return;
+            const scrollTop = window.pageYOffset;
+            const top = clientY + scrollTop - touchStartY;
+            currentDragItem.style.top = `${top}px`;
+        }
+
+        function findClosestItem(clientY, items) {
+            let closestItem = null;
+            let closestDistance = Number.POSITIVE_INFINITY;
+            
+            items.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const distance = Math.abs(clientY - (rect.top + rect.height / 2));
+                
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestItem = item;
+                }
+            });
+            
+            return closestItem;
+        }
+
+        function dragStart() {
+            this.classList.add('dragging');
+            dragStartIndex = [...draggableList.children].indexOf(this);
+        }
+
+        function dragEnd() {
+            this.classList.remove('dragging');
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function dragDrop(e) {
+            e.preventDefault();
+            const dragEndIndex = [...draggableList.children].indexOf(this);
+            swapItems(dragStartIndex, dragEndIndex);
+        }
+
+        function swapItems(fromIndex, toIndex) {
+            const items = [...draggableList.children];
+            const itemOne = items[fromIndex];
+            const itemTwo = items[toIndex];
+
+            if (itemOne && itemTwo) {
+                if (fromIndex < toIndex) {
+                    itemTwo.parentNode.insertBefore(itemTwo, itemOne);
+                } else {
+                    itemOne.parentNode.insertBefore(itemOne, itemTwo);
+                }
+            }
+        }
+
+        function checkOrder() {
+            const currentOrder = [...draggableList.children].map(item => item.textContent);
+            const isCorrect = currentOrder.every((item, index) => item === correctOrder[index]);
+
+            if (isCorrect) {
+                feedback.textContent = "Perfect! That's the correct order! 🎉";
+                feedback.className = 'feedback success';
+                nextButton.style.display = 'block';
+                checkButton.style.display = 'none';
+                createConfetti();
+                // Save completion status
+                localStorage.setItem('order_activity_completed', 'true');
+            } else {
+                attemptsLeft--;
+                attemptsLeftSpan.textContent = attemptsLeft;
+                
+                if (attemptsLeft === 0) {
+                    feedback.textContent = "No more attempts left. Moving on to the next section.";
+                    feedback.className = 'feedback error';
+                    checkButton.style.display = 'none';
+                    nextButton.style.display = 'block';
+                    disableDragging();
+                } else {
+                    feedback.textContent = `Not quite right. Try again! You have ${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} left. 🤔`;
+                    feedback.className = 'feedback error';
+                }
+            }
+        }
+
+        function disableDragging() {
+            const items = document.querySelectorAll('.draggable-item');
+            items.forEach(item => {
+                item.draggable = false;
+                item.classList.add('disabled');
+            });
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                document.body.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        function closeActivity() {
+            console.log('Close button clicked');
+            window.location.replace('episode7.html?panel=9');
+        }
+
+        function goToNextPage() {
+            window.location.href = 'episode7.html?panel=10';
+        }
+
+        // Initialize
+        addEventListeners();
+        
+        // Prevent scrolling when touching draggable items
+        document.addEventListener('touchmove', function(e) {
+            if (isDragging) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Fisher-Yates shuffle algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Shuffle the list items initially
+        const items = [...draggableList.children];
+        shuffleArray(items).forEach(item => draggableList.appendChild(item));
+
+        // Initialize close button
+        document.getElementById('closeButton').onclick = function() {
+            console.log('Close button clicked via onclick');
+            closeActivity();
+        };
+
+        // Add click handler for next button
+        document.getElementById('nextButton').onclick = goToNextPage;
+    </script>
+</body>
+</html>
