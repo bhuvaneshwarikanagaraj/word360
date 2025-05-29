@@ -1501,31 +1501,31 @@
                 
                 // For forward navigation only, check activity completion
                 if (index > currentPanelIndex) {
-                    const currentPanel = panelsData[currentPanelIndex];
-                    if (currentPanel) {
-                        // Check for spelling activity on panel 2
-                        if (currentPanelIndex === 1) {
-                            const spellingCompleted = localStorage.getItem('spelling7_completed') === 'true';
-                            if (!spellingCompleted) {
-                                console.log('Spelling activity not completed');
-                                return;
-                            }
+                    // Check for spelling activity on panel 1 before moving to panel 2
+                    if (currentPanelIndex === 1) {
+                        const spellingCompleted = localStorage.getItem('spelling7_completed') === 'true';
+                        if (!spellingCompleted) {
+                            console.log('Spelling activity not completed');
+                            showPrompt('Complete the spelling activity first! 📝');
+                            return;
                         }
-                        // Check for spelling activity on panel 8
-                        if (currentPanelIndex === 8) {
-                            const spelling71Completed = localStorage.getItem('spelling71_completed') === 'true';
-                            if (!spelling71Completed) {
-                                console.log('Spelling71 activity not completed');
-                                return;
-                            }
+                    }
+                    // Check for spelling71 activity on panel 7 before moving to panel 8
+                    if (currentPanelIndex === 7) {
+                        const spelling71Completed = localStorage.getItem('spelling71_completed') === 'true';
+                        if (!spelling71Completed) {
+                            console.log('Spelling71 activity not completed');
+                            showPrompt('Complete the spelling activity first! 📝');
+                            return;
                         }
-                        // Check for order activity on panel 9 only if panel index is less than 10
-                        if (currentPanelIndex === 9 && index < 10) {
-                            const orderCompleted = localStorage.getItem('order_completed') === 'true';
-                            if (!orderCompleted) {
-                                console.log('Order activity not completed');
-                                return;
-                            }
+                    }
+                    // Check for order activity on panel 8 before moving to panel 9
+                    if (currentPanelIndex === 8 && index < 10) {
+                        const orderCompleted = localStorage.getItem('order_completed') === 'true';
+                        if (!orderCompleted) {
+                            console.log('Order activity not completed');
+                            showPrompt('Complete the order activity first! 🔄');
+                            return;
                         }
                     }
                 }
@@ -1573,33 +1573,41 @@
                     const prevBtn = activePanel.querySelector('.prev-btn');
                     const nextBtn = activePanel.querySelector('.next-btn');
                     
+                    // Previous button is always enabled except for first panel
                     if (prevBtn) {
                         prevBtn.disabled = index === 0;
                         prevBtn.style.opacity = index === 0 ? '0.5' : '1';
                         prevBtn.style.cursor = index === 0 ? 'not-allowed' : 'pointer';
                     }
                     
+                    // Next button state
                     if (nextBtn) {
-                        const currentPanel = panelsData[index];
-                        
-                        // Enable navigation by default
+                        // Enable by default
                         nextBtn.disabled = false;
                         nextBtn.style.opacity = '1';
                         nextBtn.style.cursor = 'pointer';
                         
-                        // Check for activity completion restrictions only for forward navigation and panels before 10
-                        if (currentPanel.id === 1 && !localStorage.getItem('spelling7_completed')) {
+                        // Only check activity completion for specific panels
+                        if (index === 1 && !localStorage.getItem('spelling7_completed')) {
                             nextBtn.disabled = true;
                             nextBtn.style.opacity = '0.3';
                             nextBtn.style.cursor = 'not-allowed';
-                        } else if (currentPanel.id === 8 && !localStorage.getItem('spelling71_completed')) {
+                            nextBtn.title = 'Complete the spelling activity first!';
+                        } else if (index === 7 && !localStorage.getItem('spelling71_completed')) {
                             nextBtn.disabled = true;
                             nextBtn.style.opacity = '0.3';
                             nextBtn.style.cursor = 'not-allowed';
-                        } else if (currentPanel.id === 9 && !localStorage.getItem('order_completed') && index < 10) {
+                            nextBtn.title = 'Complete the spelling activity first!';
+                        } else if (index === 8 && !localStorage.getItem('order_completed')) {
                             nextBtn.disabled = true;
                             nextBtn.style.opacity = '0.3';
                             nextBtn.style.cursor = 'not-allowed';
+                            nextBtn.title = 'Complete the order activity first!';
+                        } else {
+                            nextBtn.disabled = index === panelsData.length - 1;
+                            nextBtn.style.opacity = index === panelsData.length - 1 ? '0.5' : '1';
+                            nextBtn.style.cursor = index === panelsData.length - 1 ? 'not-allowed' : 'pointer';
+                            nextBtn.title = '';
                         }
                     }
                 }
