@@ -47,7 +47,7 @@
         }
 
         .container {
-            width: 100%;
+            width: 95%;
             max-width: 400px;
             min-height: 450px;
             text-align: center;
@@ -291,54 +291,161 @@
         }
 
         @media (max-width: 480px) {
-            .close-button {
-                width: 35px;
-                height: 35px;
-                font-size: 1.3em;
-                top: 8px;
-                right: 8px;
-            }
-        }
-
-        .close-button:active {
-            transform: scale(0.95);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        .close-button.disabled {
-            opacity: 1;
-            cursor: pointer;
-            pointer-events: auto;
-        }
-
-        @media (max-height: 600px), (max-width: 400px) {
             .container {
-                padding: 10px;
-                max-height: 85vh;
+                width: 92%;
+                padding: 20px 15px 40px;
+                min-height: 400px;
             }
+
+            h2 {
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+
+            .question {
+                font-size: 0.95em;
+                margin-bottom: 15px;
+            }
+
+            p {
+                font-size: 0.9em;
+                margin-bottom: 10px;
+            }
+
+            .flashcard-grid {
+                gap: 8px;
+                margin: 10px 0;
+            }
+
+            .flashcard {
+                padding: 10px;
+                min-height: 50px;
+                font-size: 0.85em;
+            }
+
+            .result-message {
+                font-size: 0.85em;
+                padding: 12px;
+                margin-top: 10px;
+            }
+
+            .button-container {
+                margin: 15px 0;
+            }
+
+            .check-button {
+                padding: 8px 20px;
+                font-size: 0.9em;
+            }
+
+            .next-button {
+                padding: 10px 25px;
+                font-size: 0.9em;
+                bottom: -25px;
+            }
+
+            .completion-tag {
+                font-size: 0.8em;
+                padding: 6px 15px;
+                top: -30px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .container {
+                width: 95%;
+                padding: 15px 10px 35px;
+                min-height: 380px;
+            }
+
             h2 {
                 font-size: 0.9em;
                 margin-bottom: 8px;
             }
+
+            .question {
+                font-size: 0.85em;
+                margin-bottom: 12px;
+            }
+
+            p {
+                font-size: 0.8em;
+                margin-bottom: 8px;
+            }
+
+            .flashcard-grid {
+                gap: 6px;
+                margin: 8px 0;
+            }
+
             .flashcard {
                 padding: 8px;
                 min-height: 45px;
                 font-size: 0.8em;
             }
-            .check-button {
-                padding: 8px 15px;
-                font-size: 0.9em;
-                margin-top: 8px;
-            }
-            .congratulations {
-                padding: 10px 15px;
-                font-size: 1em;
-                margin: 10px auto;
-            }
+
             .result-message {
+                font-size: 0.8em;
                 padding: 10px;
-                font-size: 0.9em;
                 margin-top: 8px;
+            }
+
+            .button-container {
+                margin: 12px 0;
+            }
+
+            .check-button {
+                padding: 6px 15px;
+                font-size: 0.85em;
+            }
+
+            .next-button {
+                padding: 8px 20px;
+                font-size: 0.85em;
+                bottom: -22px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .container {
+                min-height: 350px;
+                padding: 15px 10px 35px;
+            }
+
+            .flashcard-grid {
+                margin: 8px 0;
+            }
+
+            .flashcard {
+                min-height: 40px;
+            }
+
+            .button-container {
+                margin: 10px 0;
+            }
+
+            .result-message {
+                margin-top: 8px;
+            }
+        }
+
+        @media (max-height: 500px) {
+            .container {
+                min-height: 320px;
+                padding: 12px 8px 30px;
+            }
+
+            .flashcard {
+                min-height: 35px;
+                padding: 6px;
+            }
+
+            .button-container {
+                margin: 8px 0;
+            }
+
+            h2, .question {
+                margin-bottom: 6px;
             }
         }
     </style>
@@ -464,7 +571,7 @@
                     // Show the appropriate explanation
                     const resultMessage = document.querySelector('.result-message');
                     if (selectedAnswerValue === correctAnswer) {
-                        resultMessage.textContent = "That's right! 'Expertise' means having special skills and knowledge in a particular field. Mr. Ginger needs Ferret's detective expertise to solve the case.";
+                        resultMessage.textContent = "That's right! 'Expertise' means having special skills and knowledge. Mr. Ginger needs Ferret's detective expertise to solve the case.";
                         resultMessage.classList.add('correct');
                     } else {
                         resultMessage.textContent = "That's not correct. 'Expertise' refers to special skills and knowledge in a particular field. The correct answer is highlighted in green.";

@@ -91,7 +91,7 @@
             letter-spacing: 3px;
             text-align: center;
             margin: 15px 0;
-                font-size: 1.6em;
+            font-size: 1.6em;
             min-height: 35px;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
@@ -295,28 +295,127 @@
 
         @media (max-width: 480px) {
             .spelling-popup {
-                width: 92%;
-                padding: 25px 15px;
-                min-height: 500px;
+                width: 95%;
+                padding: 20px 10px;
+                min-height: 450px;
             }
 
-            .keyboard {
-                transform: scale(1);
-                margin: 15px 0;
-            }
-
-            .key {
-                width: 32px;
-                height: 32px;
-                font-size: 1em;
+            .spelling-popup h2 {
+                font-size: 0.85em;
+                margin-bottom: 10px;
+                padding: 0 5px;
             }
 
             .revealed-letters {
-                font-size: 1.4em;
+                font-size: 1.2em;
+                letter-spacing: 2px;
+                margin: 10px 0;
+            }
+
+            .keyboard {
+                transform: scale(0.85);
+                margin: 10px 0;
+            }
+
+            .key {
+                width: 28px;
+                height: 28px;
+                font-size: 0.9em;
+                border-width: 1px;
+            }
+
+            .button-container {
+                transform: scale(0.9);
+                margin: 15px 0;
+            }
+
+            .check-button, .hint-button {
+                padding: 5px 12px;
+                font-size: 0.8em;
+            }
+
+            .hint-text {
+                font-size: 0.75em;
+                padding: 0 8px;
+                margin-top: 8px;
             }
 
             .close-button {
-                bottom: 15px;
+                bottom: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.2em;
+            }
+
+            .completion-tag {
+                top: -35px;
+                padding: 6px 15px;
+                font-size: 0.8em;
+            }
+
+            .next-button {
+                bottom: -50px;
+                padding: 10px 25px;
+                font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .spelling-popup {
+                width: 98%;
+                padding: 15px 8px;
+                min-height: 400px;
+            }
+
+            .spelling-popup h2 {
+                font-size: 0.75em;
+                margin-bottom: 8px;
+            }
+
+            .revealed-letters {
+                font-size: 1em;
+                letter-spacing: 1.5px;
+            }
+
+            .keyboard {
+                transform: scale(0.75);
+                margin: 5px 0;
+            }
+
+            .key {
+                width: 25px;
+                height: 25px;
+                font-size: 0.85em;
+            }
+
+            .button-container {
+                transform: scale(0.8);
+                margin: 10px 0;
+            }
+
+            .hint-text {
+                font-size: 0.7em;
+                padding: 0 5px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .spelling-popup {
+                min-height: 380px;
+                padding: 15px 10px;
+            }
+
+            .keyboard {
+                transform: scale(0.8);
+                margin: 8px 0;
+            }
+
+            .revealed-letters {
+                margin: 8px 0;
+            }
+
+            .button-container {
+                margin: 10px 0;
             }
         }
     </style>
