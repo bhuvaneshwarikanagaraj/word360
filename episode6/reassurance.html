@@ -727,12 +727,6 @@
             
             try {
                 console.log("Navigating to next panel");
-                // Play victory sound
-                const victorySound = document.getElementById('victorySound');
-                if (victorySound) {
-                    victorySound.currentTime = 0;
-                    victorySound.play().catch(console.error);
-                }
                 
                 // Send message to parent window for navigation
                 window.parent.postMessage({

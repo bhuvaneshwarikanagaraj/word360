@@ -473,37 +473,49 @@
                 const userTableBody = document.getElementById('userTableBody');
                 userTableBody.innerHTML = '';
 
-                // Get users who were either created or completed episodes on the selected date
+                // Get users who were either created, logged in, or completed episodes on the selected date
                 const relevantUsers = users.filter(user => {
                     const userCreatedAt = user.createdAt;
+                    const userLastLogin = user.lastLoginAt;
                     const hasCompletionsOnDate = user.episodeDetails.some(episode => 
                         episode.completedAt && 
                         episode.completedAt >= startOfDay && 
                         episode.completedAt <= endOfDay
                     );
+                    const hasLoginOnDate = userLastLogin && userLastLogin >= startOfDay && userLastLogin <= endOfDay;
                     
-                    return (userCreatedAt >= startOfDay && userCreatedAt <= endOfDay) || hasCompletionsOnDate;
+                    return (userCreatedAt >= startOfDay && userCreatedAt <= endOfDay) || 
+                           hasCompletionsOnDate || 
+                           hasLoginOnDate;
                 });
 
                 // Sort users by most recent activity first
                 const sortedUsers = relevantUsers.sort((a, b) => {
-                    // Get the most recent completion time for the selected date
-                    const getLatestCompletion = (user) => {
+                    // Get the most recent activity time (login, creation, or completion)
+                    const getLatestActivity = (user) => {
+                        const times = [];
+                        
+                        // Add creation time if it's today
+                        if (user.createdAt >= startOfDay && user.createdAt <= endOfDay) {
+                            times.push(user.createdAt.getTime());
+                        }
+                        
+                        // Add login time if it's today
+                        if (user.lastLoginAt && user.lastLoginAt >= startOfDay && user.lastLoginAt <= endOfDay) {
+                            times.push(user.lastLoginAt.getTime());
+                        }
+                        
+                        // Add completion times from today
                         const completions = user.episodeDetails
                             .filter(ep => ep.completedAt && ep.completedAt >= startOfDay && ep.completedAt <= endOfDay)
-                            .map(ep => ep.completedAt);
-                        return completions.length > 0 ? Math.max(...completions.map(d => d.getTime())) : 0;
+                            .map(ep => ep.completedAt.getTime());
+                        times.push(...completions);
+                        
+                        return times.length > 0 ? Math.max(...times) : 0;
                     };
 
-                    const aCreatedToday = a.createdAt >= startOfDay && a.createdAt <= endOfDay;
-                    const bCreatedToday = b.createdAt >= startOfDay && b.createdAt <= endOfDay;
-                    const aLatestCompletion = getLatestCompletion(a);
-                    const bLatestCompletion = getLatestCompletion(b);
-
-                    // Sort by the most recent activity (either creation or completion)
-                    const aLatest = aCreatedToday ? Math.max(a.createdAt.getTime(), aLatestCompletion) : aLatestCompletion;
-                    const bLatest = bCreatedToday ? Math.max(b.createdAt.getTime(), bLatestCompletion) : bLatestCompletion;
-
+                    const aLatest = getLatestActivity(a);
+                    const bLatest = getLatestActivity(b);
                     return bLatest - aLatest;
                 });
 
@@ -511,6 +523,7 @@
                 sortedUsers.forEach(user => {
                     const row = document.createElement('tr');
                     const createdToday = user.createdAt >= startOfDay && user.createdAt <= endOfDay;
+                    const loggedInToday = user.lastLoginAt && user.lastLoginAt >= startOfDay && user.lastLoginAt <= endOfDay;
                     
                     // Get completions for today
                     const todayCompletions = user.episodeDetails.filter(ep => 
@@ -522,27 +535,29 @@
                     if (createdToday) {
                         activityType.push('<span style="color: #4361ee;">New Registration</span>');
                     }
-                    if (user.lastLoginAt && user.lastLoginAt >= startOfDay && user.lastLoginAt <= endOfDay) {
+                    if (loggedInToday) {
                         activityType.push('<span style="color: #38b000;">Logged In</span>');
                     }
                     
                     // Get completion status
-                    const completionStatus = todayCompletions.map(ep => 
-                        `Episode ${ep.number} - ${new Date(ep.completedAt).toLocaleTimeString()}`
-                    ).join('<br>') || 'No completions';
+                    const completionStatus = todayCompletions.length > 0 ?
+                        todayCompletions.map(ep => 
+                            `Episode ${ep.number} - ${new Date(ep.completedAt).toLocaleTimeString()}`
+                        ).join('<br>') :
+                        'No completions today';
 
                     const registrationTime = createdToday ? 
                         user.createdAt.toLocaleTimeString() : 
                         'Prior Registration';
 
-                    const loginTime = user.lastLoginAt && user.lastLoginAt >= startOfDay && user.lastLoginAt <= endOfDay ?
-                        user.lastLoginAt.toLocaleTimeString() :
+                    const loginTime = loggedInToday ?
+                        `<span style="color: #38b000;">${user.lastLoginAt.toLocaleTimeString()}</span>` :
                         '-';
                     
                     row.innerHTML = `
-                        <td>${user.name}</td>
-                        <td>Episode ${user.lastEpisodeCompleted}</td>
-                        <td>${activityType.join('<br>')}</td>
+                        <td>${user.name || 'Anonymous'}</td>
+                        <td>Episode ${user.lastEpisodeCompleted || 0}</td>
+                        <td>${activityType.join('<br>') || 'No activity'}</td>
                         <td>${registrationTime}<br><small>Login: ${loginTime}</small></td>
                         <td>${completionStatus}</td>
                     `;
@@ -570,9 +585,10 @@
         // Add this in your login function (likely in auth.js or similar)
         async function trackUserLogin(userId) {
             try {
+                const currentTime = new Date();
                 await db.collection('userProgress').doc(userId).update({
                     lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    loginTimes: firebase.firestore.FieldValue.arrayUnion(firebase.firestore.FieldValue.serverTimestamp())
+                    loginTimes: firebase.firestore.FieldValue.arrayUnion(currentTime.toISOString())
                 });
             } catch (error) {
                 console.error("Error tracking login:", error);
