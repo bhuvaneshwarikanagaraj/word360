@@ -6,6 +6,16 @@
     <title>Spelling Task</title>
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- LogRocket initialization -->
+    <script src="https://cdn.lr-ingest.com/LogRocket.min.js"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('hit1rk/word360');
+        
+        // Track spelling task page view
+        LogRocket.track('Spelling Task View');
+    </script>
+
     <style>
         body {
             margin: 0;
@@ -759,5 +769,7 @@
         // Add event listener for next button
         document.getElementById('next-btn').onclick = navigateToNextPanel;
     </script>
+    <!-- Disable search functionality -->
+    <script src="../disable-search.js"></script>
 </body>
 </html>
