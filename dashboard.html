@@ -374,8 +374,7 @@
                             phone: data.phone || 'N/A',
                             lastEpisodeCompleted: data.lastEpisodeCompleted || 0,
                             registrationComplete: data.registrationComplete || false,
-                            episodeDetails: [],
-                            loginTimes: data.loginTimes || []
+                            episodeDetails: []
                         };
 
                         // Process episode details
@@ -585,10 +584,8 @@
         // Add this in your login function (likely in auth.js or similar)
         async function trackUserLogin(userId) {
             try {
-                const currentTime = new Date();
                 await db.collection('userProgress').doc(userId).update({
-                    lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    loginTimes: firebase.firestore.FieldValue.arrayUnion(currentTime.toISOString())
+                    lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
             } catch (error) {
                 console.error("Error tracking login:", error);

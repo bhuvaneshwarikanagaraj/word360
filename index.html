@@ -1768,15 +1768,6 @@
         <button class="ripple" onclick="nextStep(1)">Next</button>
       </div>
 
-      <!-- Step 2: Age -->
-      <div id="signup-step-2" class="auth-form">
-        <div class="form-group">
-          <label for="signup-age">How old are you?</label>
-          <input type="number" id="signup-age" placeholder="Enter your age">
-        </div>
-        <button class="ripple" onclick="nextStep(2)">Next</button>
-        <button class="ripple back-btn" onclick="prevStep(2)">Back</button>
-      </div>
 
       <!-- Step 3: Password -->
       <div id="signup-step-3" class="auth-form">
@@ -1853,7 +1844,7 @@
       </div>
 
       <!-- Episode 5 -->
-      <div class="episode-card" onclick="window.location.href='episode5/episode5.html'">
+      <div class="episode-card" onclick="window.location.href='episode4/episode5.html'">
         <div class="episode-number">5</div>
         <div class="episode-content">
           <div class="episode-title">Whispers of Lightning</div>
@@ -2704,11 +2695,12 @@
 
                     // Get current timestamp
                     const now = new Date();
-                    const loginTime = firebase.firestore.Timestamp.fromDate(now);
+                    const loginTime = now.toISOString(); // Store as ISO string
                     
                     // Update document with login time
                     await db.collection('userProgress').doc(userDoc.id).update({
-                        lastLoginAt: loginTime,
+                        lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                         loginTimes: firebase.firestore.FieldValue.arrayUnion(loginTime)
                     });
 
@@ -3480,7 +3472,7 @@ function setEpisodeClickHandler(card, episodeNumber) {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                 lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
-                loginTimes: [firebase.firestore.FieldValue.serverTimestamp()],
+                loginTimes: [new Date().toISOString()], // Store as ISO string instead of serverTimestamp
                 userId: userId,
                 completedEpisodes: []
             });
