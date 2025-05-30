@@ -702,6 +702,12 @@
                 }
             });
             
+            // Set up next button click handler once
+            const nextButton = document.getElementById('nextButton');
+            if (nextButton) {
+                nextButton.onclick = goToNextPanel;
+            }
+            
             // Inform parent that we're ready
             try {
                 window.parent.postMessage("flashcard_ready", "*");
@@ -728,17 +734,23 @@
                     victorySound.play().catch(console.error);
                 }
                 
-                // Navigate to panel 11 since task is completed after any answer
-                window.location.href = 'episode6.html?panel=11';
+                // Send message to parent window for navigation
+                window.parent.postMessage({
+                    type: 'flashcard_navigation',
+                    action: 'next_panel',
+                    target: 11
+                }, '*');
+                
+                // Fallback direct navigation if parent message fails
+                setTimeout(() => {
+                    window.location.href = 'episode6.html?panel=11';
+                }, 300);
             } catch (e) {
                 console.error("Error in next panel navigation:", e);
                 // Fallback navigation
                 window.location.href = 'episode6.html?panel=11';
             }
         }
-
-        // Update next button click handler
-        document.getElementById('nextButton').onclick = goToNextPanel;
     </script>
     <script src="../disable-search.js"></script>
 </body>
