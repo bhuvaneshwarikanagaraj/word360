@@ -1378,7 +1378,23 @@
             // Initialize audio
             createAudioElements();
             handleBackgroundAudio([]);
-            showPanel(0);
+
+            // Clear any existing activity flags
+            const ACTIVITY_KEYS = [
+                'returnToCurrentPanel',
+                'targetPanel',
+                'DODGE_ACTIVITY_KEY',
+                'MAINTENANCE_ACTIVITY_KEY'
+            ];
+            
+            // Clear all activity flags unless coming directly from an activity
+            const referrer = document.referrer;
+            if (!referrer.includes('dodge.html') && 
+                !referrer.includes('maintenance.html') && 
+                !referrer.includes('32.html') && 
+                !referrer.includes('camera.html')) {
+                ACTIVITY_KEYS.forEach(key => localStorage.removeItem(key));
+            }
 
             // Check for return flags and target panel
             window.addEventListener('DOMContentLoaded', () => {
@@ -1392,34 +1408,41 @@
                     return;
                 }
 
-                // Then check localStorage flags
-                if (localStorage.getItem('targetPanel')) {
-                    const panel = parseInt(localStorage.getItem('targetPanel')) - 1;
-                    localStorage.removeItem('targetPanel');
-                    if (panel >= 0 && panel < panelsData.length) {
-                        showPanel(panel);
+                // Then check localStorage flags only if coming directly from an activity
+                if (referrer.includes('dodge.html') || 
+                    referrer.includes('maintenance.html') || 
+                    referrer.includes('32.html') || 
+                    referrer.includes('camera.html')) {
+                    
+                    if (localStorage.getItem('targetPanel')) {
+                        const panel = parseInt(localStorage.getItem('targetPanel')) - 1;
+                        localStorage.removeItem('targetPanel');
+                        if (panel >= 0 && panel < panelsData.length) {
+                            showPanel(panel);
+                            return;
+                        }
+                    }
+
+                    if (localStorage.getItem('returnToCurrentPanel') === 'true') {
+                        localStorage.removeItem('returnToCurrentPanel');
+                        showPanel(9);
+                        return;
+                    }
+
+                    if (localStorage.getItem('DODGE_ACTIVITY_KEY') === 'true') {
+                        localStorage.removeItem('DODGE_ACTIVITY_KEY');
+                        showPanel(4);
+                        return;
+                    }
+
+                    if (localStorage.getItem('MAINTENANCE_ACTIVITY_KEY') === 'true') {
+                        localStorage.removeItem('MAINTENANCE_ACTIVITY_KEY');
+                        showPanel(11);
                         return;
                     }
                 }
 
-                // Check return flags
-                if (localStorage.getItem('returnToCurrentPanel') === 'true') {
-                    localStorage.removeItem('returnToCurrentPanel');
-                    showPanel(9); // Return to panel 10 (index 9)
-                    return;
-                }
-
-                // Check if returning from activities
-                if (localStorage.getItem(DODGE_ACTIVITY_KEY) === 'true') {
-                    showPanel(4); // Go to panel 5 (after dodge activity)
-                    return;
-                }
-
-                if (localStorage.getItem(MAINTENANCE_ACTIVITY_KEY) === 'true') {
-                    showPanel(11); // Go to panel 12 (after maintenance activity)
-                    return;
-                }
-
+                // Default to first panel
                 showPanel(0);
             });
 
