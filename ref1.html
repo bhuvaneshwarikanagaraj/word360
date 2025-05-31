@@ -1853,7 +1853,7 @@
       </div>
 
       <!-- Episode 5 -->
-      <div class="episode-card" onclick="window.location.href='episode5/episode5.html'">
+      <div class="episode-card" onclick="window.location.href='episode4/episode5.html'">
         <div class="episode-number">5</div>
         <div class="episode-content">
           <div class="episode-title">Whispers of Lightning</div>
@@ -1865,16 +1865,7 @@
       <div class="episode-card" onclick="window.location.href='episode6/episode6.html'">
         <div class="episode-number">6</div>
         <div class="episode-content">
-          <div class="episode-title">The clue</div>
-        </div>
-        <div class="episode-status available">PLAY</div>
-      </div>
-
-      <!-- Episode 7 -->
-      <div class="episode-card" onclick="window.location.href='episode7/episode7.html'">
-        <div class="episode-number">7</div>
-        <div class="episode-content">
-          <div class="episode-title">The Vanished</div>
+          <div class="episode-title">The Final Challenge</div>
         </div>
         <div class="episode-status available">PLAY</div>
       </div>
@@ -2690,6 +2681,8 @@
 
             console.log('Password verified successfully');
 
+            // Instead of using signInAnonymously, we'll use custom auth
+            // Just set authentication state in our app without Firebase Auth
             // Store auth data
             localStorage.setItem('auth_name', userData.name);
             localStorage.setItem('auth_phone', formattedPhone);
@@ -2712,9 +2705,9 @@
 
             // Manual redirection instead of relying on auth state observer
             setTimeout(() => {
-                document.getElementById('auth-page').classList.remove('visible');
-                document.getElementById('episodes-page').classList.add('visible');
-                checkEpisodeCompletion();
+        document.getElementById('auth-page').classList.remove('visible');
+        document.getElementById('episodes-page').classList.add('visible');
+            checkEpisodeCompletion();
             }, 1500);
 
         } catch (error) {
@@ -2726,7 +2719,7 @@
                 loginButton.disabled = false;
                 loginButton.textContent = "Let's Read!";
             }
-        }
+      }
     }
     
     // Initialize the visibility of pages
@@ -2992,7 +2985,7 @@
             const episodeCompletionTimes = {};
             
             // Get completion times for each episode
-            for (let i = 1; i <= 8; i++) {  // Updated to include episodes 6, 7, and 8
+            for (let i = 1; i <= 5; i++) {
                 const completionTimeField = `episode${i}CompletedAt`;
                 if (userData[completionTimeField]) {
                     episodeCompletionTimes[i] = userData[completionTimeField].toMillis ? 
@@ -3132,14 +3125,13 @@ function setEpisodeClickHandler(card, episodeNumber) {
         const progressBar = document.querySelector('.progress-bar');
         const progressText = document.querySelector('.progress-container + p');
         
-        const totalEpisodes = 8;  // Updated to include all episodes
-        const progressPercentage = (completedCount / totalEpisodes) * 100;
+        const progressPercentage = (completedCount / 6) * 100;
         progressBar.style.width = `${progressPercentage}%`;
         
-        if (completedCount === totalEpisodes) {
+        if (completedCount === 6) {
             progressText.textContent = 'All episodes completed! 🎉';
         } else {
-            progressText.textContent = `${completedCount} out of ${totalEpisodes} episodes completed`;
+            progressText.textContent = `${completedCount} out of 6 episodes completed`;
         }
     }
 
