@@ -2002,16 +2002,16 @@
                 console.log('Clearing reCAPTCHA container...');
                 container.innerHTML = '';
 
-                // Create new reCAPTCHA verifier
+                // Create new reCAPTCHA verifier with automatic verification
                 console.log('Creating new reCAPTCHA verifier...');
                 recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                    'size': 'normal',
+                    'size': 'invisible',
                     'callback': async (response) => {
-                        console.log('reCAPTCHA verified successfully');
+                        console.log('reCAPTCHA verified automatically');
                         try {
                             // Automatically trigger sendOTP when CAPTCHA is solved
                             await sendOTP(response);
-                        resolve();
+                            resolve();
                         } catch (error) {
                             console.error('Error in CAPTCHA callback:', error);
                             showPrompt('Error sending OTP. Please try again.');
@@ -2020,7 +2020,7 @@
                     },
                     'expired-callback': () => {
                         console.log('reCAPTCHA expired');
-                        showPrompt('CAPTCHA expired. Please verify again.');
+                        showPrompt('CAPTCHA expired. Please try again.');
                         // Reinitialize on expiry
                         initializeRecaptcha().catch(console.error);
                     }
@@ -2031,6 +2031,7 @@
                 recaptchaVerifier.render().then(function(widgetId) {
                     recaptchaWidgetId = widgetId;
                     console.log('reCAPTCHA rendered successfully with widget ID:', widgetId);
+                    resolve();
                 }).catch(function(error) {
                     console.error('reCAPTCHA render error:', error);
                     reject(error);
@@ -2141,18 +2142,10 @@
         }
     }
 
-    // Update sendOTP function to use the new check
+    // Update sendOTP function to work with automatic verification
     async function sendOTP(captchaResponse = null) {
         console.log('Starting sendOTP process...', { hasCaptchaResponse: !!captchaResponse });
 
-        // For backwards compatibility - now we prefer manual button click
-        if (!captchaResponse) {
-            console.log('No CAPTCHA response provided, deferring to manual button');
-            return;
-        }
-
-        // The rest of the function is kept for backward compatibility
-        // but we now prefer the manual attemptSendOTP() function
         const countryCode = document.getElementById('country-code')?.value || '';
         const phoneInput = document.getElementById('signup-phone');
         const phoneNumber = phoneInput?.value || '';
@@ -2187,10 +2180,9 @@
             if (registrationStatus.status === 'pending') {
                 showPrompt(registrationStatus.message);
                 return;
-                //the transition will help use in t
             }
 
-            // Store phone data in signupData
+            // Store phone data
             signupData = {
                 phone: formattedPhone,
                 phoneNumber: validation.cleanNumber,
@@ -2227,7 +2219,7 @@
                     phone: formattedPhone
                 });
 
-        } catch (error) {
+            } catch (error) {
                 console.error('Error sending OTP:', error);
                 handleSendOTPError(error, phoneInput, formattedPhone);
             }
