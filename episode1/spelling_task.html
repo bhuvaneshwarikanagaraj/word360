@@ -325,8 +325,8 @@
     <div class="spelling-popup" id="spellingPopup">
         <div class="completion-tag" id="completionTag">Task Completed!</div>
         <button class="close-button" id="closeButton">→</button>
-        <h2>Did you notice there is a mistake in the word 'Disapearences'..?<br>Correct it</h2>
-        <div class="revealed-letters" id="revealedLetters">D _ _ _ _ _ _ _ _ _ _ _ _</div>
+        <h2>Did you notice there is a mistake in the word 'Vanishd'..?<br>Correct it</h2>
+        <div class="revealed-letters" id="revealedLetters">V _ _ _ _ _ _ _</div>
         <div class="keyboard" id="keyboard">
             <!-- Keys will be added dynamically -->
         </div>
@@ -343,20 +343,21 @@
 
     <script>
         let attempts = 3;
-        const correctSpelling = "DISAPPEARANCES";
+        const correctSpelling = "VANISHED";
         let currentAnswer = "";
         let revealedLetters = new Array(correctSpelling.length).fill(null);
         let taskCompleted = false; // Track if the task has been successfully completed
         const hints = [
-            "🔍 Detective's Note: Look for double letters in this word...",
-            "🗒️ Case Hint: When something 'appears', it becomes visible...",
-            "📝 Final Clue: The ending should be '-ANCES', not '-ENCES'"
+            "🔍 Detective's Note: Think about the past tense of this word...",
+            "📝 Final Clue: The word ends with '-ED', not just '-D'",
+            "🗒️ Case Hint: When something 'vanish', we add 'ed' at the end..."
+    
         ];
         // Define the reveal positions for each attempt
         const revealPositions = [
-            { index: 3, letter: 'A' },  // First reveal: A in "disAppearances"
-            { index: 7, letter: 'A' },  // Second reveal: A in "disappeArances"
-            { index: 10, letter: 'E' }  // Third reveal: E in "disappearancEs"
+            { index: 2, letter: 'N' },  // First reveal: N in "vaNished"
+            { index: 4, letter: 'S' },  // Second reveal: S in "vaniShed"
+            { index: 6, letter: 'E' }  // Third reveal: E in "vanishEd"
         ];
 
         function createKeyboard() {
@@ -675,7 +676,7 @@
                     currentAnswer = "";
                     revealedLetters = correctSpelling.split('');
                     updateDisplay();
-                    document.getElementById('hintText').textContent = "The correct spelling is 'Disappearances'... Keep Learning..!";
+                    document.getElementById('hintText').textContent = "The correct spelling is 'Vanished'... Keep Learning..!";
                     
                     // Mark task as completed and show next button
                     taskCompleted = true;
