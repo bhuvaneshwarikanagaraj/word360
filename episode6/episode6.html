@@ -1538,50 +1538,57 @@
         });
 
         // Add feedback handling functions
-        function submitFeedback(rating) {
+        async function submitFeedback(rating) {
             const userPhone = localStorage.getItem('auth_phone') || 'unknown';
             const authName = localStorage.getItem('auth_name');
             const userId = localStorage.getItem('auth_userId');
-            const feedbackKey = `user_${userPhone}_feedback_6`;
             
             // Immediately show thank you UI
             showFeedbackUI();
             
-            // Check if already submitted
-            if (localStorage.getItem(feedbackKey)) {
-                    return;
-                }
-
-            // Mark as submitted in localStorage
-            localStorage.setItem(feedbackKey, 'submitted');
-            
-            // Get current timestamp
-            const now = new Date().getTime();
-            const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours from now
-            
-            // Set required flags immediately for episode 6 completion
-            localStorage.setItem('auth_isLoggedIn', 'true');
-            localStorage.setItem('episode6_completed', 'true');
-            localStorage.setItem('show_episodes_page', 'true');
-            localStorage.setItem('episode6_completed_at', now.toString());
-            localStorage.setItem('next_episode_unlock', unlockTime.toString());
-            
-            // Save feedback to Firebase
-            const feedback = {
-                timestamp: new Date().toISOString(),
-                rating: rating,
-                episode: 6,
-                userPhone: userPhone,
-                userId: userId || null
-            };
-            
-            // Update user progress in Firebase
-            if (db && (userId || userPhone)) {
-                try {
-                    // Save feedback
-                    db.collection('userFeedback').add(feedback);
+            try {
+                // Check Firebase first for existing feedback
+                if (db && (userId || userPhone)) {
+                    let userData = null;
                     
-                    // Update user progress
+                    if (userId) {
+                        const userDoc = await db.collection('userProgress').doc(userId).get();
+                        if (userDoc.exists) {
+                            userData = userDoc.data();
+                        }
+                    } else {
+                        const userQuery = await db.collection('userProgress').where('phone', '==', userPhone).limit(1).get();
+                        if (!userQuery.empty) {
+                            userData = userQuery.docs[0].data();
+                        }
+                    }
+                    
+                    // Check if feedback already exists
+                    if (userData && userData.episode6Feedback) {
+                        console.log('Episode 6 feedback already exists, not collecting again');
+                        if (window.LogRocket) {
+                            LogRocket.track('Episode 6 Feedback Already Exists', {
+                                userPhone: userPhone,
+                                userId: userId
+                            });
+                        }
+                        return;
+                    }
+                }
+                
+                // Get current timestamp
+                const now = new Date().getTime();
+                const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours from now
+                
+                // Set required flags immediately for episode 6 completion
+                localStorage.setItem('auth_isLoggedIn', 'true');
+                localStorage.setItem('episode6_completed', 'true');
+                localStorage.setItem('show_episodes_page', 'true');
+                localStorage.setItem('episode6_completed_at', now.toString());
+                localStorage.setItem('next_episode_unlock', unlockTime.toString());
+                
+                // Update user progress in Firebase with feedback
+                if (db && (userId || userPhone)) {
                     const userRef = userId 
                         ? db.collection('userProgress').doc(userId)
                         : db.collection('userProgress').where('phone', '==', userPhone).limit(1);
@@ -1593,27 +1600,30 @@
                         phone: userPhone,
                         episode6Completed: true,
                         episode6CompletedAt: firebase.firestore.Timestamp.fromMillis(now),
-                        nextEpisodeUnlock: firebase.firestore.Timestamp.fromMillis(unlockTime)
+                        nextEpisodeUnlock: firebase.firestore.Timestamp.fromMillis(unlockTime),
+                        episode6Feedback: {
+                            rating: rating,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            submittedAt: new Date().toISOString()
+                        }
                     };
 
                     if (userId) {
                         // Update by userId
-                        userRef.set(updateData, { merge: true })
-                            .catch(error => console.error('Error updating user progress:', error));
+                        await userRef.set(updateData, { merge: true });
                     } else {
                         // Update by phone if no userId
-                        userRef.get().then((userQuery) => {
-                            if (!userQuery.empty) {
-                                userQuery.docs[0].ref.update(updateData);
-                            } else {
-                                // Create new progress document if none exists
-                                db.collection('userProgress').add({
-                                    ...updateData,
-                                    completedEpisodes: [6],
-                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
-                            }
-                        }).catch(error => console.error('Error updating user progress:', error));
+                        const userQuery = await userRef.get();
+                        if (!userQuery.empty) {
+                            await userQuery.docs[0].ref.update(updateData);
+                        } else {
+                            // Create new progress document if none exists
+                            await db.collection('userProgress').add({
+                                ...updateData,
+                                completedEpisodes: [6],
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
                     }
                     
                     // Store user data in sessionStorage
@@ -1634,15 +1644,22 @@
                     
                     // Track in LogRocket
                     if (window.LogRocket) {
-                        LogRocket.track('Episode 6 Completed', {
+                        LogRocket.track('Episode 6 Feedback Submitted', {
                             rating: rating,
                             userPhone: userPhone,
                             completedAt: new Date(now).toISOString(),
                             nextUnlock: new Date(unlockTime).toISOString()
                         });
                     }
-                } catch (error) {
-                    console.error('Error saving feedback and progress:', error);
+                }
+            } catch (error) {
+                console.error('Error saving feedback and progress:', error);
+                if (window.LogRocket) {
+                    LogRocket.track('Episode 6 Feedback Error', {
+                        error: error.message,
+                        userPhone: userPhone,
+                        userId: userId
+                    });
                 }
             }
         }

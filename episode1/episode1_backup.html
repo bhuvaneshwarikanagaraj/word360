@@ -474,6 +474,26 @@
             background: #F5E6D3;
         }
 
+        /* Add diary button styles */
+        .diary-button {
+            display: inline-block;
+            background: #8B4513;
+            color: #F5E6D3 !important;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .diary-button:hover {
+            background: #6B3410;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
         .lazy {
             opacity: 0;
             transition: opacity 0.3s ease-in;
@@ -498,7 +518,6 @@
             transition: opacity 0.5s ease;
             z-index: 10;
         }
-
         .transition-text {
             color: #F5E6D3;
             font-size: 24px;
@@ -507,7 +526,7 @@
             padding: 20px;
         }
 
-        /* Feedback UI Styles */
+        /* Enhanced Feedback Styles */
         .feedback-container {
             position: absolute;
             top: 50%;
@@ -548,7 +567,6 @@
             text-shadow: 1px 1px 0 #FFE5D9;
             position: relative;
             display: inline-block;
-            font-family: 'Special Elite', cursive;
         }
 
         .feedback-form h3::after {
@@ -624,7 +642,6 @@
             color: #8B4513;
             font-weight: bold;
             text-shadow: 1px 1px 0 #FFE5D9;
-            font-family: 'Special Elite', cursive;
         }
 
         .thank-you {
@@ -634,7 +651,6 @@
             gap: 10px;
             font-size: 1.8em;
             color: #8B4513;
-            font-family: 'Special Elite', cursive;
             animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
@@ -693,7 +709,6 @@
             margin: 0 0 15px 0;
             font-size: 1.5em;
             text-shadow: 1px 1px 0 #fff;
-            font-family: 'Special Elite', cursive;
         }
 
         .next-button {
@@ -767,12 +782,10 @@
         }
 
         .to-be-continued-text {
-            color: white;
+            color: #F5E6D3;
             font-size: 2em;
             text-align: center;
             font-family: 'Special Elite', cursive;
-            padding: 20px 40px;
-            border-radius: 15px;
             animation: fadeInUp 0.5s ease-out;
         }
 
@@ -802,8 +815,8 @@
                 <i class="fas fa-chevron-right"></i>
             </button>
         </div>
-        
-        <!-- Add Feedback Section (initially hidden) -->
+
+        <!-- Add Feedback Section -->
         <div class="feedback-container" id="feedbackContainer" style="display: none;">
             <div class="feedback-form">
                 <h3>What do you think of the story?</h3>
@@ -969,7 +982,7 @@
                     id: 10, 
                     type: 'image', 
                     image: './panel3_ginger3.webp',
-                    text: 'Ferret. Three <span class="spelling-error" onclick="window.showSpellingTask()">vaanishd</span>. No leads. It\'s urgent.',
+                    text: 'Ferret. Three <span class="spelling-error" onclick="window.showSpellingTask()">disapearences</span>. No leads. It\'s urgent.',
                     audio: {
                         backgrounds: ['bg-rain']
                     }
@@ -1370,11 +1383,7 @@
             // Panel navigation
             function showPanel(index) {
                 if (index < 0) index = 0;
-                if (index >= panelsData.length) {
-                    // Show feedback instead of redirecting to diary
-                    document.getElementById('feedbackContainer').style.display = 'block';
-                    return;
-                }
+                if (index >= panelsData.length) index = panelsData.length - 1;
 
                 // Check if we can proceed based on task completion
                 const currentPanelId = panelsData[currentPanelIndex].id;
@@ -1396,6 +1405,23 @@
                         panel.classList.add('prev');
                     } else if (i === index) {
                         panel.classList.add('active');
+                        
+                        // If this is the last panel, show the transition and feedback
+                        if (i === panelsData.length - 1) {
+                            const imageContainer = panel.querySelector('.image-container');
+                            const overlay = document.createElement('div');
+                            overlay.className = 'transition-overlay';
+                            overlay.innerHTML = '<div class="transition-text">To be continued</div>';
+                            imageContainer.appendChild(overlay);
+                            
+                            setTimeout(() => {
+                                overlay.style.opacity = '1';
+                            }, 100);
+                            
+                            setTimeout(() => {
+                                document.getElementById('feedbackContainer').style.display = 'block';
+                            }, 2000);
+                        }
                     }
                 });
 
@@ -1428,20 +1454,24 @@
             // Navigation event listeners
             nextBtn.addEventListener('click', () => {
                 if (currentPanelIndex === panelsData.length - 1) {
-                    // Show "To be continued" on the last panel
-                    const activePanel = document.querySelector('.panel.active');
-                    const imageContainer = activePanel.querySelector('.image-container');
+                    // If on last panel, show transition overlay and navigate to diary
+                    const currentPanel = document.querySelector('.panel.active');
+                    const imageContainer = currentPanel.querySelector('.image-container');
+                    
+                    // Create transition overlay
                     const overlay = document.createElement('div');
                     overlay.className = 'transition-overlay';
                     overlay.innerHTML = '<div class="transition-text">To be continued</div>';
                     imageContainer.appendChild(overlay);
                     
+                    // Show overlay
                     setTimeout(() => {
                         overlay.style.opacity = '1';
                     }, 100);
                     
+                    // Navigate after 2 seconds
                     setTimeout(() => {
-                        document.getElementById('feedbackContainer').style.display = 'block';
+                    window.location.href = './diary.html';
                     }, 2000);
                 } else if (currentPanelIndex < panelsData.length - 1) {
                     showPanel(currentPanelIndex + 1);
@@ -1596,7 +1626,7 @@
                     if (panel10Text) {
                         panel10Text.innerHTML = panel10Text.innerHTML.replace(
                             /<span[^>]*>.*?<\/span>/,
-                            '<span style="color: #4CAF50;">disappearances</span>'
+                            '<span style="color: #4CAF50; text-decoration: none; cursor: default;">disappearances</span>'
                         );
                     }
                 }
@@ -1719,299 +1749,36 @@
             initializeBackgroundAudio();
             handleBackgroundAudio([]); // Start background audio
             
-            // Add feedback handling functions
-            window.submitFeedback = async function(rating) {
-                const userPhone = localStorage.getItem('auth_phone') || 'unknown';
-                const authName = localStorage.getItem('auth_name');
-                const userId = localStorage.getItem('auth_userId');
+            // Check if returning from diary
+            const returnFromDiary = localStorage.getItem('returnToPanel16');
+            if (returnFromDiary === 'true') {
+                // Clear the flag
+                localStorage.removeItem('returnToPanel16');
+                // Show the last panel (panel 16)
+                const lastPanelIndex = panelsData.length - 1;
+                currentPanelIndex = lastPanelIndex; // Set current index immediately
                 
-                // Immediately show thank you UI
-                showFeedbackUI();
-                
-                try {
-                    // Check if feedback already exists in Firebase
-                    let userData = null;
-                    let userDocRef = null;
-                    
-                    if (db && (userId || userPhone)) {
-                        if (userId) {
-                            userDocRef = db.collection('userProgress').doc(userId);
-                            const userDoc = await userDocRef.get();
-                            if (userDoc.exists) {
-                                userData = userDoc.data();
-                            }
-                        } else {
-                            const userQuery = await db.collection('userProgress')
-                                .where('phone', '==', userPhone)
-                                .limit(1)
-                                .get();
-                            if (!userQuery.empty) {
-                                userDocRef = userQuery.docs[0].ref;
-                                userData = userQuery.docs[0].data();
-                            }
-                        }
-                        
-                        // Check if episode 1 feedback already exists
-                        if (userData && userData.episode1Feedback) {
-                            console.log('Episode 1 feedback already exists, not collecting again');
-                            LogRocket.track('Episode 1 Feedback Already Exists', {
-                                userPhone: userPhone,
-                                existingFeedback: userData.episode1Feedback
-                            });
-                            return;
-                        }
+                // Update panel classes
+                const panels = document.querySelectorAll('.panel');
+                panels.forEach((panel, i) => {
+                    panel.classList.remove('active', 'prev');
+                    if (i < lastPanelIndex) {
+                        panel.classList.add('prev');
+                    } else if (i === lastPanelIndex) {
+                        panel.classList.add('active');
                     }
-                    
-                    // Get current timestamp
-                    const now = new Date().getTime();
-                    const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours from now
-                    
-                    // Set required flags immediately for episode 1 completion
-                    localStorage.setItem('auth_isLoggedIn', 'true');
-                    localStorage.setItem('episode1_completed', 'true');
-                    localStorage.setItem('show_episodes_page', 'true');
-                    localStorage.setItem('episode1_completed_at', now.toString());
-                    localStorage.setItem('next_episode_unlock', unlockTime.toString());
-                    
-                    // Update user progress in Firebase with feedback
-                    if (db && (userId || userPhone)) {
-                        const updateData = {
-                            completedEpisodes: firebase.firestore.FieldValue.arrayUnion(1),
-                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-                            name: authName || 'Anonymous',
-                            phone: userPhone,
-                            episode1Completed: true,
-                            episode1CompletedAt: firebase.firestore.Timestamp.fromMillis(now),
-                            nextEpisodeUnlock: firebase.firestore.Timestamp.fromMillis(unlockTime),
-                            // Store feedback in userProgress document
-                            episode1Feedback: {
-                                rating: rating,
-                                timestamp: firebase.firestore.Timestamp.fromMillis(now),
-                                submittedAt: new Date().toISOString()
-                            }
-                        };
+                });
 
-                        if (userDocRef) {
-                            // Update existing document
-                            await userDocRef.set(updateData, { merge: true });
-                            console.log('Episode 1 feedback saved successfully');
-                        } else {
-                            // Create new progress document if none exists
-                            await db.collection('userProgress').add({
-                                ...updateData,
-                                completedEpisodes: [1],
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                            console.log('New user progress document created with Episode 1 feedback');
-                        }
-                        
-                        // Store user data in sessionStorage
-                        if (authName && userPhone) {
-                            const userData = {
-                                name: authName,
-                                phone: userPhone,
-                                episode1CompletedAt: now,
-                                nextEpisodeUnlock: unlockTime
-                            };
-                            
-                            if (userId) {
-                                userData.uid = userId;
-                            }
-                            
-                            sessionStorage.setItem('userData', JSON.stringify(userData));
-                        }
-                        
-                        // Track in LogRocket
-                        if (window.LogRocket) {
-                            LogRocket.track('Episode 1 Feedback Submitted', {
-                                rating: rating,
-                                userPhone: userPhone,
-                                completedAt: new Date(now).toISOString(),
-                                nextUnlock: new Date(unlockTime).toISOString(),
-                                isFirstTime: true
-                            });
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error saving feedback and progress:', error);
-                    LogRocket.track('Episode 1 Feedback Error', {
-                        error: error.message,
-                        userPhone: userPhone
-                    });
-                }
-            };
+                // Show navigation buttons
+                navButtons.classList.add('visible');
+                prevBtn.disabled = false;
+                nextBtn.disabled = false;
 
-            window.showFeedbackUI = function() {
-                // Hide emoji options
-                document.querySelector('.emoji-options').style.display = 'none';
-                
-                // Show thank you message
-                document.getElementById('thankYouMessage').style.display = 'flex';
-                
-                // Show success message immediately
-                const successMessage = document.getElementById('successMessage');
-                successMessage.style.display = 'block';
-                
-                // Show the next button after a short delay
-                setTimeout(() => {
-                    const nextButton = successMessage.querySelector('.next-button');
-                    nextButton.style.display = 'inline-block';
-                    nextButton.style.animation = 'fadeIn 0.5s ease-in-out';
-                }, 500);
-            };
-
-            window.handleNextEpisode = async function() {
-                try {
-                    // Check if any timer is currently running
-                    if (window.parent && window.parent.isAnyTimerRunning && window.parent.isAnyTimerRunning()) {
-                        console.log('Timer is already running, redirecting to episodes page without creating timer');
-                        window.location.href = '../index.html#episodes';
-                        return;
-                    }
-
-                    // Check if next episode (episode 2) is already opened
-                    const phone = localStorage.getItem('auth_phone');
-                    const userId = localStorage.getItem('auth_userId');
-                    
-                    if (db && (userId || phone)) {
-                        try {
-                            let userData = null;
-                            
-                            if (userId) {
-                                const userDoc = await db.collection('userProgress').doc(userId).get();
-                                if (userDoc.exists) {
-                                    userData = userDoc.data();
-                                }
+                // Handle audio for last panel
+                handleAudio(lastPanelIndex);
             } else {
-                                const userQuery = await db.collection('userProgress')
-                                    .where('phone', '==', phone)
-                                    .limit(1)
-                                    .get();
-                                if (!userQuery.empty) {
-                                    userData = userQuery.docs[0].data();
-                                }
-                            }
-                            
-                            // If episode 2 is already opened, don't create timer
-                            if (userData && userData.episode2_opened === true) {
-                                console.log('Episode 2 is already opened, redirecting without creating timer');
-                                window.location.href = '../index.html#episodes';
-                                return;
-                            }
-                        } catch (error) {
-                            console.error('Error checking episode opened status:', error);
-                        }
-                    }
-                    
-                    // Get user data from localStorage
-                    const name = localStorage.getItem('auth_name');
-                    const now = new Date().getTime();
-                    const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours from now
-                    
-                    // Update user progress in Firebase
-                    if (db && (userId || phone)) {
-                        try {
-                            const userRef = userId 
-                                ? db.collection('userProgress').doc(userId)
-                                : db.collection('userProgress').where('phone', '==', phone).limit(1);
-                            
-                            const updateData = {
-                                completedEpisodes: firebase.firestore.FieldValue.arrayUnion(1),
-                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-                                name: name || 'Anonymous',
-                                phone: phone || 'unknown',
-                                episode1Completed: true,
-                                episode1CompletedAt: firebase.firestore.Timestamp.fromMillis(now),
-                                nextEpisodeUnlock: firebase.firestore.Timestamp.fromMillis(unlockTime)
-                            };
-
-                            if (userId) {
-                                // Update by userId
-                                await userRef.set(updateData, { merge: true });
-                            } else {
-                                // Update by phone if no userId
-                                const userQuery = await userRef.get();
-                                if (!userQuery.empty) {
-                                    await userQuery.docs[0].ref.update(updateData);
-                                } else {
-                                    // Create new progress document if none exists
-                                    await db.collection('userProgress').add({
-                                        ...updateData,
-                                        completedEpisodes: [1],
-                                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                    });
-                                }
-                            }
-                        } catch (progressError) {
-                            console.error('Error updating user progress:', progressError);
-                        }
-                    }
-                    
-                    // Store user data in sessionStorage
-                    if (name && phone) {
-                        const userData = {
-                            name: name,
-                            phone: phone,
-                            episode1CompletedAt: now,
-                            nextEpisodeUnlock: unlockTime
-                        };
-                        
-                        if (userId) {
-                            userData.uid = userId;
-                        }
-                        
-                        sessionStorage.setItem('userData', JSON.stringify(userData));
-                    }
-                    
-                    // Track in LogRocket
-                    if (window.LogRocket) {
-                        LogRocket.track('Moving to Episode List', {
-                            from: 'episode1',
-                            to: 'episode_list',
-                            userPhone: phone,
-                            unlockTime: new Date(unlockTime).toISOString()
-                        });
-                    }
-                    
-                    // Redirect to episodes page
-                    window.location.href = '../index.html#episodes';
-                } catch (error) {
-                    console.error('Error handling navigation:', error);
-                    // If there's an error, still redirect to ensure user can continue
-                    window.location.href = '../index.html#episodes';
-                }
-            };
-            
-            // Check if returning from diary (remove this logic since we're removing diary)
-            // const returnFromDiary = localStorage.getItem('returnToPanel16');
-            // if (returnFromDiary === 'true') {
-            //     // Clear the flag
-            //     localStorage.removeItem('returnToPanel16');
-            //     // Show the last panel (panel 16)
-            //     const lastPanelIndex = panelsData.length - 1;
-            //     currentPanelIndex = lastPanelIndex; // Set current index immediately
-                
-            //     // Update panel classes
-            //     const panels = document.querySelectorAll('.panel');
-            //     panels.forEach((panel, i) => {
-            //         panel.classList.remove('active', 'prev');
-            //         if (i < lastPanelIndex) {
-            //             panel.classList.add('prev');
-            //         } else if (i === lastPanelIndex) {
-            //             panel.classList.add('active');
-            //         }
-            //     });
-
-            //     // Show navigation buttons
-            //     navButtons.classList.add('visible');
-            //     prevBtn.disabled = false;
-            //     nextBtn.disabled = false;
-
-            //     // Handle audio for last panel
-            //     handleAudio(lastPanelIndex);
-            // } else {
                 showPanel(0);
-            // }
+            }
 
             // Add JavaScript to handle the click
             const panel1Container = document.querySelector('#panel-1 .image-container');
@@ -2163,7 +1930,530 @@
             } catch (error) {
                 console.error('Firebase initialization error:', error);
             }
+
+            // Add timer and completion state handling functions
+            async function checkEpisodeCompletion() {
+                const phone = localStorage.getItem('auth_phone');
+                const userId = localStorage.getItem('auth_userId');
+                
+                if (db && (userId || phone)) {
+                    try {
+                        let userData = null;
+                        
+                        if (userId) {
+                            const userDoc = await db.collection('userProgress').doc(userId).get();
+                            if (userDoc.exists) {
+                                userData = userDoc.data();
+                            }
+                        } else {
+                            const userQuery = await db.collection('userProgress')
+                                .where('phone', '==', phone)
+                                .limit(1)
+                                .get();
+                            if (!userQuery.empty) {
+                                userData = userQuery.docs[0].data();
+                            }
+                        }
+                        
+                        // Check if episode 1 is already completed
+                        if (userData && userData.episode1Completed) {
+                            console.log('Episode 1 already completed');
+                            return true;
+                        }
+                        
+                        return false;
+                    } catch (error) {
+                        console.error('Error checking episode completion:', error);
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            async function updateEpisodeState(state) {
+                const phone = localStorage.getItem('auth_phone');
+                const userId = localStorage.getItem('auth_userId');
+                const now = new Date().getTime();
+                
+                if (db && (userId || phone)) {
+                    try {
+                        const userRef = userId 
+                            ? db.collection('userProgress').doc(userId)
+                            : db.collection('userProgress').where('phone', '==', phone).limit(1);
+                        
+                        const updateData = {
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                            episode1State: state,
+                            episode1LastAccessed: firebase.firestore.Timestamp.fromMillis(now)
+                        };
+                        
+                        if (userId) {
+                            await userRef.set(updateData, { merge: true });
+                        } else {
+                            const userQuery = await userRef.get();
+                            if (!userQuery.empty) {
+                                await userQuery.docs[0].ref.update(updateData);
+                            }
+                        }
+                        
+                        // Track state update in LogRocket
+                        if (window.LogRocket) {
+                            LogRocket.track('Episode 1 State Update', {
+                                state: state,
+                                userPhone: phone,
+                                timestamp: new Date(now).toISOString()
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error updating episode state:', error);
+                    }
+                }
+            }
+
+            async function startEpisodeTimer() {
+                const phone = localStorage.getItem('auth_phone');
+                const userId = localStorage.getItem('auth_userId');
+                const now = new Date().getTime();
+                const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours
+                
+                if (db && (userId || phone)) {
+                    try {
+                        const userRef = userId 
+                            ? db.collection('userProgress').doc(userId)
+                            : db.collection('userProgress').where('phone', '==', phone).limit(1);
+                        
+                        const updateData = {
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                            episode1Started: true,
+                            episode1StartedAt: firebase.firestore.Timestamp.fromMillis(now),
+                            episode1Timer: firebase.firestore.Timestamp.fromMillis(unlockTime)
+                        };
+                        
+                        if (userId) {
+                            await userRef.set(updateData, { merge: true });
+                        } else {
+                            const userQuery = await userRef.get();
+                            if (!userQuery.empty) {
+                                await userQuery.docs[0].ref.update(updateData);
+                            }
+                        }
+                        
+                        // Store timer info in localStorage
+                        localStorage.setItem('episode1_timer_start', now.toString());
+                        localStorage.setItem('episode1_timer_end', unlockTime.toString());
+                        
+                        // Track timer start in LogRocket
+                        if (window.LogRocket) {
+                            LogRocket.track('Episode 1 Timer Started', {
+                                userPhone: phone,
+                                startTime: new Date(now).toISOString(),
+                                endTime: new Date(unlockTime).toISOString()
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error starting episode timer:', error);
+                    }
+                }
+            }
+
+            async function checkTimer() {
+                const phone = localStorage.getItem('auth_phone');
+                const userId = localStorage.getItem('auth_userId');
+                
+                if (db && (userId || phone)) {
+                    try {
+                        let userData = null;
+                        
+                        if (userId) {
+                            const userDoc = await db.collection('userProgress').doc(userId).get();
+                            if (userDoc.exists) {
+                                userData = userDoc.data();
+                            }
+                        } else {
+                            const userQuery = await db.collection('userProgress')
+                                .where('phone', '==', phone)
+                                .limit(1)
+                                .get();
+                            if (!userQuery.empty) {
+                                userData = userQuery.docs[0].data();
+                            }
+                        }
+                        
+                        if (userData && userData.episode1Timer) {
+                            const timerEnd = userData.episode1Timer.toMillis();
+                            const now = new Date().getTime();
+                            
+                            if (now < timerEnd) {
+                                // Timer still running
+                                return {
+                                    isRunning: true,
+                                    remainingTime: timerEnd - now
+                                };
+                            }
+                        }
+                        
+                        return {
+                            isRunning: false,
+                            remainingTime: 0
+                        };
+                    } catch (error) {
+                        console.error('Error checking timer:', error);
+                        return {
+                            isRunning: false,
+                            remainingTime: 0
+                        };
+                    }
+                }
+                
+                return {
+                    isRunning: false,
+                    remainingTime: 0
+                };
+            }
+
+            // Update handleNextEpisode to use timer logic
+            async function handleNextEpisode() {
+                try {
+                    // Check if timer is already running
+                    const timerStatus = await checkTimer();
+                    if (timerStatus.isRunning) {
+                        console.log('Timer already running, redirecting to episodes page');
+                        window.location.href = '../index.html#episodes';
+                        return;
+                    }
+
+                    // Check if episode is already completed
+                    const isCompleted = await checkEpisodeCompletion();
+                    if (isCompleted) {
+                        console.log('Episode already completed, redirecting to episodes page');
+                        window.location.href = '../index.html#episodes';
+                        return;
+                    }
+
+                    // Start the episode timer
+                    await startEpisodeTimer();
+                    
+                    // Update episode state
+                    await updateEpisodeState('completed');
+                    
+                    // Show "To be continued" overlay
+                    const toBeContinued = document.getElementById('toBeContinued');
+                    toBeContinued.classList.add('visible');
+                    
+                    // Play sound effect if available
+                    const buttonClickSound = document.getElementById('buttonClickSound');
+                    if (buttonClickSound) {
+                        buttonClickSound.currentTime = 0;
+                        buttonClickSound.play().catch(console.error);
+                    }
+                    
+                    // Redirect after animation
+                    setTimeout(() => {
+                        window.location.href = '../index.html#episodes';
+                    }, 2000);
+                } catch (error) {
+                    console.error('Error in handleNextEpisode:', error);
+                    // Fallback redirect
+                    window.location.href = '../index.html#episodes';
+                }
+            }
+
+            // Add function to check if any timer is running (for parent window)
+            window.isAnyTimerRunning = async function() {
+                const timerStatus = await checkTimer();
+                return timerStatus.isRunning;
+            };
+
+            // Initialize timer check on page load
+            document.addEventListener('DOMContentLoaded', async () => {
+                try {
+                    const timerStatus = await checkTimer();
+                    if (timerStatus.isRunning) {
+                        console.log('Timer is running:', timerStatus.remainingTime);
+                        // You can add UI feedback here if needed
+                    }
+                } catch (error) {
+                    console.error('Error checking timer on load:', error);
+                }
+            });
         });
+
+        // Add feedback handling functions
+        function submitFeedback(rating) {
+            const userPhone = localStorage.getItem('auth_phone') || 'unknown';
+            const authName = localStorage.getItem('auth_name');
+            const userId = localStorage.getItem('auth_userId');
+            const feedbackKey = `user_${userPhone}_feedback_1`;
+            
+            // Immediately show thank you UI
+            showFeedbackUI();
+            
+            // Check if already submitted
+            if (localStorage.getItem(feedbackKey)) {
+                return;
+            }
+
+            // Mark as submitted in localStorage
+            localStorage.setItem(feedbackKey, 'submitted');
+            
+            // Get current timestamp
+            const now = new Date().getTime();
+            const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours from now
+            
+            // Set required flags immediately for episode 1 completion
+            localStorage.setItem('auth_isLoggedIn', 'true');
+            localStorage.setItem('episode1_completed', 'true');
+            localStorage.setItem('show_episodes_page', 'true');
+            localStorage.setItem('episode1_completed_at', now.toString());
+            localStorage.setItem('next_episode_unlock', unlockTime.toString());
+            
+            // Save feedback to Firebase
+            const feedback = {
+                timestamp: new Date().toISOString(),
+                rating: rating,
+                episode: 1,
+                userPhone: userPhone,
+                userId: userId || null
+            };
+            
+            // Update user progress in Firebase
+            if (db && (userId || userPhone)) {
+                try {
+                    // Save feedback
+                    db.collection('userFeedback').add(feedback);
+                    
+                    // Update user progress
+                    const userRef = userId 
+                        ? db.collection('userProgress').doc(userId)
+                        : db.collection('userProgress').where('phone', '==', userPhone).limit(1);
+                    
+                    const updateData = {
+                        completedEpisodes: firebase.firestore.FieldValue.arrayUnion(1),
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                        name: authName || 'Anonymous',
+                        phone: userPhone,
+                        episode1Completed: true,
+                        episode1CompletedAt: firebase.firestore.Timestamp.fromMillis(now),
+                        nextEpisodeUnlock: firebase.firestore.Timestamp.fromMillis(unlockTime)
+                    };
+
+                    if (userId) {
+                        // Update by userId
+                        userRef.set(updateData, { merge: true })
+                            .catch(error => console.error('Error updating user progress:', error));
+                    } else {
+                        // Update by phone if no userId
+                        userRef.get().then((userQuery) => {
+                            if (!userQuery.empty) {
+                                userQuery.docs[0].ref.update(updateData);
+                            } else {
+                                // Create new progress document if none exists
+                                db.collection('userProgress').add({
+                                    ...updateData,
+                                    completedEpisodes: [1],
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        }).catch(error => console.error('Error updating user progress:', error));
+                    }
+                    
+                    // Store user data in sessionStorage
+                    if (authName && userPhone) {
+                        const userData = {
+                            name: authName,
+                            phone: userPhone,
+                            episode1CompletedAt: now,
+                            nextEpisodeUnlock: unlockTime
+                        };
+                        
+                        if (userId) {
+                            userData.uid = userId;
+                        }
+                        
+                        sessionStorage.setItem('userData', JSON.stringify(userData));
+                    }
+                    
+                    // Track in LogRocket
+                    if (window.LogRocket) {
+                        LogRocket.track('Episode 1 Completed', {
+                            rating: rating,
+                            userPhone: userPhone,
+                            completedAt: new Date(now).toISOString(),
+                            nextUnlock: new Date(unlockTime).toISOString()
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error saving feedback and progress:', error);
+                }
+            }
+        }
+
+        function showFeedbackUI() {
+            // Hide emoji options
+            document.querySelector('.emoji-options').style.display = 'none';
+            
+            // Show thank you message
+            document.getElementById('thankYouMessage').style.display = 'flex';
+            
+            // Show success message immediately
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'block';
+            
+            // Show the next button after a short delay
+            setTimeout(() => {
+                const nextButton = successMessage.querySelector('.next-button');
+                nextButton.style.display = 'inline-block';
+                nextButton.style.animation = 'fadeIn 0.5s ease-in-out';
+            }, 500);
+        }
+
+        // Remove duplicate timer functions and replace with episode6-style implementation
+        async function handleNextEpisode() {
+            try {
+                // Check if any timer is currently running (exactly like episode6)
+                if (window.parent && window.parent.isAnyTimerRunning && window.parent.isAnyTimerRunning()) {
+                    console.log('Timer is already running, redirecting to episodes page without creating timer');
+                    window.location.href = '../index.html#episodes';
+                    return;
+                }
+
+                // Check if next episode (episode 2) is already opened
+                const phone = localStorage.getItem('auth_phone');
+                const userId = localStorage.getItem('auth_userId');
+                
+                if (db && (userId || phone)) {
+                    try {
+                        let userData = null;
+                        
+                        if (userId) {
+                            const userDoc = await db.collection('userProgress').doc(userId).get();
+                            if (userDoc.exists) {
+                                userData = userDoc.data();
+                            }
+                        } else {
+                            const userQuery = await db.collection('userProgress')
+                                .where('phone', '==', phone)
+                                .limit(1)
+                                .get();
+                            if (!userQuery.empty) {
+                                userData = userQuery.docs[0].data();
+                            }
+                        }
+                        
+                        // If episode 2 is already opened, don't create timer
+                        if (userData && userData.episode2_opened === true) {
+                            console.log('Episode 2 is already opened, redirecting without creating timer');
+                            window.location.href = '../index.html#episodes';
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Error checking episode opened status:', error);
+                    }
+                }
+                
+                // Get user data from localStorage
+                const name = localStorage.getItem('auth_name');
+                const now = new Date().getTime();
+                const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours from now
+                
+                // Update user progress in Firebase (exactly like episode6)
+                if (db && (userId || phone)) {
+                    try {
+                        const userRef = userId 
+                            ? db.collection('userProgress').doc(userId)
+                            : db.collection('userProgress').where('phone', '==', phone).limit(1);
+                        
+                        const updateData = {
+                            completedEpisodes: firebase.firestore.FieldValue.arrayUnion(1),
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                            name: name || 'Anonymous',
+                            phone: phone || 'unknown',
+                            episode1Completed: true,
+                            episode1CompletedAt: firebase.firestore.Timestamp.fromMillis(now),
+                            nextEpisodeUnlock: firebase.firestore.Timestamp.fromMillis(unlockTime)
+                        };
+
+                        if (userId) {
+                            // Update by userId
+                            await userRef.set(updateData, { merge: true });
+                        } else {
+                            // Update by phone if no userId
+                            const userQuery = await userRef.get();
+                            if (!userQuery.empty) {
+                                await userQuery.docs[0].ref.update(updateData);
+                            } else {
+                                // Create new progress document if none exists
+                                await db.collection('userProgress').add({
+                                    ...updateData,
+                                    completedEpisodes: [1],
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        }
+                    } catch (progressError) {
+                        console.error('Error updating user progress:', progressError);
+                    }
+                }
+                
+                // Store user data in sessionStorage
+                if (name && phone) {
+                    const userData = {
+                        name: name,
+                        phone: phone,
+                        episode1CompletedAt: now,
+                        nextEpisodeUnlock: unlockTime
+                    };
+                    
+                    if (userId) {
+                        userData.uid = userId;
+                    }
+                    
+                    sessionStorage.setItem('userData', JSON.stringify(userData));
+                }
+                
+                // Track in LogRocket
+                if (window.LogRocket) {
+                    LogRocket.track('Moving to Episode List', {
+                        from: 'episode1',
+                        to: 'episode_list',
+                        userPhone: phone,
+                        unlockTime: new Date(unlockTime).toISOString()
+                    });
+                }
+                
+                // Redirect to episodes page (exactly like episode6)
+                window.location.href = '../index.html#episodes';
+            } catch (error) {
+                console.error('Error handling navigation:', error);
+                // If there's an error, still redirect to ensure user can continue
+                window.location.href = '../index.html#episodes';
+            }
+        }
+
+        function openSpellingActivity() {
+            window.location.href = 'spelling_task.html';
+        }
+
+        function openFlashcardActivity() {
+            window.location.href = 'flashcard.html';
+        }
+
+        function showToBeContinued() {
+            const toBeContinued = document.getElementById('toBeContinued');
+            toBeContinued.classList.add('visible');
+            
+            // Play button click sound
+            const buttonClickSound = document.getElementById('buttonClickSound');
+            if (buttonClickSound) {
+                buttonClickSound.currentTime = 0;
+                buttonClickSound.play().catch(console.error);
+            }
+
+            // After 2 seconds, redirect to episodes page
+            setTimeout(() => {
+                window.location.href = '../index.html#episodes';
+            }, 2000);
+        }
     </script>
     <script src="../disable-search.js"></script>
 </body>

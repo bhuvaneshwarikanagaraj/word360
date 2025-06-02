@@ -427,11 +427,32 @@
         }
 
         .next-button {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1001;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.1em;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            display: none;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .next-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+        }
+
+        .next-button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
         }
 
         .continue-diary {
@@ -519,6 +540,214 @@
             overflow: hidden;
             border-radius: 20px;
         }
+
+        /* Feedback UI Styles */
+        .feedback-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #FFE5D9 0%, #FFD7BA 100%);
+            padding: 25px;
+            border-radius: 25px;
+            text-align: center;
+            z-index: 1000;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15),
+                        0 5px 15px rgba(139, 69, 19, 0.1);
+            border: 3px solid #8B4513;
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .feedback-form {
+            margin: 20px 0;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            border: 2px dashed #8B4513;
+        }
+
+        .feedback-form h3 {
+            color: #8B4513;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 0 #FFE5D9;
+            position: relative;
+            display: inline-block;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .feedback-form h3::after {
+            content: '✨';
+            position: absolute;
+            right: -25px;
+            animation: sparkle 1.5s infinite;
+        }
+
+        .feedback-form h3::before {
+            content: '✨';
+            position: absolute;
+            left: -25px;
+            animation: sparkle 1.5s infinite reverse;
+        }
+
+        @keyframes sparkle {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+            100% { transform: scale(1) rotate(360deg); opacity: 1; }
+        }
+
+        .emoji-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .emoji-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 15px;
+            border-radius: 15px;
+            min-width: 90px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid transparent;
+            transform-origin: center bottom;
+        }
+
+        .emoji-option:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: scale(1.1) translateY(-5px);
+            border-color: #8B4513;
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.2);
+            animation: wobble 1s infinite;
+        }
+
+        @keyframes wobble {
+            0%, 100% { transform: scale(1.1) translateY(-5px) rotate(0deg); }
+            25% { transform: scale(1.1) translateY(-5px) rotate(-3deg); }
+            75% { transform: scale(1.1) translateY(-5px) rotate(3deg); }
+        }
+
+        .emoji {
+            font-size: 3em;
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+            animation: float 3s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .emoji-label {
+            font-size: 1em;
+            color: #8B4513;
+            font-weight: bold;
+            text-shadow: 1px 1px 0 #FFE5D9;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .thank-you {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8em;
+            color: #8B4513;
+            font-family: 'Special Elite', cursive;
+            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.2); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .thank-you span {
+            display: inline-block;
+            animation: rainbow 3s infinite;
+        }
+
+        @keyframes rainbow {
+            0% { color: #8B4513; }
+            25% { color: #D35400; }
+            50% { color: #A0522D; }
+            75% { color: #8B4513; }
+            100% { color: #8B4513; }
+        }
+
+        .thank-you .star {
+            font-size: 2.2em;
+            margin-top: 15px;
+            animation: spin 3s infinite;
+            color: gold;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .success-message {
+            display: none;
+            background: rgba(255, 255, 255, 0.8);
+            border: 3px solid #4CAF50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+            text-align: center;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .success-message h2 {
+            color: #4CAF50;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            text-shadow: 1px 1px 0 #fff;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .next-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                rgba(255, 255, 255, 0.2),
+                rgba(255, 255, 255, 0)
+            );
+            transform: rotate(45deg);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -534,6 +763,39 @@
             <button class="nav-btn" id="next-btn" title="Next Panel">
                 <i class="fas fa-chevron-right"></i>
             </button>
+        </div>
+        
+        <!-- Add Feedback Section (initially hidden) -->
+        <div class="feedback-container" id="feedbackContainer" style="display: none;">
+            <div class="feedback-form">
+                <h3>What do you think of the story?</h3>
+                <div class="emoji-options">
+                    <div class="emoji-option" onclick="submitFeedback('love')">
+                        <div class="emoji">😍</div>
+                        <div class="emoji-label">Love it!</div>
+                    </div>
+                    <div class="emoji-option" onclick="submitFeedback('okay')">
+                        <div class="emoji">😊</div>
+                        <div class="emoji-label">Okay okay</div>
+                    </div>
+                    <div class="emoji-option" onclick="submitFeedback('not_good')">
+                        <div class="emoji">😕</div>
+                        <div class="emoji-label">Not so good</div>
+                    </div>
+                </div>
+                <div class="thank-you" id="thankYouMessage">
+                    <span>Thanks</span>
+                    <span>for</span>
+                    <span>your</span>
+                    <span>feedback</span>
+                    <span class="star">⭐</span>
+                </div>
+            </div>
+            
+            <div class="success-message" id="successMessage">
+                <h2>🎉 Well done—Episode 3 is now complete!</h2>
+                <button class="next-button" onclick="handleNextEpisode()">Continue to Next Episode →</button>
+            </div>
         </div>
     </div>
 
@@ -1254,7 +1516,7 @@
                     
                     // Navigate after 2 seconds
                     setTimeout(() => {
-                        window.location.href = './diary3.html';
+                        showFeedbackContainer();
                     }, 2000);
                 } else if (currentPanelIndex < panelsData.length - 1) {
                     showPanel(currentPanelIndex + 1);
@@ -1294,7 +1556,7 @@
                     
                     // Check if we're on panel 16 - redirect to diary
                     if (currentPanel.id === 16) {
-                        window.location.href = 'diary3.html';
+                        showFeedbackContainer();
                         return;
                     }
                     
@@ -1372,7 +1634,7 @@
                 continueDiaryBtn.className = 'continue-diary';
                 continueDiaryBtn.textContent = 'Continue to Diary';
                 continueDiaryBtn.onclick = () => {
-                    window.location.href = 'diary3.html';
+                    showFeedbackContainer();
                 };
                 document.body.appendChild(continueDiaryBtn);
             }
@@ -1383,7 +1645,7 @@
                 // Rest of the existing initialization code...
             });
 
-            // Initialize Firebase and Firestore
+            // Initialize Firebase and Firestore globally
             let db;
             let auth;
             try {
@@ -1403,6 +1665,11 @@
                 }
                 db = firebase.firestore();
                 auth = firebase.auth();
+                
+                // Make db globally accessible
+                window.db = db;
+                window.auth = auth;
+                
                 console.log('Firebase initialized successfully');
 
                 // Function to check authentication
@@ -1464,6 +1731,296 @@
             } catch (error) {
                 console.error('Firebase initialization error:', error);
             }
+        });
+
+        // Replace diary3.html redirects with feedback UI
+        function showFeedbackContainer() {
+            document.getElementById('feedbackContainer').style.display = 'block';
+            document.getElementById('nav-buttons').style.display = 'none';
+        }
+
+        // Feedback submission function
+        window.submitFeedback = async function(rating) {
+            const userPhone = localStorage.getItem('auth_phone') || 'unknown';
+            const authName = localStorage.getItem('auth_name');
+            const userId = localStorage.getItem('auth_userId');
+            
+            // Immediately show thank you UI
+            showFeedbackUI();
+            
+            try {
+                // Check if feedback already exists in Firebase
+                let userData = null;
+                let userDocRef = null;
+                
+                if (db && (userId || userPhone)) {
+                    if (userId) {
+                        userDocRef = db.collection('userProgress').doc(userId);
+                        const userDoc = await userDocRef.get();
+                        if (userDoc.exists) {
+                            userData = userDoc.data();
+                        }
+                    } else {
+                        const userQuery = await db.collection('userProgress')
+                            .where('phone', '==', userPhone)
+                            .limit(1)
+                            .get();
+                        if (!userQuery.empty) {
+                            userDocRef = userQuery.docs[0].ref;
+                            userData = userQuery.docs[0].data();
+                        }
+                    }
+                    
+                    // Check if episode 3 feedback already exists
+                    if (userData && userData.episode3Feedback) {
+                        console.log('Episode 3 feedback already exists, not collecting again');
+                        LogRocket.track('Episode 3 Feedback Already Exists', {
+                            userPhone: userPhone,
+                            existingFeedback: userData.episode3Feedback
+                        });
+                        return;
+                    }
+                }
+                
+                // Get current timestamp
+                const now = new Date().getTime();
+                const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours from now
+                
+                // Set required flags immediately for episode 3 completion
+                localStorage.setItem('auth_isLoggedIn', 'true');
+                localStorage.setItem('episode3_completed', 'true');
+                localStorage.setItem('show_episodes_page', 'true');
+                localStorage.setItem('episode3_completed_at', now.toString());
+                localStorage.setItem('next_episode_unlock', unlockTime.toString());
+                
+                // Update user progress in Firebase with feedback
+                if (db && (userId || userPhone)) {
+                    const updateData = {
+                        completedEpisodes: firebase.firestore.FieldValue.arrayUnion(3),
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                        name: authName || 'Anonymous',
+                        phone: userPhone,
+                        episode3Completed: true,
+                        episode3CompletedAt: firebase.firestore.Timestamp.fromMillis(now),
+                        nextEpisodeUnlock: firebase.firestore.Timestamp.fromMillis(unlockTime),
+                        // Store feedback in userProgress document
+                        episode3Feedback: {
+                            rating: rating,
+                            timestamp: firebase.firestore.Timestamp.fromMillis(now),
+                            submittedAt: new Date().toISOString()
+                        }
+                    };
+
+                    if (userDocRef) {
+                        // Update existing document
+                        await userDocRef.set(updateData, { merge: true });
+                        console.log('Episode 3 feedback saved successfully');
+                    } else {
+                        // Create new progress document if none exists
+                        await db.collection('userProgress').add({
+                            ...updateData,
+                            completedEpisodes: [3],
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        console.log('New user progress document created with Episode 3 feedback');
+                    }
+                    
+                    // Store user data in sessionStorage
+                    if (authName && userPhone) {
+                        const userData = {
+                            name: authName,
+                            phone: userPhone,
+                            episode3CompletedAt: now,
+                            nextEpisodeUnlock: unlockTime
+                        };
+                        
+                        if (userId) {
+                            userData.uid = userId;
+                        }
+                        
+                        sessionStorage.setItem('userData', JSON.stringify(userData));
+                    }
+                    
+                    // Track in LogRocket
+                    if (window.LogRocket) {
+                        LogRocket.track('Episode 3 Feedback Submitted', {
+                            rating: rating,
+                            userPhone: userPhone,
+                            completedAt: new Date(now).toISOString(),
+                            nextUnlock: new Date(unlockTime).toISOString(),
+                            isFirstTime: true
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving feedback and progress:', error);
+                LogRocket.track('Episode 3 Feedback Error', {
+                    error: error.message,
+                    userPhone: userPhone
+                });
+            }
+        }
+
+        window.showFeedbackUI = function() {
+            // Hide emoji options
+            document.querySelector('.emoji-options').style.display = 'none';
+            
+            // Show thank you message
+            document.getElementById('thankYouMessage').style.display = 'flex';
+            
+            // Show success message immediately
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'block';
+            
+            // Show the next button after a short delay
+            setTimeout(() => {
+                const nextButton = successMessage.querySelector('.next-button');
+                nextButton.style.display = 'inline-block';
+                nextButton.style.animation = 'fadeIn 0.5s ease-in-out';
+            }, 500);
+        }
+
+        window.handleNextEpisode = async function() {
+            console.log('handleNextEpisode called');
+            
+            try {
+                // Check if any timer is currently running
+                if (window.parent && window.parent.isAnyTimerRunning && window.parent.isAnyTimerRunning()) {
+                    console.log('Timer is already running, redirecting to episodes page without creating timer');
+                    window.location.href = '../index.html#episodes';
+                    return;
+                }
+
+                // Check if next episode (episode 4) is already opened
+                const phone = localStorage.getItem('auth_phone');
+                const userId = localStorage.getItem('auth_userId');
+                
+                if (db && (userId || phone)) {
+                    try {
+                        let userData = null;
+                        
+                        if (userId) {
+                            const userDoc = await db.collection('userProgress').doc(userId).get();
+                            if (userDoc.exists) {
+                                userData = userDoc.data();
+                            }
+                        } else {
+                            const userQuery = await db.collection('userProgress')
+                                .where('phone', '==', phone)
+                                .limit(1)
+                                .get();
+                            if (!userQuery.empty) {
+                                userData = userQuery.docs[0].data();
+                            }
+                        }
+                        
+                        // If episode 4 is already opened, don't create timer
+                        if (userData && userData.episode4_opened === true) {
+                            console.log('Episode 4 is already opened, redirecting without creating timer');
+                            window.location.href = '../index.html#episodes';
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Error checking episode opened status:', error);
+                    }
+                }
+                
+                // Get user data from localStorage
+                const name = localStorage.getItem('auth_name');
+                const now = new Date().getTime();
+                const unlockTime = now + (24 * 60 * 60 * 1000); // 24 hours from now
+                
+                // Update user progress in Firebase
+                if (db && (userId || phone)) {
+                    console.log('Updating Firebase user progress...');
+                    try {
+                        const userRef = userId 
+                            ? db.collection('userProgress').doc(userId)
+                            : db.collection('userProgress').where('phone', '==', phone).limit(1);
+                        
+                        const updateData = {
+                            completedEpisodes: firebase.firestore.FieldValue.arrayUnion(3),
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                            name: name || 'Anonymous',
+                            phone: phone || 'unknown',
+                            episode3Completed: true,
+                            episode3CompletedAt: firebase.firestore.Timestamp.fromMillis(now),
+                            nextEpisodeUnlock: firebase.firestore.Timestamp.fromMillis(unlockTime)
+                        };
+
+                        if (userId) {
+                            // Update by userId
+                            await userRef.set(updateData, { merge: true });
+                        } else {
+                            // Update by phone if no userId
+                            userRef.get().then((userQuery) => {
+                                if (!userQuery.empty) {
+                                    userQuery.docs[0].ref.update(updateData);
+                                } else {
+                                    // Create new progress document if none exists
+                                    db.collection('userProgress').add({
+                                        ...updateData,
+                                        completedEpisodes: [3],
+                                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+                                }
+                            }).catch(error => console.error('Error updating user progress:', error));
+                        }
+                    } catch (progressError) {
+                        console.error('Error updating user progress:', progressError);
+                    }
+                } else {
+                    console.log('No Firebase db or user data available');
+                }
+                
+                // Store user data in sessionStorage
+                if (name && phone) {
+                    const userData = {
+                        name: name,
+                        phone: phone,
+                        episode3CompletedAt: now,
+                        nextEpisodeUnlock: unlockTime
+                    };
+                    
+                    if (userId) {
+                        userData.uid = userId;
+                    }
+                    
+                    sessionStorage.setItem('userData', JSON.stringify(userData));
+                    console.log('Stored user data in sessionStorage:', userData);
+                }
+                
+                // Track in LogRocket
+                if (window.LogRocket) {
+                    LogRocket.track('Moving to Episode List', {
+                        from: 'episode3',
+                        to: 'episode_list',
+                        userPhone: phone,
+                        unlockTime: new Date(unlockTime).toISOString()
+                    });
+                }
+                
+                console.log('Redirecting to episodes page...');
+                // Redirect to episodes page
+                window.location.href = '../index.html#episodes';
+            } catch (error) {
+                console.error('Error handling navigation:', error);
+                // If there's an error, still redirect to ensure user can continue
+                console.log('Fallback redirect to episodes page...');
+                window.location.href = '../index.html#episodes';
+            }
+        }
+
+        // Simple fallback function for testing
+        window.testNavigation = function() {
+            console.log('Test navigation called');
+            alert('Navigation test - redirecting to episodes page');
+            window.location.href = '../index.html#episodes';
+        };
+
+        // Add event listeners for emoji options after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Event listeners removed to avoid conflict with onclick handlers
         });
     </script>
     <script src="../disable-search.js"></script>

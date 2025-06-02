@@ -196,12 +196,17 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            display: none;
+            visibility: hidden;
             margin: 15px auto;
             font-size: 16px;
             transition: all 0.3s ease;
             width: 100%;
             max-width: 200px;
+        }
+        .next-btn.show, .proceed-btn.show {
+            visibility: visible !important;
+            display: block !important;
+            opacity: 1 !important;
         }
         .next-btn:hover, .proceed-btn:hover {
             background-color: #0069d9;
@@ -450,6 +455,10 @@
                 isCorrect: isCorrect
             });
 
+            // Get the question container
+            const questionContainer = element.parentElement.parentElement;
+            console.log('Question container ID:', questionContainer.id);
+            
             // Clear any previous selections
             const options = element.parentElement.getElementsByClassName('option');
             for (let i = 0; i < options.length; i++) {
@@ -458,33 +467,118 @@
             
             // Select and mark the current option
             element.classList.add('selected');
+            
+            // Show appropriate feedback based on correctness
+            const correctFeedback = questionContainer.querySelector('.feedback.correct');
+            const incorrectFeedback = questionContainer.querySelector('.feedback.incorrect');
+            
             if (isCorrect) {
                 element.classList.add('correct');
-                element.parentElement.parentElement.getElementsByClassName('feedback correct')[0].style.display = 'block';
-                element.parentElement.parentElement.getElementsByClassName('feedback incorrect')[0].style.display = 'none';
+                if (correctFeedback) correctFeedback.style.display = 'block';
+                if (incorrectFeedback) incorrectFeedback.style.display = 'none';
                 
                 // Track correct answer
                 LogRocket.track('Weather Report - Correct Answer', {
-                    questionId: element.parentElement.parentElement.id
+                    questionId: questionContainer.id
                 });
             } else {
                 element.classList.add('incorrect');
-                element.parentElement.parentElement.getElementsByClassName('feedback incorrect')[0].style.display = 'block';
-                element.parentElement.parentElement.getElementsByClassName('feedback correct')[0].style.display = 'none';
+                if (incorrectFeedback) incorrectFeedback.style.display = 'block';
+                if (correctFeedback) correctFeedback.style.display = 'none';
                 
                 // Track incorrect answer
                 LogRocket.track('Weather Report - Incorrect Answer', {
-                    questionId: element.parentElement.parentElement.id,
+                    questionId: questionContainer.id,
                     selectedOption: element.textContent
                 });
             }
             
-            // Show the next button if this is the first question, or proceed button if it's the last
-            if (element.parentElement.parentElement.id === 'question1') {
-                element.parentElement.parentElement.getElementsByClassName('next-btn')[0].style.display = 'block';
-            } else {
-                element.parentElement.parentElement.getElementsByClassName('proceed-btn')[0].style.display = 'block';
+            // FORCE show buttons regardless of answer - with multiple approaches
+            setTimeout(() => {
+                if (questionContainer.id === 'question1') {
+                    // Multiple ways to find and show the Next button
+                    let nextBtn = questionContainer.querySelector('.next-btn');
+                    if (!nextBtn) {
+                        nextBtn = questionContainer.querySelector('button');
+                    }
+                    if (!nextBtn) {
+                        nextBtn = document.querySelector('#question1 .next-btn');
+                    }
+                    
+                    if (nextBtn) {
+                        // Use multiple methods to force visibility
+                        nextBtn.classList.add('show');
+                        nextBtn.style.setProperty('display', 'block', 'important');
+                        nextBtn.style.setProperty('visibility', 'visible', 'important');
+                        nextBtn.style.setProperty('opacity', '1', 'important');
+                        nextBtn.style.pointerEvents = 'auto';
+                        nextBtn.disabled = false;
+                        nextBtn.removeAttribute('hidden');
+                        nextBtn.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important;');
+                        console.log('✅ Next button FORCED visible for question 1');
+                        
+                        // Additional failsafe - remove any CSS that might hide it
+                        nextBtn.classList.remove('hidden', 'd-none');
+                    } else {
+                        console.error('❌ Could not find Next button for question 1');
+                    }
+                    
+                } else if (questionContainer.id === 'question2') {
+                    // Multiple ways to find and show the Proceed button
+                    let proceedBtn = questionContainer.querySelector('.proceed-btn');
+                    if (!proceedBtn) {
+                        proceedBtn = questionContainer.querySelector('button');
+                    }
+                    if (!proceedBtn) {
+                        proceedBtn = document.querySelector('#question2 .proceed-btn');
+                    }
+                    
+                    if (proceedBtn) {
+                        // Use multiple methods to force visibility
+                        proceedBtn.classList.add('show');
+                        proceedBtn.style.setProperty('display', 'block', 'important');
+                        proceedBtn.style.setProperty('visibility', 'visible', 'important');
+                        proceedBtn.style.setProperty('opacity', '1', 'important');
+                        proceedBtn.style.pointerEvents = 'auto';
+                        proceedBtn.disabled = false;
+                        proceedBtn.removeAttribute('hidden');
+                        proceedBtn.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important;');
+                        console.log('✅ Proceed button FORCED visible for question 2');
+                        
+                        // Additional failsafe - remove any CSS that might hide it
+                        proceedBtn.classList.remove('hidden', 'd-none');
+                    } else {
+                        console.error('❌ Could not find Proceed button for question 2');
+                    }
+                }
+                
+                // Log final button status
+                const q1NextBtn = document.querySelector('#question1 .next-btn');
+                const q2ProceedBtn = document.querySelector('#question2 .proceed-btn');
+                
+                console.log('Final button status:');
+                console.log('Q1 Next button display:', q1NextBtn?.style.display);
+                console.log('Q1 Next button visibility:', q1NextBtn?.style.visibility);
+                console.log('Q1 Next button classes:', q1NextBtn?.className);
+                console.log('Q2 Proceed button display:', q2ProceedBtn?.style.display);
+                console.log('Q2 Proceed button visibility:', q2ProceedBtn?.style.visibility);
+                console.log('Q2 Proceed button classes:', q2ProceedBtn?.className);
+                
+            }, 100); // Small delay to ensure DOM updates
+            
+            // Disable all options after selection to prevent multiple clicks
+            for (let i = 0; i < options.length; i++) {
+                options[i].style.pointerEvents = 'none';
+                options[i].style.opacity = '0.8';
             }
+            
+            // Log button visibility for debugging
+            LogRocket.track('Weather Report - Button Status', {
+                questionId: questionContainer.id,
+                selectedOption: element.textContent,
+                isCorrect: isCorrect,
+                buttonShouldBeVisible: true
+            });
         }
         
         function showNextQuestion() {
@@ -512,6 +606,14 @@
             database.ref('activities/report').set({
                 completed: true,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                console.log('Report activity completion saved to Firebase');
+                LogRocket.track('Weather Report - Completion Saved to Firebase');
+            }).catch((error) => {
+                console.error('Error saving completion to Firebase:', error);
+                LogRocket.track('Weather Report - Firebase Save Error', {
+                    error: error.message
+                });
             });
             
             disableInteraction();

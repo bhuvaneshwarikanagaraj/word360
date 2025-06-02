@@ -483,23 +483,25 @@
 
         // Update initialize function
         function initialize() {
-            // Check completion status from localStorage first
+            // Check if activity was previously completed
             try {
-                const isCompleted = window.parent.localStorage.getItem('flashcard_completed') === 'true';
-                const selectedAnswerValue = window.parent.localStorage.getItem('flashcard_selected_answer');
-                console.log("Checking completion status:", isCompleted, "Selected answer:", selectedAnswerValue);
-                
-                const completionTag = document.getElementById('completionTag');
-                const nextButton = document.getElementById('nextButton');
+                const isCompleted = localStorage.getItem('reassurance_completed') === 'true' || 
+                                  localStorage.getItem('flashcard_completed') === 'true';
+                const selectedAnswerValue = localStorage.getItem('flashcard_selected_answer');
                 
                 if (isCompleted && selectedAnswerValue) {
-                    console.log("Task was previously completed");
+                    console.log("Reassurance activity was previously completed");
+                    
                     // Show completion state
+                    const completionTag = document.getElementById('completionTag');
+                    const nextButton = document.getElementById('nextButton');
+                    
                     completionTag.textContent = "Task Completed!";
                     completionTag.classList.add('completed');
                     nextButton.classList.add('visible');
                     nextButton.style.display = 'flex';
                     taskCompleted = true;
+                    attemptMade = true;
                     
                     // Show the user's selected answer and the correct answer
                     document.querySelectorAll('.flashcard').forEach(card => {
@@ -524,48 +526,66 @@
                     // Show the appropriate explanation
                     const resultMessage = document.querySelector('.result-message');
                     if (selectedAnswerValue === correctAnswer) {
-    resultMessage.textContent = "Correct. Public reassurance involves clear and honest communication.";
-    resultMessage.classList.add('correct');
-} else {
-    resultMessage.textContent = "Incorrect. It refers to building trust through honest communication.";
+                        resultMessage.textContent = "That's right! Public reassurance means communicating effectively to calm concerns and maintain trust. It's about being honest while helping people feel secure.";
+                        resultMessage.classList.add('correct');
+                    } else {
+                        resultMessage.textContent = "Not quite. Public reassurance is about calming concerns and building trust through honest, clear communication. It's not about making false promises or hiding information.";
                         resultMessage.classList.add('incorrect');
                     }
                     resultMessage.style.display = 'block';
                     
                     // Hide check button
                     document.querySelector('.check-button').style.display = 'none';
-
-                    // Add click handler for next button
-                    nextButton.onclick = goToNextPanel;
-                } else {
-                    console.log("Task not completed yet");
-                    // Reset for new attempt
-                    completionTag.textContent = "Not completed yet";
-                    completionTag.classList.remove('completed');
-                    nextButton.classList.remove('visible');
-                    nextButton.style.display = 'none';
                     
-                    // Reset UI elements
-                    document.querySelectorAll('.flashcard').forEach(card => {
-                        card.classList.remove('selected', 'correct', 'incorrect');
-                        card.style.opacity = '1';
-                        card.style.cursor = 'pointer';
-                        card.style.pointerEvents = 'auto';
-                    });
-                    
-                    if (document.querySelector('.check-button')) {
-                        document.querySelector('.check-button').style.display = 'block';
-                        document.querySelector('.check-button').disabled = true;
-                    }
-                    
-                    const resultMessage = document.querySelector('.result-message');
-                    resultMessage.textContent = '';
-                    resultMessage.classList.remove('correct', 'incorrect');
-                    resultMessage.style.display = 'none';
+                    return; // Exit early if completed
                 }
             } catch (e) {
                 console.error("Error checking completion status:", e);
             }
+            
+            // If not completed, start fresh
+            console.log("Starting fresh reassurance activity");
+            
+            // Reset all variables to initial state
+            taskCompleted = false;
+            attemptMade = false;
+            selectedCard = null;
+            
+            // Reset UI elements to initial state
+            const completionTag = document.getElementById('completionTag');
+            const nextButton = document.getElementById('nextButton');
+            
+            // Hide completion tag
+            completionTag.textContent = "Not completed yet";
+            completionTag.classList.remove('completed');
+            
+            // Hide next button
+            nextButton.classList.remove('visible');
+            nextButton.style.display = 'none';
+            
+            // Reset all flashcards to initial state
+            document.querySelectorAll('.flashcard').forEach(card => {
+                card.classList.remove('selected', 'correct', 'incorrect');
+                card.style.opacity = '1';
+                card.style.cursor = 'pointer';
+                card.style.pointerEvents = 'auto';
+            });
+            
+            // Reset check button
+            const checkButton = document.querySelector('.check-button');
+            if (checkButton) {
+                checkButton.style.display = 'block';
+                checkButton.classList.remove('active');
+                checkButton.disabled = true;
+            }
+            
+            // Reset result message
+            const resultMessage = document.querySelector('.result-message');
+            resultMessage.textContent = '';
+            resultMessage.classList.remove('correct', 'incorrect');
+            resultMessage.style.display = 'none';
+            
+            console.log("Activity initialized in fresh state");
         }
 
         // Update the checkAnswer function
@@ -608,13 +628,21 @@
             completionTag.textContent = "Task Completed!";
             completionTag.classList.add('completed');
             
-            // Store completion status
+            // Store completion status for parent episode to track
             try {
-                window.parent.localStorage.setItem('flashcard_completed', 'true');
-                window.parent.localStorage.setItem('flashcard_selected_answer', selectedCard.dataset.value);
+                localStorage.setItem('reassurance_completed', 'true');
+                localStorage.setItem('flashcard_completed', 'true');
+                localStorage.setItem('flashcard_selected_answer', selectedCard.dataset.value);
                 
                 // Notify parent window of completion
                 window.parent.postMessage('flashcard_success', '*');
+                window.parent.postMessage({
+                    type: 'activity_completed',
+                    activity: 'reassurance',
+                    completed: true
+                }, '*');
+                
+                console.log('Reassurance activity marked as completed');
             } catch (e) {
                 console.error("Error storing completion status:", e);
             }

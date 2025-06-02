@@ -1,0 +1,2963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>Instagram-like Swipe Content</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile */
+            margin: 0;
+            padding: 0;
+            position: fixed;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: pan-y;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height */
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+
+        .story-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            transform: translateY(0);
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+            touch-action: pan-y;
+        }
+
+        .story {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: max(env(safe-area-inset-top), 60px) 20px max(env(safe-area-inset-bottom), 40px) 20px;
+            will-change: transform;
+        }
+
+        /* Story specific backgrounds */
+        .story-1 {
+            background: #6366f1;
+        }
+
+        .story-2 {
+            background: #ec4899;
+        }
+
+        .story-3 {
+            background: #06b6d4;
+        }
+
+        .story-4 {
+            background: #10b981;
+        }
+
+        .story-5 {
+            background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+            position: relative;
+            overflow: hidden;
+            height: 100vh;
+            height: 100dvh;
+            display: flex !important; /* Force display */
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            visibility: visible !important; /* Force visibility */
+            opacity: 1 !important; /* Force opacity */
+        }
+
+        .image-container {
+            width: min(90%, 400px);
+            max-width: 90vw;
+            aspect-ratio: 1 / 1;
+            border-radius: min(12px, 3vw);
+            overflow: hidden;
+            margin-bottom: clamp(20px, 5vh, 30px);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            will-change: transform;
+            transform: translateZ(0); /* Hardware acceleration */
+        }
+
+        .image-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.05));
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container:hover::before {
+            opacity: 1;
+        }
+
+        /* Placeholder styling for image containers */
+        .story-1 .image-container {
+            background-image: url('https://your-image-url.com/image1.jpg');
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+        }
+
+
+        .story-2 .image-container {
+            background-image: url('https://your-image-url.com/image2.jpg');
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+        }
+
+        .story-3 .image-container {
+            background-image: url('https://your-image-url.com/image3.jpg');
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+        }
+
+     
+
+        .story-4 .image-container {
+            background-image: url('https://your-image-url.com/image4.jpg');
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+        }
+
+    
+
+        .story-5 .image-container {
+            background-image: url('https://your-image-url.com/image5.jpg');
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+        }
+
+
+
+        /* When images are added, hide the emoji placeholders */
+        .image-container.has-image::after {
+            display: none;
+        }
+
+        .story-content {
+            position: relative;
+            z-index: 2;
+            max-width: 400px;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .story h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.3;
+            color: #fff;
+        }
+
+        .story p {
+            font-size: 1em;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .story .emoji {
+            font-size: 2em;
+            margin: 15px 0;
+            display: block;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: max(env(safe-area-inset-top), 10px);
+            left: max(env(safe-area-inset-left), 20px);
+            right: max(env(safe-area-inset-right), 20px);
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            width: 20%;
+            transition: width 0.3s ease;
+            will-change: width;
+        }
+
+        .navigation-hint {
+            position: fixed;
+            bottom: max(env(safe-area-inset-bottom), 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: clamp(12px, 3vw, 14px);
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+
+        .swipe-indicator {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 24px;
+            z-index: 100;
+            animation: bounce 2s infinite;
+        }
+
+        .swipe-up-indicator {
+            position: fixed;
+            right: 20px;
+            top: 30%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 20px;
+            z-index: 100;
+            animation: bounceUp 2s infinite;
+        }
+
+        .swipe-down-indicator {
+            position: fixed;
+            right: 20px;
+            bottom: 30%;
+            transform: translateY(50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 20px;
+            z-index: 100;
+            animation: bounceDown 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-50%); }
+            50% { transform: translateY(-60%); }
+        }
+
+        @keyframes bounceUp {
+            0%, 100% { transform: translateY(-50%) translateX(0); }
+            50% { transform: translateY(-60%) translateX(-5px); }
+        }
+
+        @keyframes bounceDown {
+            0%, 100% { transform: translateY(50%) translateX(0); }
+            50% { transform: translateY(60%) translateX(-5px); }
+        }
+
+        /* Touch feedback */
+        .story.touching {
+            transform: scale(0.98);
+            transition: transform 0.1s ease;
+        }
+
+        /* Completion message styles */
+        .completion-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+            transform: translateY(100%);
+        }
+
+        .completion-message.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .completion-message h1 {
+            font-size: clamp(2em, 6vw, 3em);
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .completion-message p {
+            font-size: clamp(1em, 4vw, 1.2em);
+            margin-bottom: 15px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .completion-message .emoji {
+            font-size: clamp(3em, 8vw, 4em);
+            margin: 20px 0;
+            animation: bounce 2s infinite;
+        }
+
+        .restart-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: clamp(1em, 3.5vw, 1.1em);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .restart-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .restart-button:active {
+            transform: translateY(0);
+        }
+
+        /* Mobile optimizations for all phone sizes */
+        @media (max-width: 768px) {
+            .story {
+                padding: max(env(safe-area-inset-top), 50px) 15px max(env(safe-area-inset-bottom), 25px) 15px;
+            }
+            
+            .image-container {
+                width: min(95%, 350px);
+                margin-bottom: clamp(15px, 4vh, 25px);
+            }
+            
+            .story h1 {
+                font-size: clamp(1.2em, 4vw, 1.5em);
+                margin-bottom: clamp(8px, 2vh, 12px);
+                line-height: 1.2;
+            }
+            
+            .story p {
+                font-size: clamp(0.85em, 3.5vw, 0.95em);
+                margin-bottom: clamp(6px, 1.5vh, 10px);
+                line-height: 1.4;
+            }
+            
+            .story .emoji {
+                font-size: clamp(1.5em, 5vw, 1.8em);
+                margin: clamp(8px, 2vh, 12px) 0;
+            }
+            
+            .story-content {
+                padding: 0 5px;
+                max-width: 95%;
+            }
+        }
+
+        /* Small phones (iPhone SE, small Android) */
+        @media (max-width: 480px) {
+            .story {
+                padding: max(env(safe-area-inset-top), 40px) 10px max(env(safe-area-inset-bottom), 20px) 10px;
+            }
+            
+            .image-container {
+                width: min(98%, 320px);
+                margin-bottom: clamp(12px, 3vh, 20px);
+                border-radius: min(8px, 2vw);
+            }
+            
+            .story h1 {
+                font-size: clamp(1.1em, 4.5vw, 1.3em);
+                margin-bottom: clamp(6px, 1.5vh, 10px);
+            }
+            
+            .story p {
+                font-size: clamp(0.8em, 3.8vw, 0.9em);
+                margin-bottom: clamp(4px, 1vh, 8px);
+            }
+            
+            .story .emoji {
+                font-size: clamp(1.3em, 5.5vw, 1.6em);
+                margin: clamp(6px, 1.5vh, 10px) 0;
+            }
+        }
+
+        /* Very small phones */
+        @media (max-width: 360px) {
+            .story {
+                padding: max(env(safe-area-inset-top), 35px) 8px max(env(safe-area-inset-bottom), 15px) 8px;
+            }
+            
+            .image-container {
+                width: min(99%, 300px);
+                margin-bottom: clamp(10px, 2.5vh, 15px);
+            }
+            
+            .story h1 {
+                font-size: clamp(1em, 5vw, 1.2em);
+                margin-bottom: clamp(4px, 1vh, 8px);
+            }
+            
+            .story p {
+                font-size: clamp(0.75em, 4vw, 0.85em);
+                margin-bottom: clamp(3px, 0.8vh, 6px);
+            }
+        }
+
+        /* Large phones and phablets */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .image-container {
+                width: min(85%, 380px);
+            }
+            
+            .story h1 {
+                font-size: clamp(1.4em, 3.5vw, 1.6em);
+            }
+            
+            .story p {
+                font-size: clamp(0.9em, 3vw, 1em);
+            }
+        }
+
+        /* Landscape orientation optimization */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .story {
+                padding: max(env(safe-area-inset-top), 20px) 15px max(env(safe-area-inset-bottom), 15px) 15px;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+            }
+            
+            .image-container {
+                width: min(40vw, 200px);
+                margin-bottom: 0;
+                flex-shrink: 0;
+            }
+            
+            .story-content {
+                flex: 1;
+                max-width: 50vw;
+                text-align: left;
+            }
+            
+            .story h1 {
+                font-size: clamp(1em, 3vw, 1.2em);
+                margin-bottom: 8px;
+            }
+            
+            .story p {
+                font-size: clamp(0.8em, 2.5vw, 0.9em);
+                margin-bottom: 6px;
+            }
+            
+            .story .emoji {
+                font-size: clamp(1.2em, 4vw, 1.4em);
+                margin: 8px 0;
+            }
+        }
+
+        /* Typewriter animation styles */
+        .typewriter {
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 0 auto;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+            border-right: 3px solid rgba(255, 255, 255, 0.75);
+            max-width: 90vw; /* Prevent overflow on small screens */
+        }
+
+        /* Story 2 specific typewriter fix */
+        .story-2 .typewriter {
+            white-space: normal; /* Allow text wrapping */
+            overflow: visible; /* Show all text */
+            width: auto; /* Auto width */
+            max-width: 90vw; /* Prevent overflow */
+            text-align: center;
+            line-height: 1.3;
+            animation: fadeIn 1s ease-in-out forwards, blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typewriter-line {
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 0 auto;
+            opacity: 0;
+            animation: fadeInTyping 0.5s ease-in-out forwards;
+            border-right: 2px solid rgba(255, 255, 255, 0.5);
+            margin-bottom: 15px;
+        }
+
+        .typewriter-line:last-child {
+            border-right: none;
+        }
+
+        .typewriter-line.line-1 {
+            animation-delay: 0.5s;
+            animation: fadeInTyping 0.5s ease-in-out 0.5s forwards, typing-line1 3s steps(50, end) 0.5s forwards;
+        }
+
+        .typewriter-line.line-2 {
+            animation-delay: 4s;
+            animation: fadeInTyping 0.5s ease-in-out 4s forwards, typing-line2 2s steps(20, end) 4s forwards;
+        }
+
+        .typewriter-line.line-3 {
+            animation-delay: 7s;
+            animation: fadeInTyping 0.5s ease-in-out 7s forwards;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes typing-line1 {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes typing-line2 {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes typing-line3 {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes fadeInTyping {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: rgba(255, 255, 255, 0.75); }
+        }
+
+        /* Highlighted numbers */
+        .highlight-number {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            font-size: 1.2em;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+            display: inline-block;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.5));
+            }
+            to {
+                filter: drop-shadow(0 0 15px rgba(255, 107, 107, 0.8));
+            }
+        }
+
+        /* Number counting animation */
+        .counting-number {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            font-size: 1.3em;
+            display: inline-block;
+            animation: glow 2s ease-in-out infinite alternate;
+            min-width: 1em;
+        }
+
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.5));
+            }
+            to {
+                filter: drop-shadow(0 0 15px rgba(255, 107, 107, 0.8));
+            }
+        }
+
+        /* Story 1 specific styles - centered text */
+        .story-1 .story-content {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .story-1 h1 {
+            font-size: clamp(2em, 6vw, 2.5em);
+            margin: 20px 0;
+            font-weight: 800;
+        }
+
+        .story-1 p {
+            font-size: clamp(1.1em, 4vw, 1.3em);
+            line-height: 1.6;
+            margin-bottom: 15px;
+            max-width: 90%;
+        }
+
+        /* Story 2 specific styles - no image */
+        .story-2 .story-content {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 25vh;
+        }
+
+        .story-2 h1 {
+            font-size: clamp(2.5em, 8vw, 4em);
+            margin-bottom: 60px;
+            font-weight: 800;
+        }
+
+        .story-2 h3 {
+            font-size: clamp(2.5em, 8vw, 4em);
+            margin-bottom: 60px;
+            font-weight: 800;
+        }
+
+        .story-2 .typewriter-line {
+            font-size: clamp(1.3em, 5vw, 1.8em);
+            line-height: 1.6;
+            max-width: 90%;
+            margin: 0 auto 20px auto;
+        }
+
+        /* Story 3 specific styles - simplified and readable */
+        .story-3 .story-content {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .story-3 h1 {
+            font-size: clamp(1.4em, 5vw, 2.2em);
+            margin: 0 0 30px 0;
+            font-weight: 700;
+            line-height: 1.3;
+            max-width: 95%;
+            word-wrap: break-word;
+            hyphens: auto;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .story-3 h2 {
+            font-size: clamp(2.2em, 6vw, 3.2em);
+            margin: 20px 0;
+            font-weight: 800;
+            line-height: 1.2;
+            max-width: 95%;
+            word-wrap: break-word;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .story-3 .typewriter-line {
+            font-size: inherit;
+            line-height: inherit;
+            max-width: 95%;
+            margin: 0 auto;
+            text-align: center;
+            white-space: normal;
+            word-wrap: break-word;
+            hyphens: auto;
+            overflow: visible;
+        }
+
+        .story-3 .counting-number {
+            font-size: 1.1em;
+            white-space: nowrap;
+        }
+
+        /* Wow emoji with typewriter timing */
+        .story-3 .wow-emoji {
+            font-size: clamp(4em, 10vw, 6em);
+            margin: 30px 0;
+            animation: fadeInTyping 0.5s ease-in-out 7s forwards, bounceWow 2s ease-in-out 7.5s infinite, rainbow 3s linear 7.5s infinite;
+            opacity: 0;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+            transform-origin: center;
+        }
+
+        /* Mobile specific adjustments for story 3 */
+        @media (max-width: 768px) {
+            .story-3 h1 {
+                font-size: clamp(1.2em, 4.5vw, 1.8em);
+                line-height: 1.3;
+            }
+            
+            .story-3 .typewriter-line {
+                font-size: clamp(1.2em, 4.5vw, 1.8em);
+                line-height: 1.3;
+            }
+            
+            .story-3 .counting-number {
+                font-size: 1.05em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .story-3 h1 {
+                font-size: clamp(1em, 4vw, 1.5em);
+                line-height: 1.2;
+                padding: 0 10px;
+            }
+            
+            .story-3 .typewriter-line {
+                font-size: clamp(1em, 4vw, 1.5em);
+                line-height: 1.2;
+                padding: 0 10px;
+            }
+            
+            .story-3 .counting-number {
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .story-3 h1 {
+                font-size: clamp(0.9em, 3.8vw, 1.3em);
+                line-height: 1.1;
+                padding: 0 5px;
+            }
+            
+            .story-3 .typewriter-line {
+                font-size: clamp(0.9em, 3.8vw, 1.3em);
+                line-height: 1.1;
+                padding: 0 5px;
+            }
+        }
+
+        /* Wow emoji styles for kids */
+        .wow-emoji {
+            font-size: clamp(3em, 8vw, 5em);
+            margin: 20px 0;
+            animation: bounceWow 2s ease-in-out infinite, rainbow 3s linear infinite;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+            transform-origin: center;
+        }
+
+        .wow-emoji:first-child {
+            animation-delay: 0s;
+        }
+
+        .wow-emoji:last-child {
+            animation-delay: 1s;
+        }
+
+        @keyframes bounceWow {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg); 
+            }
+            25% { 
+                transform: scale(1.2) rotate(-5deg); 
+            }
+            50% { 
+                transform: scale(1.3) rotate(5deg); 
+            }
+            75% { 
+                transform: scale(1.1) rotate(-3deg); 
+            }
+        }
+
+        @keyframes rainbow {
+            0% { filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.6)) hue-rotate(0deg); }
+            16% { filter: drop-shadow(0 0 10px rgba(255, 165, 0, 0.6)) hue-rotate(60deg); }
+            33% { filter: drop-shadow(0 0 10px rgba(255, 255, 0, 0.6)) hue-rotate(120deg); }
+            50% { filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.6)) hue-rotate(180deg); }
+            66% { filter: drop-shadow(0 0 10px rgba(0, 0, 255, 0.6)) hue-rotate(240deg); }
+            83% { filter: drop-shadow(0 0 10px rgba(128, 0, 128, 0.6)) hue-rotate(300deg); }
+            100% { filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.6)) hue-rotate(360deg); }
+        }
+
+        /* Enhanced counting number for kids */
+        .counting-number {
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            background-size: 400% 400%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            font-size: 1.4em;
+            display: inline-block;
+            animation: gradientShift 2s ease-in-out infinite, pulse 1.5s ease-in-out infinite;
+            min-width: 1em;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                box-shadow: 0 0 15px rgba(254, 202, 87, 0.5);
+            }
+            50% { 
+                box-shadow: 0 0 25px rgba(254, 202, 87, 0.8);
+            }
+        }
+
+        /* Story 3 enhanced for kids */
+        .story-3 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        .story-3 .story-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+            max-height: 100vh;
+            max-height: 100dvh;
+        }
+
+        /* Video-style text animations for story 3 */
+        .video-text {
+            opacity: 0;
+            transform: translateY(50px) scale(0.8);
+            animation-fill-mode: forwards;
+            margin: clamp(10px, 3vh, 20px) 0;
+            max-width: 95%;
+            text-align: center;
+        }
+
+        .video-text.line-1 {
+            animation: videoSlideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s forwards;
+        }
+
+        .video-text.line-2 {
+            animation: videoSlideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.5s forwards, 
+                       videoPulse 0.6s ease-out 3.5s forwards;
+        }
+
+        .video-text.line-3 {
+            animation: videoSlideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 5s forwards,
+                       videoExplode 0.8s ease-out 5.8s forwards;
+        }
+
+        @keyframes videoSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.8);
+            }
+            60% {
+                opacity: 0.8;
+                transform: translateY(-10px) scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes videoPulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes videoExplode {
+            0% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            50% {
+                transform: scale(1.3);
+                filter: brightness(1.5);
+            }
+            100% {
+                transform: scale(1.1);
+                filter: brightness(1.2);
+            }
+        }
+
+        /* Video-style text styling - optimized for no scroll */
+        .story-3 .video-text h1 {
+            font-size: clamp(1.2em, 4.5vw, 2em);
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            color: #fff;
+            margin: 0 0 30px 0;
+            line-height: 1.3;
+            max-width: 95%;
+            word-wrap: break-word;
+        }
+
+        .story-3 .video-text h2 {
+            font-size: clamp(2.2em, 6vw, 3.2em);
+            font-weight: 800;
+            margin: 20px 0;
+            line-height: 1.2;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+            max-width: 95%;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        /* Enhanced counting number for video style - simplified */
+        .video-counting-number {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            font-size: 1.1em;
+            display: inline-block;
+            animation: gradientShift 2s ease-in-out infinite;
+            text-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+        }
+
+        /* Video-style emoji - simplified */
+        .video-emoji {
+            font-size: clamp(3em, 8vw, 5em);
+            margin: 30px 0;
+            display: inline-block;
+            filter: drop-shadow(0 2px 10px rgba(255, 255, 255, 0.3));
+        }
+
+        /* Story 4 drag and drop spelling task styles */
+        .story-4 .story-content {
+            justify-content: flex-start;
+            align-items: center;
+            text-align: center;
+            padding: 30px 15px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .spelling-task {
+            max-width: 95%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .spelling-task h1 {
+            font-size: clamp(1.3em, 4.5vw, 1.8em);
+            margin-bottom: 15px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .fact-text {
+            font-size: clamp(1em, 3.5vw, 1.2em);
+            color: rgba(255, 255, 255, 0.95);
+            margin: 15px 0;
+            line-height: 1.5;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 15px;
+            border-radius: 12px;
+            border-left: 4px solid #feca57;
+        }
+
+        .wrong-spelling {
+            text-decoration: line-through;
+            text-decoration-color: #ff4757;
+            text-decoration-thickness: 2px;
+        }
+
+        .spelling-hint {
+            font-size: clamp(0.9em, 3.2vw, 1.1em);
+            color: rgba(255, 255, 255, 0.8);
+            margin: 10px 0 20px 0;
+            font-style: italic;
+        }
+
+        .letter-bank {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            min-height: 80px;
+            max-width: 100%;
+            overflow: visible;
+        }
+
+        .letter-tile {
+            width: clamp(32px, 7vw, 42px);
+            height: clamp(32px, 7vw, 42px);
+            background: linear-gradient(135deg, #48dbfb, #0abde3);
+            color: white;
+            font-size: clamp(0.9em, 3.5vw, 1.2em);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: grab;
+            user-select: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+            min-width: 32px;
+            min-height: 32px;
+        }
+
+        .letter-tile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(72, 219, 251, 0.4);
+        }
+
+        .letter-tile:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .letter-tile.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg) scale(1.1);
+            z-index: 1000;
+        }
+
+        .drop-zone {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .drop-slot {
+            width: clamp(35px, 8vw, 45px);
+            height: clamp(35px, 8vw, 45px);
+            border: 2px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1em, 4vw, 1.3em);
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .drop-slot.drag-over {
+            border-color: #feca57;
+            background: rgba(254, 202, 87, 0.2);
+            transform: scale(1.05);
+        }
+
+        .drop-slot.filled {
+            background: linear-gradient(135deg, #48dbfb, #0abde3);
+            color: white;
+            border-color: #48dbfb;
+            border-style: solid;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .drop-slot.selected {
+            border-color: #feca57;
+            background: rgba(254, 202, 87, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(254, 202, 87, 0.5);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .letter-content {
+            font-size: inherit;
+            font-weight: inherit;
+            color: inherit;
+            z-index: 1;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff4757;
+            color: white;
+            border: none;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(255, 71, 87, 0.3);
+        }
+
+        .remove-btn:hover {
+            background: #ff3742;
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(255, 71, 87, 0.4);
+        }
+
+        .remove-btn:active {
+            transform: scale(0.95);
+        }
+
+        .attempts-counter {
+            font-size: clamp(0.9em, 3.2vw, 1.1em);
+            color: #feca57;
+            font-weight: 700;
+            margin: 15px 0 10px 0;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .backspace-btn {
+            background: linear-gradient(135deg, #feca57, #ff9ff3);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: clamp(0.9em, 3.5vw, 1.1em);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(254, 202, 87, 0.3);
+            min-width: 120px;
+        }
+
+        .backspace-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(254, 202, 87, 0.4);
+        }
+
+        .backspace-btn:active {
+            transform: translateY(0);
+        }
+
+        .backspace-btn:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .check-spelling-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: clamp(0.9em, 3.5vw, 1.1em);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .check-spelling-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .check-spelling-btn:active {
+            transform: translateY(0);
+        }
+
+        .check-spelling-btn:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .feedback-message {
+            font-size: clamp(0.9em, 3.2vw, 1.1em);
+            font-weight: 600;
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            min-height: 20px;
+        }
+
+        .feedback-message.success {
+            background: rgba(72, 219, 251, 0.2);
+            color: #48dbfb;
+            border: 2px solid rgba(72, 219, 251, 0.4);
+        }
+
+        .feedback-message.error {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 2px solid rgba(255, 107, 107, 0.4);
+        }
+
+        .feedback-message.warning {
+            background: rgba(254, 202, 87, 0.2);
+            color: #feca57;
+            border: 2px solid rgba(254, 202, 87, 0.4);
+        }
+
+        /* Mobile adjustments for story 4 */
+        @media (max-width: 768px) {
+            .story-4 .story-content {
+                padding: 25px 12px;
+            }
+            
+            .letter-bank {
+                gap: 6px;
+                padding: 12px;
+                margin: 12px 0;
+            }
+            
+            .drop-zone {
+                gap: 4px;
+                padding: 12px;
+            }
+            
+            .letter-tile, .drop-slot {
+                width: clamp(32px, 7.5vw, 42px);
+                height: clamp(32px, 7.5vw, 42px);
+                font-size: clamp(0.9em, 3.5vw, 1.2em);
+            }
+            
+            .game-controls {
+                flex-direction: column;
+                gap: 8px;
+                margin: 12px 0;
+            }
+            
+            .check-spelling-btn {
+                width: 100%;
+                max-width: 250px;
+                padding: 10px 20px;
+                font-size: clamp(0.85em, 3.2vw, 1em);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .story-4 .story-content {
+                padding: 20px 10px;
+            }
+            
+            .spelling-task {
+                gap: 12px;
+            }
+            
+            .letter-bank {
+                gap: 4px;
+                padding: 10px;
+                margin: 10px 0;
+            }
+            
+            .drop-zone {
+                gap: 3px;
+                padding: 10px;
+            }
+            
+            .letter-tile, .drop-slot {
+                width: clamp(28px, 6.5vw, 35px);
+                height: clamp(28px, 6.5vw, 35px);
+                font-size: clamp(0.8em, 3vw, 1em);
+            }
+            
+            .fact-text {
+                padding: 10px 12px;
+                font-size: clamp(0.9em, 3.2vw, 1em);
+            }
+            
+            .game-controls {
+                gap: 6px;
+                margin: 10px 0;
+            }
+            
+            .check-spelling-btn {
+                padding: 8px 16px;
+                font-size: clamp(0.8em, 3vw, 0.95em);
+                min-width: 100px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .letter-bank {
+                gap: 3px;
+                padding: 8px;
+                margin: 8px 0;
+            }
+            
+            .drop-zone {
+                gap: 2px;
+                padding: 8px;
+            }
+            
+            .letter-tile, .drop-slot {
+                width: clamp(26px, 6vw, 32px);
+                height: clamp(26px, 6vw, 32px);
+                font-size: clamp(0.75em, 2.8vw, 0.9em);
+            }
+        }
+
+        /* Spelling Task Styles */
+        .spelling-task {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            margin: 20px 0;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .spelling-task h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .fact-text {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .wrong-spelling {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            padding: 5px 10px;
+            border-radius: 8px;
+            text-decoration: line-through;
+            font-weight: bold;
+        }
+
+        .spelling-hint {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .speaker-icon {
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .speaker-icon:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .revealed-letters {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 30px 0;
+            letter-spacing: 0.2em;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            max-width: 500px;
+            margin: 15px auto;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .key {
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 35px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .key:hover {
+            background: linear-gradient(145deg, #f0f0f0, #d0d0d0);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .key:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .key:disabled,
+        .key.used {
+            background: linear-gradient(145deg, #95a5a6, #7f8c8d);
+            color: #fff;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .key.clicked {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            transform: scale(0.95);
+        }
+
+        .key.correct {
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+            color: white;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .key.incorrect {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            color: white;
+            animation: incorrectShake 0.6s ease;
+        }
+
+        .letter-slot {
+            display: inline-block;
+            width: 30px;
+            height: 40px;
+            margin: 0 3px;
+            border: 2px solid #fff;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.1);
+            text-align: center;
+            line-height: 36px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .letter-slot.filled {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            border-color: #3498db;
+            color: white;
+        }
+
+        .letter-slot.revealed {
+            background: linear-gradient(145deg, #f39c12, #e67e22);
+            border-color: #f39c12;
+            color: white;
+        }
+
+        .letter-slot.correct {
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+            border-color: #2ecc71;
+            animation: correctPulse 0.6s ease;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .check-button, .hint-button, .backspace-button {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .hint-button {
+            background: linear-gradient(145deg, #f39c12, #e67e22);
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+
+        .backspace-button {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            padding: 15px 20px;
+        }
+
+        .check-button:hover, .hint-button:hover, .backspace-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .hint-button:hover {
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+        }
+
+        .backspace-button:hover {
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .feedback-message {
+            font-size: 1.3em;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            min-height: 20px;
+            text-align: center;
+        }
+
+        .feedback-message.success {
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .feedback-message.error {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .feedback-message.warning {
+            background: linear-gradient(145deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .feedback-message.hint {
+            background: linear-gradient(145deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .revealed-letters {
+                font-size: 1.8em;
+                letter-spacing: 0.1em;
+                margin: 10px 0;
+            }
+            
+            .keyboard {
+                gap: 4px;
+                padding: 8px;
+                margin: 10px auto;
+            }
+            
+            .keyboard-row {
+                gap: 3px;
+            }
+            
+            .key {
+                padding: 6px 4px;
+                font-size: 0.9em;
+                min-width: 28px;
+                height: 35px;
+            }
+            
+            .letter-slot {
+                width: 25px;
+                height: 35px;
+                line-height: 31px;
+                font-size: 1em;
+                margin: 0 2px;
+            }
+            
+            .spelling-task h1 {
+                font-size: 1.8em;
+                margin: 10px 0;
+            }
+            
+            .button-container {
+                gap: 10px;
+                margin: 15px 0;
+            }
+            
+            .check-button, .hint-button, .backspace-button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .revealed-letters {
+                font-size: 1.4em;
+                margin: 8px 0;
+            }
+            
+            .keyboard {
+                gap: 3px;
+                padding: 5px;
+                margin: 8px auto;
+            }
+            
+            .keyboard-row {
+                gap: 2px;
+            }
+            
+            .key {
+                padding: 5px 3px;
+                font-size: 0.8em;
+                min-width: 24px;
+                height: 30px;
+            }
+            
+            .letter-slot {
+                width: 20px;
+                height: 30px;
+                line-height: 26px;
+                font-size: 0.9em;
+                margin: 0 1px;
+            }
+            
+            .spelling-task h1 {
+                font-size: 1.5em;
+                margin: 8px 0;
+            }
+            
+            .button-container {
+                gap: 8px;
+                margin: 12px 0;
+            }
+            
+            .check-button, .hint-button, .backspace-button {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+        }
+
+        /* Story 5 sunset video-style animations */
+        .story-5 .story-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+            max-height: 100vh;
+            max-height: 100dvh;
+        }
+
+        /* Apple-style image zoom effect */
+        .sunset-image {
+            animation: appleZoom 8s ease-out forwards;
+            transform-origin: center center;
+            will-change: transform;
+        }
+
+        @keyframes appleZoom {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(1.15);
+            }
+        }
+
+        /* Video-style text animations for sunset */
+        .sunset-text {
+            opacity: 1; /* Make visible by default instead of 0 */
+            transform: translateY(0); /* Start in normal position */
+            animation-fill-mode: forwards;
+            margin: clamp(15px, 4vh, 25px) 0;
+            max-width: 95%;
+            text-align: center;
+        }
+
+        .sunset-text.line-1 {
+            animation: sunsetSlideIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1s forwards;
+        }
+
+        .sunset-text.line-2 {
+            animation: sunsetSlideIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.5s forwards;
+        }
+
+        .sunset-text.line-3 {
+            animation: sunsetSlideIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 4s forwards,
+                       sunsetGlow 1s ease-out 5s forwards;
+        }
+
+        @keyframes sunsetSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(60px) scale(0.9);
+            }
+            60% {
+                opacity: 0.8;
+                transform: translateY(-15px) scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes sunsetGlow {
+            0% {
+                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                text-shadow: 0 4px 20px rgba(255, 126, 95, 0.6), 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+            100% {
+                text-shadow: 0 4px 15px rgba(255, 126, 95, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        /* Sunset text styling */
+        .story-5 .sunset-text h1 {
+            font-size: clamp(1.4em, 5vw, 2.4em);
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            color: #fff;
+            margin: 0;
+            line-height: 1.2;
+            max-width: 95%;
+            word-wrap: break-word;
+            text-align: center;
+        }
+
+        .story-5 .sunset-text p {
+            font-size: clamp(1.1em, 4vw, 1.6em);
+            font-weight: 500;
+            margin: 0;
+            line-height: 1.3;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            max-width: 95%;
+            word-wrap: break-word;
+            text-align: center;
+        }
+
+        /* Mobile optimization for story 5 */
+        @media (max-height: 600px) {
+            .story-5 .sunset-text h1 {
+                font-size: clamp(1.2em, 4.5vw, 2em);
+            }
+            
+            .story-5 .sunset-text p {
+                font-size: clamp(1em, 3.5vw, 1.4em);
+            }
+            
+            .sunset-text {
+                margin: clamp(10px, 3vh, 20px) 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        
+        <div class="swipe-indicator">↑</div>
+        
+        <div class="swipe-up-indicator">↑</div>
+        
+        <div class="swipe-down-indicator">↓</div>
+
+        <div class="story-container" id="storyContainer">
+            <!-- Story 1: Burj Khalifa -->
+            <div class="story story-1" data-story="0">
+                <div class="image-container" style="background-image: url('./1.png');"></div>
+                <div class="story-content">
+                    <p>You're standing at the base of a building so tall… you have to tilt your entire body just to see the top.</p>
+                    <p>Even then—you still can't.</p>
+                    <h1>Enter the Burj Khalifa.</h1>
+                </div>
+            </div>
+            
+            <!-- Story 2 -->
+            <div class="story story-2" data-story="1">
+                <div class="story-content">
+                    <h3 class="typewriter">It is 828 Meters High</h3>
+
+                </div>
+            </div>
+            
+            <!-- Story 3 -->
+            <div class="story story-3" data-story="2">
+                <div class="story-content">
+                    <div class="video-text line-1">
+                        <h1>Do you know how many floors the building has?</h1>
+                    </div>
+                    <div class="video-text line-2">
+                        <h2><span class="video-counting-number" data-target="163">0</span> floors!</h2>
+                    </div>
+                    <div class="video-text line-3">
+                        <div class="video-emoji">🤩</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Story 4 -->
+            <div class="story story-4" data-story="3">
+                <div class="story-content">
+                    <div class="spelling-task">
+                        <h1>Spell the word correctly!</h1>
+                        <div class="fact-text">The Burj Khalifa's <span class="wrong-spelling">Arkitectur</span> took 6 years to build!</div>
+                        <div class="spelling-hint">Use the keyboard below to spell the word correctly.</div>
+                        
+                        <i class="fas fa-volume-up speaker-icon" onclick="playArchitectureWord()">🔊</i>
+                        
+                        <div class="revealed-letters"></div>
+                        
+                        <div class="keyboard"></div>
+
+                        <div class="button-container">
+                            <button class="check-button" onclick="checkSpelling()">CHECK</button>
+                            <button class="hint-button" onclick="showHint()">HINT</button>
+                            <button class="backspace-button" onclick="removeLastLetter()">⌫</button>
+                        </div>
+
+                        <div class="feedback-message"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation-hint">Swipe ↑ for next • Swipe ↓ for previous</div>
+    </div>
+
+    <!-- Completion Message -->
+    <div class="completion-message" id="completionMessage">
+        <div class="emoji">🎉</div>
+        <h1>Congratulations!</h1>
+        <p>You've completed the Burj Khalifa journey!</p>
+        <p>Thanks for exploring this architectural marvel with us.</p>
+        <button class="restart-button" onclick="restartStories()">Start Over</button>
+    </div>
+
+    <script>
+        class InstagramSwipe {
+            constructor() {
+                this.currentStory = 0;
+                this.totalStories = document.querySelectorAll('.story').length;
+                this.container = document.getElementById('storyContainer');
+                this.progressFill = document.querySelector('.progress-fill');
+                this.isAnimating = false;
+                this.touchStartY = 0;
+                this.touchEndY = 0;
+                this.isDragging = false;
+                
+                console.log('=== INSTAGRAM SWIPE INITIALIZATION ===');
+                console.log('Total stories found:', this.totalStories);
+                console.log('Story elements:', document.querySelectorAll('.story'));
+                console.log('Container:', this.container);
+                console.log('=== END INITIALIZATION ===');
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.updateProgress();
+                this.positionStories();
+            }
+            
+            setupEventListeners() {
+                // Touch events for mobile
+                this.container.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
+                this.container.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: true });
+                this.container.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true });
+                
+                // Mouse events for desktop
+                this.container.addEventListener('mousedown', this.handleMouseDown.bind(this));
+                this.container.addEventListener('mousemove', this.handleMouseMove.bind(this));
+                this.container.addEventListener('mouseup', this.handleMouseUp.bind(this));
+                this.container.addEventListener('mouseleave', this.handleMouseUp.bind(this));
+                
+                // Keyboard navigation
+                document.addEventListener('keydown', this.handleKeyDown.bind(this));
+                
+                // Prevent context menu
+                this.container.addEventListener('contextmenu', (e) => e.preventDefault());
+                
+                // Prevent default drag behavior
+                this.container.addEventListener('dragstart', (e) => e.preventDefault());
+            }
+            
+            positionStories() {
+                const stories = document.querySelectorAll('.story');
+                stories.forEach((story, index) => {
+                    story.style.top = `${index * 100}vh`;
+                });
+            }
+            
+            handleTouchStart(e) {
+                this.touchStartY = e.touches[0].clientY;
+                this.touchEndY = this.touchStartY;
+                this.isDragging = false;
+                this.addTouchFeedback();
+            }
+            
+            handleTouchMove(e) {
+                if (this.touchStartY === 0) return;
+                this.touchEndY = e.touches[0].clientY;
+                this.isDragging = true;
+            }
+            
+            handleTouchEnd(e) {
+                this.removeTouchFeedback();
+                this.handleSwipe();
+                this.resetTouch();
+            }
+            
+            handleMouseDown(e) {
+                e.preventDefault();
+                this.touchStartY = e.clientY;
+                this.touchEndY = this.touchStartY;
+                this.isDragging = false;
+                this.addTouchFeedback();
+            }
+            
+            handleMouseMove(e) {
+                if (this.touchStartY === 0) return;
+                this.touchEndY = e.clientY;
+                this.isDragging = true;
+            }
+            
+            handleMouseUp(e) {
+                if (this.touchStartY === 0) return;
+                this.removeTouchFeedback();
+                this.handleSwipe();
+                this.resetTouch();
+            }
+            
+            resetTouch() {
+                this.touchStartY = 0;
+                this.touchEndY = 0;
+                this.isDragging = false;
+            }
+            
+            handleSwipe() {
+                const swipeThreshold = 15; // Ultra-sensitive for all phones
+                const swipeDistance = this.touchStartY - this.touchEndY;
+                
+                console.log('Swipe detected:', { 
+                    startY: this.touchStartY, 
+                    endY: this.touchEndY, 
+                    distance: swipeDistance,
+                    isDragging: this.isDragging
+                });
+                
+                if (Math.abs(swipeDistance) > swipeThreshold) {
+                    if (swipeDistance > 0) {
+                        // Swipe up - next story
+                        console.log('Swiping up to next story');
+                        this.nextStory();
+                    } else {
+                        // Swipe down - previous story
+                        console.log('Swiping down to previous story');
+                        this.prevStory();
+                    }
+                }
+            }
+            
+            handleKeyDown(e) {
+                switch(e.key) {
+                    case 'ArrowUp':
+                    case ' ':
+                    case 'Enter':
+                        e.preventDefault();
+                        this.nextStory();
+                        break;
+                    case 'ArrowDown':
+                    case 'Backspace':
+                        e.preventDefault();
+                        this.prevStory();
+                        break;
+                }
+            }
+            
+            nextStory() {
+                console.log('=== NEXT STORY DEBUG ===');
+                console.log('Current story:', this.currentStory);
+                console.log('Total stories:', this.totalStories);
+                console.log('Is animating:', this.isAnimating);
+                console.log('=== END DEBUG ===');
+                
+                if (this.isAnimating) {
+                    console.log('Cannot go to next story: animation in progress');
+                    return;
+                }
+                
+                // Check if we're trying to go beyond the last story
+                if (this.currentStory >= this.totalStories) {
+                    console.log('Already beyond last story, showing completion message');
+                    this.showCompletionMessage();
+                    return;
+                }
+                
+                // Check if we're at the last story and trying to go further
+                if (this.currentStory === this.totalStories - 1) {
+                    console.log('At last story (story 5), showing completion message on next attempt');
+                    this.showCompletionMessage();
+                    return;
+                }
+                
+                this.currentStory++;
+                console.log('Moving to story:', this.currentStory + 1, '(index:', this.currentStory, ')');
+                this.animateToStory();
+            }
+            
+            showCompletionMessage() {
+                const completionMessage = document.getElementById('completionMessage');
+                if (completionMessage) {
+                    completionMessage.classList.add('show');
+                    console.log('Completion message shown');
+                }
+            }
+            
+            hideCompletionMessage() {
+                const completionMessage = document.getElementById('completionMessage');
+                if (completionMessage) {
+                    completionMessage.classList.remove('show');
+                    console.log('Completion message hidden');
+                }
+            }
+            
+            prevStory() {
+                if (this.isAnimating || this.currentStory <= 0) {
+                    console.log('Cannot go to previous story:', { 
+                        isAnimating: this.isAnimating, 
+                        currentStory: this.currentStory 
+                    });
+                    return;
+                }
+                
+                this.currentStory--;
+                console.log('Moving to story:', this.currentStory);
+                this.animateToStory();
+            }
+            
+            animateToStory() {
+                this.isAnimating = true;
+                const translateY = -this.currentStory * 100;
+                
+                console.log('Animating to translateY:', translateY);
+                console.log('Current story:', this.currentStory);
+                
+                // Use requestAnimationFrame for smoother animation
+                requestAnimationFrame(() => {
+                this.container.style.transform = `translateY(${translateY}vh)`;
+                this.updateProgress();
+                    
+                    // Start number counting animation for story 3
+                    if (this.currentStory === 2) {
+                        setTimeout(() => {
+                            this.startVideoNumberCounting();
+                        }, 1500); // Reduced from 2800ms to 1500ms to start much earlier
+                    }
+                    
+                    // Initialize spelling game for story 4
+                    if (this.currentStory === 3) {
+                        console.log('Reached story 4, initializing spelling game...');
+                        setTimeout(() => {
+                            this.initializeSpellingGame();
+                        }, 500);
+                    }
+                    
+                    // Start sunset animations for story 5
+                    if (this.currentStory === 4) {
+                        console.log('Reached story 5, starting sunset animations...');
+                        setTimeout(() => {
+                            this.startSunsetAnimations();
+                        }, 500);
+                    }
+                });
+                
+                // Reset animation flag after transition
+                setTimeout(() => {
+                    this.isAnimating = false;
+                    console.log('Animation completed');
+                }, 350); // Slightly longer timeout for smoother experience
+            }
+            
+            initializeSpellingTask() {
+                const spellingTask = document.querySelector('.story-4 .spelling-task');
+                
+                if (spellingTask && !spellingTask.classList.contains('initialized')) {
+                    spellingTask.classList.add('initialized');
+                    this.setupClickToPlace();
+                    this.attemptsLeft = 2;
+                    this.correctSpelling = 'ARCHITECTURE';
+                    this.shuffleLetters();
+                    this.selectedSlot = null; // Track which slot is selected
+                    
+                    // Debug: Count and log all letters
+                    this.debugLetterCount();
+                }
+            }
+            
+            debugLetterCount() {
+                const letterTiles = document.querySelectorAll('.letter-tile');
+                const dropSlots = document.querySelectorAll('.drop-slot');
+                const letters = Array.from(letterTiles).map(tile => tile.dataset.letter);
+                
+                console.log('=== SPELLING GAME DEBUG ===');
+                console.log('Total letter tiles:', letterTiles.length);
+                console.log('Total drop slots:', dropSlots.length);
+                console.log('Letters found:', letters);
+                console.log('Required letters for ARCHITECTURE:', ['A', 'R', 'C', 'H', 'I', 'T', 'E', 'C', 'T', 'U', 'R', 'E']);
+                console.log('Letter tiles match drop slots:', letterTiles.length === dropSlots.length);
+                
+                // Specific debug for letter A
+                const letterAElements = document.querySelectorAll('.letter-tile[data-letter="A"]');
+                console.log('=== LETTER A DEBUG ===');
+                console.log('Letter A elements found:', letterAElements.length);
+                letterAElements.forEach((element, index) => {
+                    console.log(`Letter A ${index + 1}:`, {
+                        element: element,
+                        visible: element.offsetWidth > 0 && element.offsetHeight > 0,
+                        text: element.textContent,
+                        dataLetter: element.dataset.letter,
+                        computedStyle: window.getComputedStyle(element).display
+                    });
+                });
+                
+                console.log('=== END DEBUG ===');
+            }
+            
+            verifyAllLettersPresent() {
+                const letterTiles = document.querySelectorAll('.letter-tile');
+                const dropSlots = document.querySelectorAll('.drop-slot');
+                const availableLetters = Array.from(letterTiles).map(tile => tile.dataset.letter);
+                const placedLetters = Array.from(dropSlots).map(slot => slot.dataset.letter).filter(letter => letter);
+                const allLetters = [...availableLetters, ...placedLetters];
+                
+                const requiredLetters = ['A', 'R', 'C', 'H', 'I', 'T', 'E', 'C', 'T', 'U', 'R', 'E'];
+                const letterCounts = {};
+                
+                // Count all letters
+                allLetters.forEach(letter => {
+                    letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+                });
+                
+                console.log('=== LETTER VERIFICATION ===');
+                console.log('Available letters:', availableLetters);
+                console.log('Placed letters:', placedLetters);
+                console.log('All letters combined:', allLetters);
+                console.log('Letter counts:', letterCounts);
+                
+                // Check if we have all required letters
+                const requiredCounts = { A: 1, R: 2, C: 2, H: 1, I: 1, T: 2, E: 2, U: 1 };
+                let allPresent = true;
+                
+                Object.keys(requiredCounts).forEach(letter => {
+                    const required = requiredCounts[letter];
+                    const actual = letterCounts[letter] || 0;
+                    if (actual !== required) {
+                        console.error(`MISSING LETTERS: ${letter} - Required: ${required}, Found: ${actual}`);
+                        allPresent = false;
+                    }
+                });
+                
+                if (allPresent) {
+                    console.log('✅ All letters are present and accounted for!');
+                } else {
+                    console.error('❌ Some letters are missing!');
+                }
+                
+                console.log('=== END VERIFICATION ===');
+                return allPresent;
+            }
+            
+            setupClickToPlace() {
+                const letterTiles = document.querySelectorAll('.letter-tile');
+                const dropSlots = document.querySelectorAll('.drop-slot');
+                
+                // Add click event listeners to letter tiles
+                letterTiles.forEach(tile => {
+                    tile.addEventListener('click', this.handleLetterClick.bind(this));
+                });
+                
+                // Add click event listeners to drop slots
+                dropSlots.forEach(slot => {
+                    slot.addEventListener('click', this.handleSlotClick.bind(this));
+                });
+            }
+            
+            handleLetterClick(e) {
+                const letter = e.target.dataset.letter;
+                const letterTile = e.target;
+                
+                // If no slot is selected, highlight the first empty slot
+                if (!this.selectedSlot) {
+                    const firstEmptySlot = document.querySelector('.drop-slot:not(.filled)');
+                    if (firstEmptySlot) {
+                        this.selectSlot(firstEmptySlot);
+                    }
+                }
+                
+                // Place letter in selected slot
+                if (this.selectedSlot && !this.selectedSlot.classList.contains('filled')) {
+                    this.placeLetter(this.selectedSlot, letter, letterTile);
+                    this.clearSlotSelection();
+                    
+                    // Auto-select next empty slot
+                    const nextEmptySlot = document.querySelector('.drop-slot:not(.filled)');
+                    if (nextEmptySlot) {
+                        this.selectSlot(nextEmptySlot);
+                    }
+                }
+            }
+            
+            handleSlotClick(e) {
+                const slot = e.target;
+                
+                if (slot.classList.contains('filled')) {
+                    // If slot is filled, don't select it (remove button will handle removal)
+                    return;
+                } else {
+                    // Select this empty slot
+                    this.selectSlot(slot);
+                }
+            }
+            
+            selectSlot(slot) {
+                // Clear previous selection
+                this.clearSlotSelection();
+                
+                // Select new slot
+                this.selectedSlot = slot;
+                slot.classList.add('selected');
+            }
+            
+            clearSlotSelection() {
+                if (this.selectedSlot) {
+                    this.selectedSlot.classList.remove('selected');
+                    this.selectedSlot = null;
+                }
+                
+                // Clear any other selected slots
+                document.querySelectorAll('.drop-slot.selected').forEach(slot => {
+                    slot.classList.remove('selected');
+                });
+            }
+            
+            placeLetter(slot, letter, originalElement) {
+                slot.innerHTML = `
+                    <span class="letter-content">${letter}</span>
+                    <button class="remove-btn" onclick="window.swipeInstance.removeLetter(this.parentElement)">×</button>
+                `;
+                slot.classList.add('filled');
+                slot.dataset.letter = letter;
+                
+                // Remove the original letter tile from the letter bank
+                originalElement.remove();
+            }
+            
+            removeLetter(slot) {
+                const letter = slot.dataset.letter;
+                const letterBank = document.querySelector('.letter-bank');
+                
+                console.log(`=== REMOVING LETTER ${letter} ===`);
+                console.log('Letter being removed:', letter);
+                console.log('Letter bank before removal:', Array.from(letterBank.children).map(child => child.textContent));
+                
+                // Create a new letter tile and add it back to the letter bank
+                const newLetterTile = document.createElement('div');
+                newLetterTile.className = 'letter-tile';
+                newLetterTile.dataset.letter = letter;
+                newLetterTile.textContent = letter;
+                
+                // Ensure the letter is visible
+                newLetterTile.style.display = 'flex';
+                newLetterTile.style.visibility = 'visible';
+                newLetterTile.style.opacity = '1';
+                
+                // Add click event listener to the new tile
+                newLetterTile.addEventListener('click', this.handleLetterClick.bind(this));
+                
+                // Add the letter back to the letter bank
+                letterBank.appendChild(newLetterTile);
+                
+                // Force a reflow to ensure the element is rendered
+                newLetterTile.offsetHeight;
+                
+                console.log('Letter bank after adding back:', Array.from(letterBank.children).map(child => child.textContent));
+                console.log('New letter tile created:', {
+                    letter: newLetterTile.textContent,
+                    dataLetter: newLetterTile.dataset.letter,
+                    visible: newLetterTile.offsetWidth > 0 && newLetterTile.offsetHeight > 0,
+                    display: window.getComputedStyle(newLetterTile).display,
+                    opacity: window.getComputedStyle(newLetterTile).opacity
+                });
+                
+                // Clear the slot
+                slot.innerHTML = '_';
+                slot.classList.remove('filled');
+                slot.dataset.letter = '';
+                slot.dataset.originalElement = '';
+                
+                // Select this slot after removal
+                this.selectSlot(slot);
+                
+                console.log(`=== LETTER ${letter} REMOVAL COMPLETE ===`);
+                
+                // Verify all letters are still present
+                this.verifyAllLettersPresent();
+            }
+            
+            checkSpelling() {
+                const dropSlots = document.querySelectorAll('.drop-slot');
+                const currentSpelling = Array.from(dropSlots).map(slot => slot.dataset.letter || '').join('');
+                const feedbackMessage = document.getElementById('feedbackMessage');
+                const attemptsElement = document.getElementById('attemptsLeft');
+                
+                if (currentSpelling.length !== this.correctSpelling.length) {
+                    feedbackMessage.textContent = 'Please fill all letter positions!';
+                    feedbackMessage.className = 'feedback-message warning';
+                    return;
+                }
+                
+                if (currentSpelling === this.correctSpelling) {
+                    // Success!
+                    feedbackMessage.textContent = '🎉 Perfect! ARCHITECTURE is correct! The Burj Khalifa took 6 years to build!';
+                    feedbackMessage.className = 'feedback-message success';
+                    
+                    // Disable further attempts
+                    document.querySelector('.check-spelling-btn').disabled = true;
+                    
+                    // Add success animation
+                    dropSlots.forEach((slot, index) => {
+                        setTimeout(() => {
+                            slot.style.animation = 'successPulse 0.6s ease-out';
+                        }, index * 100);
+                    });
+                    
+                } else {
+                    // Wrong spelling
+                    this.attemptsLeft--;
+                    attemptsElement.textContent = this.attemptsLeft;
+                    
+                    if (this.attemptsLeft > 0) {
+                        feedbackMessage.textContent = `Not quite right! You have ${this.attemptsLeft} attempt${this.attemptsLeft > 1 ? 's' : ''} left. Try again!`;
+                        feedbackMessage.className = 'feedback-message error';
+                        
+                        // Shake animation for wrong answer
+                        dropSlots.forEach(slot => {
+                            slot.style.animation = 'shake 0.5s ease-in-out';
+                        });
+                        
+                        setTimeout(() => {
+                            dropSlots.forEach(slot => {
+                                slot.style.animation = '';
+                            });
+                        }, 500);
+                        
+                    } else {
+                        // No attempts left
+                        feedbackMessage.textContent = '❌ No more attempts! The correct spelling is ARCHITECTURE. The Burj Khalifa took 6 years to build!';
+                        feedbackMessage.className = 'feedback-message error';
+                        
+                        // Show correct spelling
+                        this.correctSpelling.split('').forEach((letter, index) => {
+                            if (dropSlots[index]) {
+                                dropSlots[index].textContent = letter;
+                                dropSlots[index].classList.add('filled');
+                                dropSlots[index].style.background = 'linear-gradient(135deg, #feca57, #ff9ff3)';
+                            }
+                        });
+                        
+                        // Disable button
+                        document.querySelector('.check-spelling-btn').disabled = true;
+                    }
+                }
+            }
+            
+            startVideoNumberCounting() {
+                const numberElement = document.querySelector('.video-counting-number');
+                if (numberElement) {
+                    const target = parseInt(numberElement.dataset.target);
+                    let current = 0;
+                    const increment = target / 60; // 60 frames for smooth animation
+                    
+                    const countUp = () => {
+                        current += increment;
+                        if (current < target) {
+                            numberElement.textContent = Math.floor(current);
+                            requestAnimationFrame(countUp);
+                        } else {
+                            numberElement.textContent = target;
+                        }
+                    };
+                    
+                    countUp();
+                }
+            }
+            
+            startSunsetAnimations() {
+                console.log('=== STARTING SUNSET ANIMATIONS ===');
+                console.log('Function called successfully');
+                
+                // Check if story 5 elements exist
+                const story5 = document.querySelector('.story-5');
+                const sunsetTexts = document.querySelectorAll('.sunset-text');
+                const sunsetImage = document.querySelector('.sunset-image');
+                
+                console.log('Story 5 element:', story5);
+                console.log('Sunset texts found:', sunsetTexts.length);
+                console.log('Sunset image found:', sunsetImage);
+                
+                if (!story5) {
+                    console.error('Story 5 element not found!');
+                    return;
+                }
+                
+                // Make story 5 visible
+                story5.style.display = 'flex';
+                story5.style.visibility = 'visible';
+                story5.style.opacity = '1';
+                
+                console.log('Story 5 made visible');
+                
+                // Reset any existing animations
+                sunsetTexts.forEach((text, index) => {
+                    console.log(`Resetting animation for text ${index + 1}:`, text);
+                    text.style.animation = 'none';
+                    text.offsetHeight; // Trigger reflow
+                    text.style.opacity = '1'; // Make sure it's visible
+                });
+                
+                // Start the image zoom animation
+                if (sunsetImage) {
+                    console.log('Starting image zoom animation');
+                    sunsetImage.style.animation = 'appleZoom 8s ease-out forwards';
+                } else {
+                    console.error('Sunset image not found!');
+                }
+                
+                // Restart text animations with proper timing
+                setTimeout(() => {
+                    const line1 = document.querySelector('.sunset-text.line-1');
+                    if (line1) {
+                        console.log('Starting line 1 animation');
+                        line1.style.animation = 'sunsetSlideIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s forwards';
+                    } else {
+                        console.error('Line 1 not found!');
+                    }
+                }, 100);
+                
+                setTimeout(() => {
+                    const line2 = document.querySelector('.sunset-text.line-2');
+                    if (line2) {
+                        console.log('Starting line 2 animation');
+                        line2.style.animation = 'sunsetSlideIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s forwards';
+                    } else {
+                        console.error('Line 2 not found!');
+                    }
+                }, 1500);
+                
+                setTimeout(() => {
+                    const line3 = document.querySelector('.sunset-text.line-3');
+                    if (line3) {
+                        console.log('Starting line 3 animation with glow');
+                        line3.style.animation = 'sunsetSlideIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s forwards, sunsetGlow 1s ease-out 1s forwards';
+                    } else {
+                        console.error('Line 3 not found!');
+                    }
+                }, 3000);
+                
+                console.log('=== SUNSET ANIMATIONS SETUP COMPLETE ===');
+            }
+            
+            updateProgress() {
+                const progress = ((this.currentStory + 1) / this.totalStories) * 100;
+                this.progressFill.style.width = `${progress}%`;
+                console.log('Progress updated:', progress + '%');
+            }
+            
+            addTouchFeedback() {
+                const currentStoryElement = document.querySelector(`[data-story="${this.currentStory}"]`);
+                if (currentStoryElement) {
+                    currentStoryElement.classList.add('touching');
+                }
+            }
+            
+            removeTouchFeedback() {
+                const currentStoryElement = document.querySelector(`[data-story="${this.currentStory}"]`);
+                if (currentStoryElement) {
+                    currentStoryElement.classList.remove('touching');
+                }
+            }
+            
+            shuffleLetters() {
+                const letterBank = document.querySelector('.letter-bank');
+                const letters = Array.from(letterBank.children);
+                
+                // Shuffle the letters
+                for (let i = letters.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    letterBank.appendChild(letters[j]);
+                }
+            }
+
+            // New keyboard-based spelling game functions
+            initializeSpellingGame() {
+                console.log('initializeSpellingGame called, currentStory:', this.currentStory);
+                if (this.currentStory === 3) { // Story 4 (0-indexed)
+                    const spellingContainer = document.querySelector('.story-4 .spelling-task');
+                    console.log('Spelling container found:', spellingContainer);
+                    if (spellingContainer && !spellingContainer.classList.contains('initialized')) {
+                        console.log('Initializing spelling game...');
+                        spellingContainer.classList.add('initialized');
+                        this.setupSpellingGame();
+                    } else {
+                        console.log('Spelling game already initialized or container not found');
+                    }
+                } else {
+                    console.log('Not on story 4, skipping spelling game initialization');
+                }
+            }
+            
+            setupSpellingGame() {
+                console.log('Setting up spelling game...');
+                this.currentAnswer = '';
+                this.correctAnswer = 'ARCHITECTURE';
+                this.maxAttempts = 3;
+                this.currentAttempt = 0;
+                this.revealedVowels = new Set();
+                
+                this.createKeyboard();
+                this.updateDisplay();
+                
+                // Add event listeners
+                document.addEventListener('keydown', this.handleKeyPress.bind(this));
+                console.log('Spelling game setup completed');
+            }
+            
+            createKeyboard() {
+                const keyboardContainer = document.querySelector('.keyboard');
+                console.log('Creating keyboard, container found:', keyboardContainer);
+                if (!keyboardContainer) {
+                    console.error('Keyboard container not found!');
+                    return;
+                }
+                
+                // Force visibility
+                keyboardContainer.style.display = 'flex';
+                keyboardContainer.style.flexDirection = 'column';
+                keyboardContainer.style.visibility = 'visible';
+                keyboardContainer.style.opacity = '1';
+                
+                const letters = 'QWERTYUIOPASDFGHJKLZXCVBNM'.split('');
+                keyboardContainer.innerHTML = '';
+                
+                const rows = [
+                    'QWERTYUIOP',
+                    'ASDFGHJKL',
+                    'ZXCVBNM'
+                ];
+                
+                console.log('Creating keyboard rows...');
+                rows.forEach((row, rowIndex) => {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'keyboard-row';
+                    
+                    row.split('').forEach(letter => {
+                        const key = document.createElement('button');
+                        key.className = 'key';
+                        key.textContent = letter;
+                        key.dataset.letter = letter;
+                        key.addEventListener('click', () => this.addLetter(letter));
+                        rowDiv.appendChild(key);
+                    });
+                    
+                    keyboardContainer.appendChild(rowDiv);
+                    console.log(`Row ${rowIndex + 1} created with ${row.length} keys`);
+                });
+                
+                console.log('Keyboard creation completed');
+                console.log('Keyboard container styles:', {
+                    display: keyboardContainer.style.display,
+                    visibility: keyboardContainer.style.visibility,
+                    opacity: keyboardContainer.style.opacity,
+                    height: keyboardContainer.offsetHeight,
+                    width: keyboardContainer.offsetWidth
+                });
+            }
+            
+            addLetter(letter) {
+                if (this.currentAnswer.length < this.correctAnswer.length) {
+                    this.currentAnswer += letter;
+                    this.updateDisplay();
+                    
+                    // Don't disable the key - allow infinite use
+                    // Visual feedback for the click
+                    const key = document.querySelector(`[data-letter="${letter}"]`);
+                    if (key) {
+                        key.classList.add('clicked');
+                        setTimeout(() => {
+                            key.classList.remove('clicked');
+                        }, 150);
+                    }
+                }
+            }
+            
+            removeLetter() {
+                if (this.currentAnswer.length > 0) {
+                    this.currentAnswer = this.currentAnswer.slice(0, -1);
+                    this.updateDisplay();
+                    
+                    // No need to re-enable keys since they're never disabled
+                }
+            }
+            
+            updateDisplay() {
+                const revealedLetters = document.querySelector('.revealed-letters');
+                if (!revealedLetters) return;
+                
+                revealedLetters.innerHTML = '';
+                
+                for (let i = 0; i < this.correctAnswer.length; i++) {
+                    const letterDiv = document.createElement('div');
+                    letterDiv.className = 'letter-slot';
+                    
+                    if (i < this.currentAnswer.length) {
+                        letterDiv.textContent = this.currentAnswer[i];
+                        letterDiv.classList.add('filled');
+                    } else if (this.revealedVowels.has(i)) {
+                        letterDiv.textContent = this.correctAnswer[i];
+                        letterDiv.classList.add('revealed');
+                    } else {
+                        letterDiv.textContent = '_';
+                    }
+                    
+                    revealedLetters.appendChild(letterDiv);
+                }
+            }
+            
+            handleKeyPress(event) {
+                if (this.currentStory !== 3) return; // Only for story 4
+                
+                const key = event.key.toUpperCase();
+                
+                if (key === 'BACKSPACE') {
+                    this.removeLetter();
+                } else if (key >= 'A' && key <= 'Z') {
+                    this.addLetter(key);
+                } else if (key === 'ENTER') {
+                    this.checkAnswer();
+                }
+            }
+            
+            checkAnswer() {
+                if (this.currentAnswer.length !== this.correctAnswer.length) {
+                    this.showFeedback('Please complete the word first!', 'warning');
+                    return;
+                }
+                
+                if (this.currentAnswer === this.correctAnswer) {
+                    this.showFeedback('🎉 Correct! ARCHITECTURE - The Burj Khalifa took 6 years to build!', 'success');
+                    this.playSuccessAnimation();
+                } else {
+                    this.currentAttempt++;
+                    
+                    if (this.currentAttempt < this.maxAttempts) {
+                        this.showFeedback(`Incorrect. ${this.maxAttempts - this.currentAttempt} attempts remaining.`, 'error');
+                        this.revealNextVowel();
+                        this.resetAnswer();
+                    } else {
+                        this.showFeedback(`Game over! The correct answer was: ${this.correctAnswer}`, 'error');
+                        this.showCorrectAnswer();
+                    }
+                }
+            }
+            
+            resetAnswer() {
+                // Keys are never disabled, so no need to re-enable them
+                // Just clear any temporary visual states
+                document.querySelectorAll('.key').forEach(key => {
+                    key.classList.remove('clicked', 'used');
+                });
+                
+                this.currentAnswer = '';
+                this.updateDisplay();
+            }
+            
+            revealNextVowel() {
+                const vowels = ['A', 'E', 'I', 'O', 'U'];
+                const vowelPositions = [];
+                
+                for (let i = 0; i < this.correctAnswer.length; i++) {
+                    if (vowels.includes(this.correctAnswer[i]) && !this.revealedVowels.has(i)) {
+                        vowelPositions.push(i);
+                    }
+                }
+                
+                if (vowelPositions.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * vowelPositions.length);
+                    this.revealedVowels.add(vowelPositions[randomIndex]);
+                    this.updateDisplay();
+                }
+            }
+            
+            showHint() {
+                const hints = [
+                    "This word describes the art and science of building design.",
+                    "The Burj Khalifa is a masterpiece of this field.",
+                    "It starts with 'A' and has 12 letters total."
+                ];
+                
+                const hintText = hints[Math.min(this.currentAttempt, hints.length - 1)];
+                this.showFeedback(`💡 Hint: ${hintText}`, 'hint');
+            }
+            
+            showFeedback(message, type) {
+                const feedback = document.querySelector('.feedback-message');
+                if (feedback) {
+                    feedback.textContent = message;
+                    feedback.className = `feedback-message ${type}`;
+                }
+            }
+            
+            playSuccessAnimation() {
+                const letterSlots = document.querySelectorAll('.letter-slot');
+                letterSlots.forEach((slot, index) => {
+                    setTimeout(() => {
+                        slot.classList.add('correct');
+                    }, index * 100);
+                });
+            }
+            
+            showCorrectAnswer() {
+                this.currentAnswer = this.correctAnswer;
+                this.updateDisplay();
+                
+                // Don't disable keys - let users try again if they want
+            }
+        }
+        
+        // Initialize the swipe functionality when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing Instagram Swipe...');
+            window.swipeInstance = new InstagramSwipe();
+        });
+        
+        // Global restart function for the restart button
+        function restartStories() {
+            console.log('Restarting stories...');
+            if (window.swipeInstance) {
+                window.swipeInstance.currentStory = 0;
+                window.swipeInstance.animateToStory();
+                window.swipeInstance.hideCompletionMessage();
+            }
+        }
+        
+        // Global function for checking spelling
+        function checkSpelling() {
+            if (window.swipeInstance) {
+                window.swipeInstance.checkAnswer();
+            }
+        }
+        
+        // Global function for showing hint
+        function showHint() {
+            if (window.swipeInstance) {
+                window.swipeInstance.showHint();
+            }
+        }
+        
+        // Global function for removing last letter
+        function removeLastLetter() {
+            if (window.swipeInstance) {
+                window.swipeInstance.removeLetter();
+            }
+        }
+        
+        // Global function for playing the word audio
+        function playArchitectureWord() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance('Architecture');
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // Global test function for debugging keyboard
+        function testKeyboard() {
+            console.log('Testing keyboard creation...');
+            if (window.swipeInstance) {
+                window.swipeInstance.createKeyboard();
+                window.swipeInstance.updateDisplay();
+            } else {
+                console.error('Swipe instance not found');
+            }
+        }
+
+        function showStory(index) {
+            const stories = document.querySelectorAll('.story');
+            stories.forEach(story => story.classList.remove('active'));
+            
+            const targetStory = document.querySelector(`.story-${index + 1}`);
+            if (targetStory) {
+                targetStory.classList.add('active');
+                
+                // Initialize spelling game for story 4
+                if (index === 3 && window.swipeInstance) {
+                    setTimeout(() => {
+                        window.swipeInstance.initializeSpellingGame();
+                    }, 100);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+
